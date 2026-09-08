@@ -58,6 +58,11 @@ body{
 .btn:hover{transform:translateY(-2px);box-shadow:0 6px 0 -2px rgba(20,33,58,.25)}
 .btn:focus-visible{outline:3px solid var(--indigo);outline-offset:3px}
 .btn-lg{font-size:17px;padding:17px 40px}
+.btn-outline{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.btn-outline:hover{box-shadow:0 6px 0 -2px rgba(20,33,58,.15)}
+.btn[aria-disabled="true"]{opacity:.55;cursor:not-allowed}
+.btn[aria-disabled="true"]:hover{transform:none;box-shadow:none}
+.cta-group{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
 
 /* ---------- 見出しの帯マーカー（ガントの棒がモチーフ） ---------- */
 .eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:18px}
@@ -102,6 +107,9 @@ body{
   font-family:var(--mono);font-size:12px;color:var(--muted);
   letter-spacing:.06em;
 }
+.screenshot-frame.chat-shot{aspect-ratio:16/10}
+.ask .screenshot-frame{background:#1B1E27;border-color:#2B2F3B}
+.ask .screenshot-note{color:#8B95A8}
 
 /* ---------- 汎用セクション ---------- */
 .sec{padding:88px 0;border-top:1px solid var(--line)}
@@ -139,14 +147,15 @@ body{
 }
 
 /* ---------- 料金 ---------- */
-.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.plans{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;max-width:720px}
 .plan{background:var(--white);border:1px solid var(--line);border-radius:4px;padding:30px 26px}
 .plan.pick{border:2px solid var(--yamabuki);position:relative}
 .plan.pick::before{
-  content:"ベータ参加者はここ";position:absolute;top:-13px;left:24px;
+  content:"買い切り";position:absolute;top:-13px;left:24px;
   background:var(--yamabuki);color:var(--ink);font-size:11px;font-weight:700;
   padding:3px 12px;border-radius:2px;letter-spacing:.06em;
 }
+.plan .note{font-size:12.5px;color:var(--muted);margin-top:14px;line-height:1.7}
 .plan h3{font-size:15px;font-weight:700;margin-bottom:10px;letter-spacing:.04em}
 .price{font-family:var(--mono);font-size:32px;font-weight:500;line-height:1.3}
 .price small{font-size:13px;color:var(--muted)}
@@ -168,6 +177,9 @@ body{
 .final{background:var(--indigo);color:#fff;padding:88px 0;text-align:center;border:0}
 .final h2{font-family:var(--display);font-size:clamp(26px,4vw,38px);margin-bottom:14px;color:#fff}
 .final p{color:#B9C6E0;margin-bottom:34px;font-size:15px}
+.final .cta-group{justify-content:center}
+.final .btn-outline{color:#fff;border-color:#fff}
+.final .btn-outline:hover{box-shadow:0 6px 0 -2px rgba(255,255,255,.25)}
 footer{padding:34px 0;font-size:12px;color:var(--muted);text-align:center;font-family:var(--mono)}
 
 /* ---------- スクロールで出てくる ---------- */
@@ -194,18 +206,21 @@ footer{padding:34px 0;font-size:12px;color:var(--muted);text-align:center;font-f
 <div class="topbar">
   <div class="wrap">
     <div class="brand">CHRONO<span>S</span></div>
-    <a class="btn" href="#apply">ベータに応募</a>
+    <a class="btn" href="#price">無料で始める</a>
   </div>
 </div>
 
 <!-- ヒーロー -->
 <header class="hero">
   <div class="wrap">
-    <div class="eyebrow"><i></i><i></i><i></i><span>Windows / Beta</span></div>
+    <div class="eyebrow"><i></i><i></i><i></i><span>Windows</span></div>
     <h1>段取りは、<br><em>猫</em>にまかせとき。</h1>
-    <p class="lead">Chronosは、中小企業と個人事業主のためのWindows用スケジュール管理ソフトです。ガントチャートとカレンダーで案件の進み具合がひと目で分かり、予定の登録はチャットに話しかけるだけで終わります。</p>
-    <a class="btn btn-lg" href="#apply">ベータテスターに応募する</a>
-    <p class="hero-note">無料 / 期間中の全機能が使えます</p>
+    <p class="lead">Chronosは、個人〜数名程度の小規模チームのためのWindows用タスク・予定管理ソフトです。WBSとガントチャート、カレンダーで進み具合がひと目で分かり、予定の登録・確認・変更はAIチャットに話しかけるだけ。AI機能以外はすべてローカルで動きます。</p>
+    <div class="cta-group">
+      <a class="btn btn-lg" href="docs/app/chronos-free.exe" download>無料版をダウンロード</a>
+      <a class="btn btn-lg btn-outline" href="#price">有償版を見る</a>
+    </div>
+    <p class="hero-note">無料版あり ／ 買い切りの有償版あり（月額なし）</p>
 
     <!-- ここにアプリ画面のスクリーンショットを差し込む（例: <img src="assets/screenshot.png" alt="Chronosアプリの画面"> をこの中に追加） -->
     <div class="screenshot-frame">
@@ -223,18 +238,18 @@ footer{padding:34px 0;font-size:12px;color:var(--muted);text-align:center;font-f
     <div class="cards">
       <div class="card">
         <div class="card-bar"></div>
-        <h3>ガントチャート</h3>
-        <p>案件ごとの期間を横棒で並べます。今どこまで進んでいて、来週どこが重なるのかが、開いた瞬間に分かります。</p>
+        <h3>タスク管理</h3>
+        <p>WBSで案件をタスクに分解し、ガントチャートで期間を横棒に並べます。日程に矛盾が出たらChronosが自動で検知して補正を提案。今日やるべきことはダッシュボードにまとまります。</p>
       </div>
       <div class="card">
         <div class="card-bar"></div>
-        <h3>カレンダー</h3>
+        <h3>予定管理</h3>
         <p>同じ予定を日・週・月で切り替えて確認できます。毎月20日の請求書のような繰り返しの予定も、一度決めれば以降は自動で並びます。</p>
       </div>
       <div class="card">
         <div class="card-bar"></div>
-        <h3>Ask Chronos</h3>
-        <p>「来週の火曜に打ち合わせ」と打つだけで予定が入ります。日付の入力欄を探す必要はありません。</p>
+        <h3>AIチャット</h3>
+        <p>「来週の火曜に打ち合わせ」と打つだけで予定が入ります。登録だけでなく、予定の確認や変更もチャットで完結します。</p>
       </div>
     </div>
   </div>
@@ -266,52 +281,60 @@ footer{padding:34px 0;font-size:12px;color:var(--muted);text-align:center;font-f
         </svg>
         <p class="cat-name">CHRONOS</p>
       </div>
-      <div class="chat">
-        <div class="msg me">毎月20日に請求書出すの、毎回忘れるんやけど</div>
-        <div class="msg cat">ほな毎月20日に「請求書の送付」で入れとくで。前の日にも一回声かけたるわ。</div>
-        <div class="msg me">土日やったらどうなる？</div>
-        <div class="msg cat">その週の金曜に前倒しといたる。ほかにも忘れる用事あるんちゃう？</div>
+      <!-- 実際のチャット画面のスクリーンショットを選定でき次第、この枠内に <img src="..." alt="Ask Chronosの画面"> を差し込む -->
+      <div class="screenshot-frame chat-shot">
+        <span class="screenshot-note">ここにChronosとのやり取り画面のスクリーンショットが入ります</span>
       </div>
     </div>
   </div>
 </section>
 
 
-<!-- βテスト -->
-<section class="sec">
-  <div class="wrap rise">
-    <div class="eyebrow"><i></i><i></i><i></i><span>β Test</span></div>
-    <h2>βテスト参加者募集中（無料）</h2>
-    <p class="sub">
-      期間中は全機能が使えます。<br>
-      製品版を割引価格でご案内いたします。<br>
-      ※AIサービスのAPIは自前でご準備をお願いいたします。</p>
-    </div>
-  </div>
-</section>
-
-
 <!-- 料金 -->
-<!-- <section class="sec">
+<section class="sec" id="price">
   <div class="wrap rise">
     <div class="eyebrow"><i></i><i></i><i></i><span>Price</span></div>
-    <h2>2,980円（買い切り）</h2>
-    <p class="sub">
-      本体は一度払えば使い続けられます。<br>
-      ガントチャート・カレンダー・AIチャットがご利用いただけます。<br>
-      1台のPCで完結します。<br>
-      ※AIサービスのAPIは自前でご準備をお願いいたします。
-    </p>
+    <h2>無料版と、買い切りの有償版。</h2>
+    <p class="sub">まずは無料で試して、必要になったら買い切りの有償版へ。月額はありません。</p>
+    <div class="plans">
+      <div class="plan">
+        <h3>無料版</h3>
+        <div class="price">¥0</div>
+        <ul>
+          <li>WBS・ガントチャート・カレンダー・AIチャットが使える</li>
+          <li>タスク・予定はそれぞれ同時3件までの登録</li>
+          <li>件数制限があるため、定期予定の設定はできません</li>
+        </ul>
+        <a class="btn" style="margin-top:22px" href="docs/app/chronos-free.exe" download>無料版をダウンロード</a>
+      </div>
+      <div class="plan pick">
+        <h3>有償版</h3>
+        <div class="price">¥2,980<small>（買い切り）</small></div>
+        <ul>
+          <li>タスク・予定の件数制限なし</li>
+          <li>定期予定の設定が可能</li>
+          <li>機能自体は無料版と同じで、制限だけが外れます</li>
+        </ul>
+        <p class="note">本来は4,980円を予定していましたが、正式なユーザーシナリオテストをまだ実施できておらず（βテストでは大きな問題は出ていません）、動作を完全には保証しきれない段階のため、2,980円でご案内しています。</p>
+        <a class="btn" style="margin-top:18px" href="#price" aria-disabled="true" onclick="return false">有償版を購入（Stripe決済・準備中）</a>
+      </div>
     </div>
+    <p class="sub" style="margin-top:34px;margin-bottom:0;font-size:13px">
+      ※ AI機能以外は完全ローカルで動作します。AI機能もご自身のホストでご利用いただけます。<br>
+      ※ AIサービスのAPIキーはご自身でご用意ください。
+    </p>
   </div>
-</section> -->
+</section>
 
 <!-- 最後のCTA -->
 <section class="sec final" id="apply">
   <div class="wrap">
-    <h2>ベータテスターを募集しています。</h2>
-    <p>使ってもらって、要らん機能を教えてほしいです。期間中は無料、途中でやめても大丈夫です。</p>
-    <a class="btn btn-lg" href="#">応募フォームへ</a>
+    <h2>無料版で試して、気に入ったら買い切りへ。</h2>
+    <p>個人〜数名の小規模チーム向けに作っています。まずは無料版で使い勝手を確かめてください。</p>
+    <div class="cta-group">
+      <a class="btn btn-lg" href="docs/app/chronos-free.exe" download>無料版をダウンロード</a>
+      <a class="btn btn-lg btn-outline" href="#price">有償版を見る</a>
+    </div>
   </div>
 </section>
 
