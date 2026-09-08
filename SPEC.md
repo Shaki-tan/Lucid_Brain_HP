@@ -7,9 +7,13 @@
 - 意味のない装飾はせず、シンプルなページとする。
 - 逆に必要な記述は全て行う。
 - LP内で無料版、有料版のダウンロードができる。
+- 無料版・有料版とも、exe実体はCloudflare R2で管理する（Pagesの公開ディレクトリには置かない。Pagesの公開ディレクトリに置いたファイルは、リンクの有無に関わらず誰でも直接URLを叩いて取得できてしまうため）。
 - 有料版はStripeによる決済を行い、決済完了後にダウンロードが走る。
-  - バックエンド構成は GitHub → Cloudflare（Pages/Functions） + Stripe とする。
-  - 決済完了の検証方式（Stripe Webhookでの検証、ダウンロードトークンの発行など）は別途議論して決定する。実装時はCloudflare Pages Functionsの仕様上、リポジトリ直下に`functions/`ディレクトリを新設する必要がある（ファイルベースルーティングの都合上、`src/`配下には置けない）。現時点では未実装のため、このディレクトリ自体もまだ作成していない（詳細は`src/README.md`参照）。
+  - バックエンド構成は GitHub → Cloudflare（Pages/Functions） + Stripe + Cloudflare R2 とする。
+  - 決済手段はカードのみに限定する（コンビニ払い等の非同期決済手段は将来検討）。決済確認はStripe Checkout SessionのIDをそのままダウンロードの認可情報として扱い、リクエストの都度Stripe APIで`payment_status === 'paid'`を照会する（自前のトークン発行・署名管理は行わない）。ダウンロードURLに独自の有効期限は設けず、Stripeのセッション照会可能性にそのまま委ねる（支払い完了後のセッションはStripe側で恒久的に照会可能なため）。
+  - Stripe Webhookは監査ログ・返金対応の記録用途に限定し、ダウンロード可否判定の必須経路にはしない。
+  - リポジトリ直下に`functions/`ディレクトリを新設する（Cloudflare Pages Functionsの仕様上、ファイルベースルーティングの都合で`src/`配下には置けないため）。`functions/api/checkout.js`（決済セッション作成）・`webhook.js`（Webhook受信）・`download.js`（有償版ダウンロード）・`download-free.js`（無料版ダウンロード）で構成する。
+  - 詳細設計・検討過程は`Tasks/有償版決済導線_SOW.md`・`Tasks/有償版決済導線_料金根拠.md`参照。
 - 英語と日本語で切り替えられる。
   - デフォルト表示言語はブラウザの言語設定から自動判定する（手動切替も可能）。
   - 価格表示は日本語ページ・英語ページともに円（JPY）表記のみとする（USD等への換算は行わない）。
@@ -20,11 +24,16 @@
 ```
 root
 |--docs/
-|  |--app/
-|  |  |--v1.0.1/ v1.0.2/ .../
-|  |     |--*.exe          # 無料版・有料版は別ファイルとして配置（例: Chronos-Free-v1.0.2.exe / Chronos-Pro-v1.0.2.exe）
 |  |--*.pdf                 # APIキー取得方法など。当面は日英共通内容だが、後から言語別に差し替えられるよう
 |  |                        #（例: api-key-guide.ja.pdf / api-key-guide.en.pdf）分離可能な構成にしておく
+|                            # 無料版・有料版のexe本体はここには置かない（Cloudflare R2で管理。下記コラム参照）
+|
+|--functions/
+|  |--api/
+|  |  |--checkout.js         # Stripe Checkout Session作成
+|  |  |--webhook.js          # Stripe Webhook受信（監査ログ・返金対応用途）
+|  |  |--download.js         # 有償版ダウンロード（Stripe決済確認あり）
+|  |  |--download-free.js    # 無料版ダウンロード（決済確認なし）
 |
 |--images/
 |  |--*.png / *.jpeg / *.svg
@@ -36,7 +45,7 @@ root
 |--src/
 |  |--i18n.js                # 日英の翻訳辞書
 |  |--script.js              # 言語切替・スクロール表示などのロジック本体（i18n.jsに依存）
-|  |--README.md              # src/の説明。Stripe決済バックエンド（`functions/`、未実装）の位置づけもここに記載
+|  |--README.md              # src/の説明
 |
 |--index.html
 |--style.css
@@ -45,6 +54,8 @@ root
 |--SPEC.md
 |--AGENTS.md
 ```
+
+無料版・有料版のexe本体は、このリポジトリ（Pages公開ディレクトリ）には置かず、Cloudflare R2バケット`chronos-releases`で管理する（`paid/latest/chronos-paid.exe`・`free/latest/chronos-free.exe`という固定キーを`functions/`から参照し、バージョン更新時もコード変更が不要な構成にしている。旧バージョンは`paid/vX.Y.Z/`・`free/vX.Y.Z/`に無期限アーカイブする）。詳細は`Tasks/有償版決済導線_SOW.md`参照。
 
 ## 記載したいこと
 
@@ -74,7 +85,5 @@ root
 
 ## 今後の検討・未確定事項
 
-- Stripe決済完了の検証方式（Webhook検証、ダウンロードトークン発行など）の具体的な設計
-- 返金ポリシー／特定商取引法に基づく表記／プライバシーポリシーの本文確定
+- 返金ポリシー／特定商取引法に基づく表記／プライバシーポリシーの本文確定（決済導線の実装はこれを待たずに進める）
 - 問い合わせ用のXアカウント・メールアドレスの確定
-- 旧バージョンexeの取り扱い（当面は最新版のみLPからDL可能とし、旧バージョンは内部で保管する）
