@@ -39,7 +39,9 @@ var i18n = {
     'price.paid.f1': 'タスク・予定の件数制限なし',
     'price.paid.f2': '定期予定の設定が可能',
     'price.paid.f3': '上記以外の制限はなく、無料版と同じ機能が使えます。無料版からは上書きインストールでそのまま移行できます',
-    'price.paid.cta': '有償版を購入（準備中）',
+    'price.paid.cta': '有償版を購入',
+    'price.paid.ctaLoading': '決済ページに移動しています…',
+    'price.paid.error': '決済ページの準備に失敗しました。しばらくしてから再度お試しください。',
     'price.legal1': 'ライセンスキーによる認証は行っていません。PCの買い替え時は同じインストーラーをそのままお使いいただけます。別の環境で新たに使う場合は、あらためてご購入ください。',
     'price.legal2': '価格は税込・円（JPY）表示です。海外からもご利用いただけますが、決済通貨は円のみとなります。',
     'final.title': '無料版で試して、気に入ったら買い切りへ。',
@@ -51,7 +53,16 @@ var i18n = {
     'footer.refund': '返金ポリシー',
     'footer.socialX': 'X（旧Twitter）で問い合わせる',
     'footer.socialMail': 'メールで問い合わせる',
-    'footer.copy': '© 2026 Team D-X'
+    'footer.copy': '© 2026 Team D-X',
+    'thanks.eyebrow': 'Thank you',
+    'thanks.title': 'ご購入ありがとうございます',
+    'thanks.body': '決済が完了しました。まもなくダウンロードが始まります。',
+    'thanks.ctaManual': 'ダウンロードが始まらない場合はこちら',
+    'thanks.backHome': 'トップページへ戻る',
+    'thanks.errorEyebrow': 'Error',
+    'thanks.errorTitle': 'セッションを確認できませんでした',
+    'thanks.errorBody': '決済情報を確認できませんでした。お手数ですが、購入手続きをやり直してください。',
+    'thanks.errorBack': '購入ページへ戻る'
   },
   en: {
     'meta.title': 'Chronos — Let the cat handle your schedule.',
@@ -93,7 +104,9 @@ var i18n = {
     'price.paid.f1': 'No limit on tasks or events',
     'price.paid.f2': 'Recurring events supported',
     'price.paid.f3': 'Otherwise identical to Free. Upgrade by installing Pro over Free — your data and settings carry over automatically',
-    'price.paid.cta': 'Buy Pro (Coming Soon)',
+    'price.paid.cta': 'Buy Pro',
+    'price.paid.ctaLoading': 'Redirecting to checkout…',
+    'price.paid.error': "Couldn't start checkout. Please try again in a moment.",
     'price.legal1': "There's no license-key activation. If you get a new PC, you can reuse the same installer. To use Chronos on a separate environment as well, please purchase again.",
     'price.legal2': 'Prices are shown in Japanese yen (tax included). International purchases are welcome, but payment is processed in JPY only.',
     'final.title': 'Try it free. Buy it once if you like it.',
@@ -105,6 +118,15 @@ var i18n = {
     'footer.refund': 'Refund Policy',
     'footer.socialX': 'Contact us on X',
     'footer.socialMail': 'Contact us by email',
-    'footer.copy': '© 2026 Team D-X'
+    'footer.copy': '© 2026 Team D-X',
+    'thanks.eyebrow': 'Thank you',
+    'thanks.title': 'Thank you for your purchase',
+    'thanks.body': "Payment complete. Your download should start automatically.",
+    'thanks.ctaManual': "Download didn't start? Click here",
+    'thanks.backHome': 'Back to homepage',
+    'thanks.errorEyebrow': 'Error',
+    'thanks.errorTitle': "We couldn't verify your session",
+    'thanks.errorBody': "We couldn't verify your payment information. Please try purchasing again.",
+    'thanks.errorBack': 'Back to purchase page'
   }
 }

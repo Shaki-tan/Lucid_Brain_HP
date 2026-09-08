@@ -78,5 +78,34 @@ function setupScrollReveal() {
   riseEls.forEach(function (el) { observer.observe(el) })
 }
 
+function setupPaidCheckout() {
+  var btn = document.getElementById('buyPaidBtn')
+  if (!btn) return
+
+  btn.addEventListener('click', function () {
+    var lang = document.documentElement.lang === 'en' ? 'en' : 'ja'
+    var dict = i18n[lang] || i18n.ja
+
+    btn.disabled = true
+    btn.textContent = dict['price.paid.ctaLoading']
+
+    fetch('/api/checkout', { method: 'POST' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('checkout request failed')
+        return res.json()
+      })
+      .then(function (data) {
+        if (!data.url) throw new Error('missing checkout url')
+        window.location.href = data.url
+      })
+      .catch(function () {
+        btn.disabled = false
+        btn.textContent = dict['price.paid.cta']
+        window.alert(dict['price.paid.error'])
+      })
+  })
+}
+
 setupLanguageToggle()
 setupScrollReveal()
+setupPaidCheckout()

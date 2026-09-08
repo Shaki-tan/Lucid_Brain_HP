@@ -7,4 +7,11 @@ LPのクライアントサイドスクリプトを格納する。
 
 ## 決済バックエンド（Stripe連携）について
 
-有償版の決済処理（Stripe Checkout・Webhook検証）は、検証方式が未確定のためまだ実装していない。実装時はCloudflare Pages Functionsの仕様上、リポジトリ直下の`functions/`ディレクトリに配置する必要がある（Pages Functionsはルート直下の`functions/`をファイルベースルーティングの対象とするため、`src/`配下には置けない）。方針が決まり次第、直下に`functions/api/checkout.js`等を追加する。
+有償版の決済処理・無料版/有償版のダウンロード配信は、Cloudflare Pages Functionsの仕様上、リポジトリ直下の`functions/`ディレクトリに実装している（Pages Functionsはルート直下の`functions/`をファイルベースルーティングの対象とするため、`src/`配下には置けない）。
+
+- `functions/api/checkout.js` — Stripe Checkout Session作成
+- `functions/api/webhook.js` — Stripe Webhook受信（監査ログ・返金対応用途、ダウンロード可否判定には使わない）
+- `functions/api/download.js` — 有償版ダウンロード（Stripe決済確認あり）
+- `functions/api/download-free.js` — 無料版ダウンロード（決済確認なし）
+
+exe実体はいずれもCloudflare R2（バケット`chronos-releases`）で管理し、このリポジトリには含めない。設計の詳細は`Tasks/有償版決済導線_SOW.md`参照。

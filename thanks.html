@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Chronos — ありがとうございます</title>
+<link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="index.html" aria-label="Chronos トップへ">
+      <svg class="brand-mark" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 7 L12 13"/>
+        <path d="M23 7 L20 13"/>
+        <path d="M10 13c0-3 2.7-4.6 6-4.6s6 1.6 6 4.6v5.2c0 3.4-2.8 6-6 6s-6-2.6-6-6V13z"/>
+        <circle cx="13.6" cy="16.6" r="0.6" fill="currentColor"/>
+        <circle cx="18.4" cy="16.6" r="0.6" fill="currentColor"/>
+        <path d="M14.6 19.4c.9.9 1.9.9 2.8 0"/>
+      </svg>
+      <span class="brand-name">Chronos</span>
+    </a>
+  </div>
+</header>
+
+<main id="top">
+<section class="sec">
+  <div class="wrap">
+    <div id="thanksOk" hidden>
+      <div class="eyebrow"><span data-i18n="thanks.eyebrow">Thank you</span></div>
+      <h1 data-i18n="thanks.title">ご購入ありがとうございます</h1>
+      <p data-i18n="thanks.body">決済が完了しました。まもなくダウンロードが始まります。</p>
+      <div class="cta-group">
+        <a class="btn btn-lg" id="thanksDownloadLink" href="#" data-i18n="thanks.ctaManual">ダウンロードが始まらない場合はこちら</a>
+        <a class="btn btn-lg btn-ghost" href="index.html" data-i18n="thanks.backHome">トップページへ戻る</a>
+      </div>
+    </div>
+    <div id="thanksError" hidden>
+      <div class="eyebrow"><span data-i18n="thanks.errorEyebrow">Error</span></div>
+      <h1 data-i18n="thanks.errorTitle">セッションを確認できませんでした</h1>
+      <p data-i18n="thanks.errorBody">決済情報を確認できませんでした。お手数ですが、購入手続きをやり直してください。</p>
+      <div class="cta-group">
+        <a class="btn btn-lg" href="index.html#price" data-i18n="thanks.errorBack">購入ページへ戻る</a>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <ul class="footer-links">
+        <li><a href="legal/privacy.html" data-i18n="footer.privacy">プライバシーポリシー</a></li>
+        <li><a href="legal/tokushoho.html" data-i18n="footer.tokushoho">特定商取引法に基づく表記</a></li>
+        <li><a href="legal/refund.html" data-i18n="footer.refund">返金ポリシー</a></li>
+      </ul>
+    </div>
+    <p class="footer-copy" data-i18n="footer.copy">© 2026 Team D-X</p>
+  </div>
+</footer>
+
+<script src="src/i18n.js"></script>
+<script src="src/script.js"></script>
+<script>
+  (function () {
+    var params = new URLSearchParams(window.location.search)
+    var sessionId = params.get('session_id')
+    var okEl = document.getElementById('thanksOk')
+    var errorEl = document.getElementById('thanksError')
+
+    if (!sessionId) {
+      errorEl.hidden = false
+      return
+    }
+
+    var downloadUrl = '/api/download?session_id=' + encodeURIComponent(sessionId)
+    document.getElementById('thanksDownloadLink').href = downloadUrl
+    okEl.hidden = false
+
+    window.location.href = downloadUrl
+
+    var lang = document.documentElement.lang === 'en' ? 'en' : 'ja'
+    document.title = lang === 'en' ? 'Chronos — Thank you' : 'Chronos — ありがとうございます'
+  })()
+</script>
+</body>
+</html>

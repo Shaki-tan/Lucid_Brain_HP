@@ -18,6 +18,7 @@ yarn-error.log*
 # Env
 .env
 .env.local
+.dev.vars
 
 # Build output
 dist/
