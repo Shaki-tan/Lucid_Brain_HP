@@ -3,138 +3,200 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Chronosは個人〜小規模チームのためのWindows用タスク・予定管理ソフト。WBS・ガントチャート・カレンダー・AIチャットで、段取りをまるごと引き受けます。">
 <title>Chronos — 段取りは、猫にまかせとき。</title>
+<link rel="icon" href="images/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="topbar">
-  <div class="wrap">
-    <div class="brand">Chronos</div>
-    <a class="btn" href="#price">無料で始める</a>
-  </div>
-</div>
-
-<!-- ヒーロー -->
-<header class="hero">
-  <div class="wrap">
-    <div class="eyebrow"><span>Windows</span></div>
-    <h1>段取りは、<br><em>猫</em>にまかせとき。</h1>
-    <p class="lead">Chronosは、個人〜数名程度の小規模チームのためのWindows用タスク・予定管理ソフトです。WBSとガントチャート、カレンダーで進み具合がひと目で分かり、予定の登録・確認・変更はAIチャットに話しかけるだけ。AI機能以外はすべてローカルで動きます。</p>
-    <div class="cta-group">
-      <a class="btn btn-lg" href="docs/app/chronos-free.exe" download>無料版をダウンロード</a>
-      <a class="btn btn-lg" href="#price">有償版を見る</a>
-    </div>
-    <p class="hero-note">無料版あり ／ 買い切りの有償版あり（月額なし）</p>
-
-    <!-- ここにアプリ画面のスクリーンショットを差し込む（例: <img src="assets/screenshot.png" alt="Chronosアプリの画面"> をこの中に追加） -->
-    <div class="screenshot-frame">
-      <span class="screenshot-note">ここにアプリ画面のスクリーンショットが入ります</span>
-    </div>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#top" aria-label="Chronos トップへ">
+      <svg class="brand-mark" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 7 L12 13"/>
+        <path d="M23 7 L20 13"/>
+        <path d="M10 13c0-3 2.7-4.6 6-4.6s6 1.6 6 4.6v5.2c0 3.4-2.8 6-6 6s-6-2.6-6-6V13z"/>
+        <circle cx="13.6" cy="16.6" r="0.6" fill="currentColor"/>
+        <circle cx="18.4" cy="16.6" r="0.6" fill="currentColor"/>
+        <path d="M14.6 19.4c.9.9 1.9.9 2.8 0"/>
+      </svg>
+      <span class="brand-name">Chronos</span>
+    </a>
+    <nav class="topbar-nav" aria-label="サイト内ナビゲーション">
+      <a class="btn btn-ghost" href="#price" data-i18n="topbar.cta">無料で始める</a>
+      <div class="lang-toggle" role="group" aria-label="表示言語 / Language">
+        <button type="button" class="lang-btn" id="langJa" aria-pressed="true">JA</button>
+        <button type="button" class="lang-btn" id="langEn" aria-pressed="false">EN</button>
+      </div>
+    </nav>
   </div>
 </header>
+
+<main id="top">
+
+<!-- ヒーロー -->
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow"><span data-i18n="hero.eyebrow">Windows対応 ／ 個人〜小規模チーム向け</span></div>
+    <h1 data-i18n-html="hero.title">段取りは、<em>猫</em>にまかせとき。</h1>
+    <p class="lead" data-i18n="hero.lead">WBSとガントチャートでタスクを、カレンダーで予定を管理。登録も確認も変更も、AIチャットに話しかけるだけで片付きます。日程の矛盾はChronosが自動で見つけて直します。個人から数名の小規模チームまで、買い切りで使えます。</p>
+    <div class="cta-group">
+      <a class="btn btn-lg" href="docs/app/chronos-free.exe" download data-i18n="hero.ctaFree">無料版をダウンロード</a>
+      <a class="btn btn-lg btn-ghost" href="#price" data-i18n="hero.ctaPaid">有償版を見る</a>
+    </div>
+    <p class="hero-note" data-i18n="hero.note">無料版あり ／ 買い切りの有償版あり（月額なし）</p>
+
+    <div class="screenshot-frame rise">
+      <img src="images/dashboard.png" data-i18n-alt="hero.screenshotAlt" alt="Chronosのダッシュボード画面">
+    </div>
+  </div>
+</section>
 
 <!-- できること -->
 <section class="sec">
   <div class="wrap rise">
-    <div class="eyebrow"><span>What it does</span></div>
-    <h2>できることは、3つだけ。</h2>
-    <p class="sub">機能を増やすより、毎日使うものを速くしました。</p>
+    <div class="eyebrow"><span data-i18n="features.eyebrow">What it does</span></div>
+    <h2 data-i18n="features.title">できることは、4つだけ。</h2>
+    <p class="sub" data-i18n="features.sub">毎日使うものだけを、ちゃんと作りました。</p>
     <div class="cards">
       <div class="card">
-        <h3>タスク管理</h3>
-        <p>WBSで案件をタスクに分解し、ガントチャートで期間を横棒に並べます。日程に矛盾が出たらChronosが自動で検知して補正を提案。今日やるべきことはダッシュボードにまとまります。</p>
+        <div class="card-icon c-purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+          </svg>
+        </div>
+        <h3 data-i18n="features.dashboard.title">今日のダッシュボード</h3>
+        <p data-i18n="features.dashboard.body">今日やるべきタスクと予定を一覧で確認できます。持ち越し・緊急・待ちの状況もひと目で分かります。</p>
       </div>
       <div class="card">
-        <h3>予定管理</h3>
-        <p>同じ予定を日・週・月で切り替えて確認できます。毎月20日の請求書のような繰り返しの予定も、一度決めれば以降は自動で並びます。</p>
+        <div class="card-icon c-orange">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="4" y1="6" x2="14" y2="6"/>
+            <line x1="4" y1="12" x2="20" y2="12"/>
+            <line x1="4" y1="18" x2="11" y2="18"/>
+          </svg>
+        </div>
+        <h3 data-i18n="features.gantt.title">WBS・ガントチャート</h3>
+        <p data-i18n="features.gantt.body">案件をタスクに分解し、期間を横棒で並べて進み具合を可視化。日程に矛盾が出たらChronosが自動で検知し、補正まで提案します。</p>
       </div>
       <div class="card">
-        <h3>AIチャット</h3>
-        <p>「来週の火曜に打ち合わせ」と打つだけで予定が入ります。登録だけでなく、予定の確認や変更もチャットで完結します。</p>
+        <div class="card-icon c-blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="2"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+            <line x1="8" y1="3" x2="8" y2="7"/>
+            <line x1="16" y1="3" x2="16" y2="7"/>
+          </svg>
+        </div>
+        <h3 data-i18n="features.calendar.title">カレンダー</h3>
+        <p data-i18n="features.calendar.body">月・週の2粒度で予定を確認。毎月の請求書のような繰り返し予定も、一度設定すれば以降は自動で並びます（有償版）。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon c-red">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 5h16v11H9l-5 4V5z"/>
+          </svg>
+        </div>
+        <h3 data-i18n="features.chat.title">AIチャット</h3>
+        <p data-i18n="features.chat.body">「来週の火曜に打ち合わせ」と話しかけるだけで登録完了。確認も変更もチャットで完結します。</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Ask Chronos -->
-<section class="sec ask">
+<!-- AI & プライバシー -->
+<section class="sec">
   <div class="wrap rise">
-    <div class="eyebrow"><span>Ask Chronos</span></div>
-    <h2>入力欄を探すより、話しかけるほうが速い。</h2>
-    <p class="sub">予定の登録も、確認も、変更も、AIチャットに話しかければ片付きます。</p>
-    <!-- 実際のチャット画面のスクリーンショットを選定でき次第、この枠内に <img src="..." alt="Ask Chronosの画面"> を差し込む -->
-    <div class="screenshot-frame chat-shot">
-      <span class="screenshot-note">ここにChronosとのやり取り画面のスクリーンショットが入ります</span>
+    <div class="eyebrow"><span data-i18n="ai.eyebrow">AI & Privacy</span></div>
+    <h2 data-i18n="ai.title">AI機能以外は、完全ローカル。</h2>
+    <div class="ai-block">
+      <p data-i18n="ai.body">タスクや予定のデータはお使いのPC内で完結します。AIチャットを使うときだけ、ご自身で用意したAPIキーで外部のAIサービスに接続します。OpenAI・Anthropic・Google・xAIに対応し、OpenAI互換形式のAPIであれば自社ホスト環境でも動作します（自社ホストでの動作は保証対象外です）。APIキーはお使いのPCにのみ保存されます。</p>
     </div>
   </div>
 </section>
-
 
 <!-- 料金 -->
 <section class="sec" id="price">
   <div class="wrap rise">
-    <div class="eyebrow"><span>Price</span></div>
-    <h2>無料版と、買い切りの有償版。</h2>
-    <p class="sub">まずは無料で試して、必要になったら買い切りの有償版へ。月額はありません。</p>
+    <div class="eyebrow"><span data-i18n="price.eyebrow">Price</span></div>
+    <h2 data-i18n="price.title">無料版と、買い切りの有償版。</h2>
+    <p class="sub" data-i18n="price.sub">まずは無料版から。必要になったら買い切りの有償版へ切り替えられます。月額はありません。</p>
     <div class="plans">
       <div class="plan">
-        <h3>無料版</h3>
+        <h3 data-i18n="price.free.name">無料版</h3>
         <div class="price">¥0</div>
         <ul>
-          <li>WBS・ガントチャート・カレンダー・AIチャットが使える</li>
-          <li>タスク・予定はそれぞれ同時3件までの登録</li>
-          <li>件数制限があるため、定期予定の設定はできません</li>
+          <li data-i18n="price.free.f1">WBS・ガントチャート・カレンダー・AIチャットなど、主要機能をすべて使えます</li>
+          <li data-i18n="price.free.f2">タスク・予定はそれぞれ同時3件までの登録</li>
+          <li data-i18n="price.free.f3">件数制限があるため、定期予定の設定はできません</li>
         </ul>
-        <a class="btn" style="margin-top:22px" href="docs/app/chronos-free.exe" download>無料版をダウンロード</a>
+        <a class="btn" href="docs/app/chronos-free.exe" download data-i18n="price.free.cta">無料版をダウンロード</a>
       </div>
-      <div class="plan pick">
-        <h3>有償版</h3>
-        <div class="price">¥2,980<small>（買い切り）</small></div>
+      <div class="plan pick" data-i18n-badge="price.paid.badge" data-badge="買い切り">
+        <h3 data-i18n="price.paid.name">有償版</h3>
+        <div class="price">
+          <span class="was">¥4,980</span>¥2,980
+          <small data-i18n="price.paid.unit">（買い切り）</small>
+        </div>
         <ul>
-          <li>タスク・予定の件数制限なし</li>
-          <li>定期予定の設定が可能</li>
-          <li>機能自体は無料版と同じで、制限だけが外れます</li>
+          <li data-i18n="price.paid.f1">タスク・予定の件数制限なし</li>
+          <li data-i18n="price.paid.f2">定期予定の設定が可能</li>
+          <li data-i18n="price.paid.f3">上記以外の制限はなく、無料版と同じ機能が使えます。無料版からは上書きインストールでそのまま移行できます</li>
         </ul>
-        <p class="note">本来は4,980円を予定していましたが、正式なユーザーシナリオテストをまだ実施できておらず（βテストでは大きな問題は出ていません）、動作を完全には保証しきれない段階のため、2,980円でご案内しています。</p>
-        <a class="btn" style="margin-top:18px" href="#price" aria-disabled="true" onclick="return false">有償版を購入（Stripe決済・準備中）</a>
+        <p class="note" data-i18n="price.paid.note">正式なユーザーシナリオテストがまだ完了していないため、予定していた4,980円から2,980円でご案内しています（βテストでは大きな問題は出ていません）。動作保証つきの正式版がリリースされ次第、価格を見直します。</p>
+        <button type="button" class="btn" disabled data-i18n="price.paid.cta">有償版を購入（準備中）</button>
       </div>
     </div>
-    <p class="sub" style="margin-top:34px;margin-bottom:0;font-size:13px">
-      ※ AI機能以外は完全ローカルで動作します。AI機能もご自身のホストでご利用いただけます。<br>
-      ※ AIサービスのAPIキーはご自身でご用意ください。
-    </p>
+    <div class="plan-legal-note">
+      <p data-i18n="price.legal1">ライセンスキーによる認証は行っていません。PCの買い替え時は同じインストーラーをそのままお使いいただけます。別の環境で新たに使う場合は、あらためてご購入ください。</p>
+      <p data-i18n="price.legal2">価格は税込・円（JPY）表示です。海外からもご利用いただけますが、決済通貨は円のみとなります。</p>
+    </div>
   </div>
 </section>
 
 <!-- 最後のCTA -->
 <section class="sec final" id="apply">
-  <div class="wrap">
-    <h2>無料版で試して、気に入ったら買い切りへ。</h2>
-    <p>個人〜数名の小規模チーム向けに作っています。まずは無料版で使い勝手を確かめてください。</p>
+  <div class="wrap rise">
+    <h2 data-i18n="final.title">無料版で試して、気に入ったら買い切りへ。</h2>
+    <p data-i18n="final.body">個人〜数名の小規模チーム向けに作っています。まずは無料版で使い勝手を確かめてください。</p>
     <div class="cta-group">
-      <a class="btn btn-lg" href="docs/app/chronos-free.exe" download>無料版をダウンロード</a>
-      <a class="btn btn-lg" href="#price">有償版を見る</a>
+      <a class="btn btn-lg" href="docs/app/chronos-free.exe" download data-i18n="final.ctaFree">無料版をダウンロード</a>
+      <a class="btn btn-lg btn-ghost" href="#price" data-i18n="final.ctaPaid">有償版を見る</a>
     </div>
   </div>
 </section>
 
-<!-- <section class="sec final" id="apply">
+</main>
+
+<footer>
   <div class="wrap">
-    <h2>さて、タスク管理は猫に任せてや！</h2>
-    <p>使っていただいて感想をいただければ幸いです。</p>
-    <a class="btn btn-lg" href="#">購入はこちらから</a>
-    <a class="btn btn-lg" href="#">感想はこちらから</a>
+    <div class="footer-inner">
+      <ul class="footer-links">
+        <li><a href="legal/privacy.html" data-i18n="footer.privacy">プライバシーポリシー</a></li>
+        <li><a href="legal/tokushoho.html" data-i18n="footer.tokushoho">特定商取引法に基づく表記</a></li>
+        <li><a href="legal/refund.html" data-i18n="footer.refund">返金ポリシー</a></li>
+      </ul>
+      <div class="footer-social">
+        <a href="#" data-i18n-aria="footer.socialX" aria-label="X（旧Twitter）で問い合わせる">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2h3.3l-7.2 8.2L23.4 22h-6.6l-5.2-6.8L5.6 22H2.3l7.7-8.8L1.6 2h6.8l4.7 6.2L18.9 2zm-1.2 18h1.8L7.4 3.9H5.5L17.7 20z"/></svg>
+        </a>
+        <a href="#" data-i18n-aria="footer.socialMail" aria-label="メールで問い合わせる">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M4 6l8 7 8-7"/></svg>
+        </a>
+      </div>
+    </div>
+    <p class="footer-copy" data-i18n="footer.copy">© 2026 Team D-X</p>
   </div>
-</section> -->
+</footer>
 
-
-
-<footer>© 2026 Chronos</footer>
-
-<script src="script.js"></script>
+<script src="src/i18n.js"></script>
+<script src="src/script.js"></script>
 </body>
 </html>
