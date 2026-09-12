@@ -29,14 +29,14 @@ export async function onRequestGet(context) {
     return new Response("Payment not completed", { status: 403 })
   }
 
-  const obj = await env.RELEASES.get("paid/latest/chronos-paid.exe")
+  const obj = await env.RELEASES.get("latest/Chronos-Paid-Setup.exe")
   if (!obj) {
     return new Response("File not found", { status: 404 })
   }
 
   return new Response(obj.body, {
     headers: {
-      "Content-Disposition": 'attachment; filename="Chronos-Pro.exe"',
+      "Content-Disposition": 'attachment; filename="Chronos-Paid-Setup.exe"',
       "Content-Type": "application/octet-stream",
     },
   })

@@ -9,14 +9,14 @@ export async function onRequestGet(context) {
     return new Response("Server not configured", { status: 500 })
   }
 
-  const obj = await env.RELEASES.get("free/latest/chronos-free.exe")
+  const obj = await env.RELEASES.get("latest/Chronos-Free-Setup.exe")
   if (!obj) {
     return new Response("File not found", { status: 404 })
   }
 
   return new Response(obj.body, {
     headers: {
-      "Content-Disposition": 'attachment; filename="Chronos-Free.exe"',
+      "Content-Disposition": 'attachment; filename="Chronos-Free-Setup.exe"',
       "Content-Type": "application/octet-stream",
     },
   })
