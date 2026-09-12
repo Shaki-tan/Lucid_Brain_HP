@@ -37,6 +37,8 @@ export async function onRequestPost(context) {
   })
 
   if (!stripeRes.ok) {
+    const errorBody = await stripeRes.text()
+    console.log("stripe checkout session creation failed", stripeRes.status, errorBody)
     return new Response(JSON.stringify({ error: "checkout_session_failed" }), {
       status: 502,
       headers: { "Content-Type": "application/json" },

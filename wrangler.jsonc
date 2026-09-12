@@ -1,0 +1,15 @@
+{
+  "name": "chronos-lp-test",
+  "compatibility_date": "2026-09-11",
+  "main": "worker.js",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "r2_buckets": [
+    {
+      "binding": "RELEASES",
+      "bucket_name": "chronos-releases"
+    }
+  ]
+}
