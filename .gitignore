@@ -20,6 +20,9 @@ yarn-error.log*
 .env.local
 .dev.vars
 
+# Wrangler local cache/auth
+.wrangler/
+
 # Build output
 dist/
 build/

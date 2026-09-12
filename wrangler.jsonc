@@ -1,0 +1,13 @@
+{
+  "name": "chronos-lp-test",
+  "compatibility_date": "2026-09-11",
+  "assets": {
+    "directory": "."
+  },
+  "r2_buckets": [
+    {
+      "binding": "RELEASES",
+      "bucket_name": "chronos-releases"
+    }
+  ]
+}
