@@ -64,9 +64,30 @@ export async function onRequestPost(context) {
 
   const event = JSON.parse(payload)
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object
-    console.log("checkout.session.completed", session.id, session.payment_status)
+  switch (event.type) {
+    case "checkout.session.completed": {
+      const session = event.data.object
+      console.log("checkout.session.completed", session.id, session.payment_status)
+      break
+    }
+    case "checkout.session.expired": {
+      const session = event.data.object
+      console.log("checkout.session.expired", session.id)
+      break
+    }
+    case "payment_intent.payment_failed": {
+      const intent = event.data.object
+      console.log("payment_intent.payment_failed", intent.id, intent.last_payment_error?.message)
+      break
+    }
+    case "charge.dispute.created": {
+      // ログのみ。異議申し立てへの対応（証拠提出等）は今回のスコープ外（Payment Disputes権限は「なし」のまま）。
+      const dispute = event.data.object
+      console.log("charge.dispute.created", dispute.id, dispute.charge, dispute.reason)
+      break
+    }
+    default:
+      break
   }
 
   return new Response("ok", { status: 200 })

@@ -22,6 +22,11 @@ export async function onRequestPost(context) {
   params.set("success_url", `${origin}/thanks.html?session_id={CHECKOUT_SESSION_ID}`)
   params.set("cancel_url", `${origin}/#price`)
 
+  // 正式なInvoiceを自動発行し、購入者にメール送信する（Stripe側の別途課金あり: 取引額の0.4%・上限$2）。
+  // 前提: Stripeダッシュボード Settings > Emails > Successful payments を有効化しておくこと。
+  // 不要と判断した場合はこの1行をコメントアウトするだけで無効化できる（環境変数は使わない方針）。
+  params.set("invoice_creation[enabled]", "true")
+
   const stripeRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
     method: "POST",
     headers: {
