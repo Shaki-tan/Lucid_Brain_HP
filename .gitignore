@@ -9,6 +9,9 @@ desktop.ini
 *.swp
 *.swo
 
+# AI agent
+.claude/
+
 # Node
 node_modules/
 npm-debug.log*
