@@ -1,0 +1,30 @@
+# セキュリティヘッダとキャッシュ制御（SPEC §2.3 / §7.5）。
+#
+# ダッシュボードではなくリポジトリ内の設定ファイルで解く。git の差分で追えるようにするためである（SPEC §1.2）。
+# 書き方を誤ると本番でだけ壊れるため、リリース前に実機で確認する（SPEC §7.4）。
+
+/*
+  # 外部からの読み込みはゼロ。フォントはセルフホストし、JS フレームワークも読み込まない（SPEC §2.3）。
+  # インラインスクリプト・インラインスタイルを書かない構成にしてあるので unsafe-inline は要らない。
+  #
+  # アナリティクス（Cloudflare Web Analytics）を入れるときは、この行の script-src と connect-src に
+  #   https://static.cloudflareinsights.com  （script-src）
+  #   https://cloudflareinsights.com         （connect-src）
+  # を足す。§2.3 の「外部読み込みゼロ」の唯一の例外になる。
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  # 使わない機能は明示的に切る。最小限にとどめる（SPEC §7.5）。
+  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), microphone=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+
+# 内容が変わったら差し替えるファイル群。HTML より長くキャッシュしてよい。
+/assets/*
+  Cache-Control: public, max-age=3600, must-revalidate
+
+/products/*/assets/*
+  Cache-Control: public, max-age=3600, must-revalidate
+
+# 配布物。人に渡すURLであり、差し替えが起きうるので長く持たせない。
+/docs/*
+  Cache-Control: public, max-age=600, must-revalidate

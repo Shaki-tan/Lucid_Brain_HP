@@ -1,0 +1,272 @@
+/* wrap / section / grid の骨格。中身の装飾は components.css と各ページの CSS が持つ。 */
+
+.wrap {
+  width: 100%;
+  max-width: var(--width-wrap);
+  margin: 0 auto;
+  padding: 0 var(--space-wrap-padding);
+}
+
+/* 本文として読ませる幅。マニフェストと legal で使う（SPEC §6.3） */
+.prose {
+  max-width: var(--width-prose);
+}
+
+/* セクション間の垂直余白はトークンで統一し、個別指定しない（SPEC §6.1） */
+.sec {
+  padding: var(--space-section) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.sec-plain {
+  border-top: none;
+}
+
+.sec-center {
+  text-align: center;
+}
+
+.sec-center .cta-group {
+  justify-content: center;
+}
+
+.sec h2 {
+  font-size: clamp(26px, 3.6vw, 38px);
+  margin-bottom: 16px;
+}
+
+.sec .sub {
+  color: var(--color-muted);
+  max-width: 620px;
+  margin-bottom: 52px;
+  font-size: 15px;
+}
+
+.sec-center .sub {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 見出しの上に置く小さなラベル */
+.eyebrow {
+  margin-bottom: 18px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--color-accent);
+  text-transform: uppercase;
+}
+
+/* カードのグリッド。3カラム、〜1024px で2カラム、〜768px で1カラム（SPEC §6.1） */
+.grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 1024px) {
+  .grid,
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .grid,
+  .grid-2,
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- トップページのセクション（SPEC §5.2 / §6） ---------- */
+
+/* ヒーロー。中央寄せ1カラム、社名 + 1行ステートメント + スクロール誘導 */
+.hero-home {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-section) 0;
+}
+
+.hero-home h1 {
+  font-size: clamp(38px, 7vw, 72px);
+  letter-spacing: 0.02em;
+  margin-bottom: 20px;
+}
+
+.hero-home .lead {
+  font-size: clamp(16px, 2.2vw, 20px);
+  color: var(--color-muted);
+  max-width: var(--width-prose);
+  margin: 0 auto 40px;
+}
+
+.hero-scroll {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted-2);
+  text-decoration: none;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-scroll:hover {
+  color: var(--color-accent);
+}
+
+.hero-scroll svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* マニフェスト。本文幅を wrap より狭くする（SPEC §6.3） */
+.manifesto {
+  max-width: var(--width-prose);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.manifesto p {
+  color: var(--color-muted);
+  font-size: 16px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+/* プロダクト。横並びカード（スクリーンショット + 要約 + LPへのリンク） */
+.product-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 36px;
+  align-items: center;
+}
+
+.product-row-body h3 {
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+.product-row-body p {
+  color: var(--color-muted);
+  font-size: 15px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .product-row {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+/* ---------- legal ページ（SPEC §2.2） ---------- */
+
+.legal {
+  padding: 56px 0 var(--space-section);
+}
+
+.legal-body {
+  max-width: var(--width-prose);
+}
+
+.legal-body h1 {
+  font-size: clamp(26px, 4vw, 34px);
+  margin-bottom: 8px;
+}
+
+.legal-body h2 {
+  font-size: 19px;
+  margin: 40px 0 12px;
+}
+
+.legal-body p,
+.legal-body li {
+  font-size: 15px;
+  color: var(--color-muted);
+}
+
+.legal-body p {
+  margin-bottom: 12px;
+}
+
+.legal-body ul,
+.legal-body ol {
+  margin: 0 0 12px 20px;
+  list-style-position: outside;
+}
+
+.legal-body li {
+  margin-bottom: 6px;
+}
+
+.legal-meta {
+  font-size: 13px;
+  color: var(--color-muted-2);
+  margin-bottom: 32px;
+}
+
+/* 英語版の冒頭に置く注記。正文が日本語であることを明示する（SPEC §2.2） */
+.legal-notice {
+  border: 1px solid var(--color-accent);
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  margin-bottom: 32px;
+}
+
+.legal-notice p {
+  color: var(--color-ink);
+  font-size: 14px;
+  margin-bottom: 0;
+}
+
+/* 要約で省略した節に添える一文 */
+.legal-seeja {
+  font-size: 13px;
+  color: var(--color-muted-2);
+}
+
+/* 定義リスト。会社概要で使う（SPEC §6 の表・6行目） */
+.deflist {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 12px 24px;
+  max-width: var(--width-prose);
+  font-size: 15px;
+}
+
+.deflist dt {
+  color: var(--color-muted);
+  font-weight: 700;
+}
+
+.deflist dd {
+  color: var(--color-ink);
+}
+
+@media (max-width: 640px) {
+  .deflist {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .deflist dd {
+    margin-bottom: 16px;
+  }
+}

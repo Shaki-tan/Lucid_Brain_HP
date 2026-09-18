@@ -1,0 +1,25 @@
+# 旧URLからの転送（SPEC §3 / §10.3 の 5）。
+#
+# 現行の / は Chronos の LP だった。会社HPに変わり、LP は /products/pawgress/ へ移る。
+# 既存のブックマークと被リンクが切れるため、ここで受ける。
+# 左が旧URL、右が新URL、最後がステータス。301 は恒久的な移動を意味する。
+
+# 旧 / は Chronos の LP だったが、そのまま会社HPのトップにする。
+# フラグメント（/#price 等）はサーバへ送られないため、_redirects では受けられない。
+# アンカー付きの被リンクは会社HPのトップに着地し、プロダクト節から LP へ辿れる形にしてある。
+
+# 決済完了ページ。プロダクト配下へ移した（SPEC §3）。
+# クエリ（?session_id=...）は Cloudflare 側で引き継がれる。
+/thanks.html                 /products/pawgress/thanks            301
+/thanks                      /products/pawgress/thanks            301
+
+# 旧レイアウトの資産。移設先は public/assets/ と各プロダクト配下（SPEC §4.2）。
+/style.css                   /assets/css/tokens.css               301
+/images/favicon.svg          /assets/images/logo/favicon.svg      301
+/images/dashboard.png        /products/pawgress/assets/images/dashboard.png  301
+/src/*                       /                                    301
+
+# 旧 legal は同じURLのままなので転送は要らない（/legal/privacy.html は拡張子なしへ自動で 301 される）。
+
+# 配布PDFの旧URL。実際に配った短縮URLがあればここに追加する（SPEC §4.3）。
+# 現時点で外部に配った PDF の旧URLは無いため、行は置かない。

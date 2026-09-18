@@ -1,0 +1,85 @@
+/* 色・タイポ・余白の単一の定義元（SPEC §5.2）。
+   配色を変えるときはこのファイルだけを触る。他の CSS に生の色を書かない。 */
+
+/* Web フォントはセルフホストする（SPEC §7.5）。外部 CDN からは読み込まない。
+   実ファイルは未配置のため、いまはローカルフォントへのフォールバックだけで組んでいる。
+   woff2 を public/assets/fonts/ に置いたら、下のブロックのコメントを外す。
+   置き方は public/assets/fonts/README.md にある。
+
+@font-face {
+  font-family: "SiteDisplay";
+  src: url("/assets/fonts/site-display-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "SiteBody";
+  src: url("/assets/fonts/site-body-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "SiteBody";
+  src: url("/assets/fonts/site-body-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+:root {
+  /* 面と境界 */
+  --color-bg: #0b0a10;
+  --color-surface: #16141d;
+  --color-surface-2: #1d1a26;
+  --color-border: #2a2733;
+
+  /* 文字 */
+  --color-ink: #f5f3fa;
+  --color-muted: #a29cb3;
+  --color-muted-2: #726c80;
+
+  /* 強調 */
+  --color-accent: #b389f9;
+  --color-accent-strong: #9a5cf5;
+  --color-accent-soft: rgba(179, 137, 249, 0.14);
+  --color-on-accent: #17091f;
+
+  /* 補助色。カードのアイコンなどに使う */
+  --color-orange: #f3a15c;
+  --color-red: #ef5b6a;
+  --color-blue: #6f8dff;
+
+  /* 角丸 */
+  --radius-lg: 22px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+
+  --shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.7);
+
+  /* 書体。@font-face を有効にしたら先頭に "SiteDisplay" / "SiteBody" を足す */
+  --font-display: "Quicksand", "Zen Kaku Gothic New", "Hiragino Sans", "Meiryo", sans-serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Meiryo", sans-serif;
+
+  /* 余白。セクション間の垂直余白は個別指定せず、これを使う（SPEC §6.1） */
+  --space-section: 88px;
+  --space-wrap-padding: 24px;
+
+  /* 幅 */
+  --width-wrap: 1080px;
+  --width-prose: 720px;
+
+  /* 共通コンポーネントの占有高さ。JS で差し込む領域のずれを防ぐ（SPEC §2.3 / §5） */
+  --height-header: 68px;
+  --height-footer: 208px;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --space-section: 56px;
+    --space-wrap-padding: 16px;
+    --height-footer: 268px;
+  }
+}

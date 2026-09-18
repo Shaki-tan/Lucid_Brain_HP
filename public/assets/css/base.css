@@ -1,0 +1,104 @@
+/* リセットと要素の既定。特定のページやコンポーネントの見た目はここに書かない。 */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* sticky ヘッダーにアンカー先が隠れないようにする */
+  scroll-padding-top: calc(var(--height-header) + 16px);
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  line-height: 1.85;
+  -webkit-font-smoothing: antialiased;
+  /* フッターを最下部に押し下げ、内容の少ないページで浮かないようにする */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body > main {
+  flex: 1 0 auto;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+img {
+  /* width / height 属性で比率を保ったまま縮める（SPEC §2.3） */
+  height: auto;
+}
+
+a {
+  color: var(--color-accent);
+}
+
+ul,
+ol {
+  list-style-position: inside;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+/* フォーカスは常に見えるようにする。見た目のためだけに outline を消さない（AGENTS.md 3.2） */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+/* 視覚的には隠すが、支援技術には読ませる */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 利用者のモーション設定に従う（SPEC §2.3） */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

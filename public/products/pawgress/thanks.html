@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- 購入者だけが辿り着くページ。検索結果には出さない -->
+<meta name="robots" content="noindex, nofollow">
+<title>Pawgress — ご購入ありがとうございます</title>
+<meta name="description" content="Pawgress 有償版のご購入ありがとうございます。ダウンロードはこのページから開始します。">
+<link rel="canonical" href="https://pawgress-site.workers.dev/products/pawgress/thanks">
+<link rel="alternate" hreflang="ja" href="https://pawgress-site.workers.dev/products/pawgress/thanks">
+<link rel="alternate" hreflang="en" href="https://pawgress-site.workers.dev/en/products/pawgress/thanks">
+<link rel="alternate" hreflang="x-default" href="https://pawgress-site.workers.dev/products/pawgress/thanks">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Lucud Brain">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:url" content="https://pawgress-site.workers.dev/products/pawgress/thanks">
+<meta property="og:title" content="Pawgress — ご購入ありがとうございます">
+<meta property="og:description" content="Pawgress 有償版のご購入ありがとうございます。ダウンロードはこのページから開始します。">
+<meta property="og:image" content="https://pawgress-site.workers.dev/assets/images/og/og-default.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/images/logo/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/images/logo/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/base.css">
+<link rel="stylesheet" href="/assets/css/layout.css">
+<link rel="stylesheet" href="/assets/css/components.css">
+<link rel="stylesheet" href="/products/pawgress/assets/css/pawgress.css">
+<script src="/assets/js/partials.js"></script>
+</head>
+<body>
+
+<site-header></site-header>
+
+<noscript>
+  <nav class="noscript-nav" aria-label="サイト内ナビゲーション">
+    <div class="wrap">
+      <ul>
+        <li><a href="/">Lucud Brain トップ</a></li>
+        <li><a href="/products/pawgress/">Pawgress</a></li>
+        <li><a href="/legal/refund">返金ポリシー</a></li>
+        <li><a href="/en/products/pawgress/thanks">English</a></li>
+      </ul>
+    </div>
+  </nav>
+</noscript>
+
+<main id="main">
+  <section class="thanks-panel">
+    <div class="wrap">
+      <div id="thanksOk" data-product="pawgress" data-plan="paid" hidden>
+        <p class="eyebrow">Thank you</p>
+        <h1>ご購入ありがとうございます</h1>
+        <p class="sub">決済が完了しました。まもなくダウンロードが始まります。このページのURLは、再ダウンロードに使えますので保管してください。</p>
+        <div class="cta-group">
+          <a class="btn btn-lg" id="thanksDownloadLink" href="/api/download">ダウンロードが始まらない場合はこちら</a>
+          <a class="btn btn-lg btn-ghost" href="/products/pawgress/">Pawgress のページへ戻る</a>
+        </div>
+        <ul class="doc-links doc-links-spaced">
+          <li><a href="/docs/pawgress/user-guide.ja.pdf">【仮】Pawgress の使い方（PDF）</a></li>
+          <li><a href="/docs/common/gemini-api-key.ja.pdf">【仮】AIサービスのAPIキー取得手順（PDF）</a></li>
+        </ul>
+      </div>
+      <div id="thanksError" hidden>
+        <p class="eyebrow">Error</p>
+        <h1>セッションを確認できませんでした</h1>
+        <p class="sub">決済情報を確認できませんでした。お手数ですが、購入手続きをやり直してください。</p>
+        <div class="cta-group">
+          <a class="btn btn-lg" href="/products/pawgress/#price">購入ページへ戻る</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<site-footer></site-footer>
+
+<script src="/assets/js/main.js" defer></script>
+<script src="/products/pawgress/assets/js/thanks.js" defer></script>
+</body>
+</html>

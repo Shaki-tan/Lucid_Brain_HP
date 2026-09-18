@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Pawgress — thank you for your purchase</title>
+<meta name="description" content="Thank you for buying the paid edition of Pawgress. Your download starts from this page.">
+<link rel="canonical" href="https://pawgress-site.workers.dev/en/products/pawgress/thanks">
+<link rel="alternate" hreflang="ja" href="https://pawgress-site.workers.dev/products/pawgress/thanks">
+<link rel="alternate" hreflang="en" href="https://pawgress-site.workers.dev/en/products/pawgress/thanks">
+<link rel="alternate" hreflang="x-default" href="https://pawgress-site.workers.dev/products/pawgress/thanks">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Lucud Brain">
+<meta property="og:locale" content="en_US">
+<meta property="og:url" content="https://pawgress-site.workers.dev/en/products/pawgress/thanks">
+<meta property="og:title" content="Pawgress — thank you for your purchase">
+<meta property="og:description" content="Thank you for buying the paid edition of Pawgress. Your download starts from this page.">
+<meta property="og:image" content="https://pawgress-site.workers.dev/assets/images/og/og-default.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/images/logo/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/images/logo/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/base.css">
+<link rel="stylesheet" href="/assets/css/layout.css">
+<link rel="stylesheet" href="/assets/css/components.css">
+<link rel="stylesheet" href="/products/pawgress/assets/css/pawgress.css">
+<script src="/assets/js/partials.js"></script>
+</head>
+<body>
+
+<site-header></site-header>
+
+<noscript>
+  <nav class="noscript-nav" aria-label="Site navigation">
+    <div class="wrap">
+      <ul>
+        <li><a href="/en/">Lucud Brain home</a></li>
+        <li><a href="/en/products/pawgress/">Pawgress</a></li>
+        <li><a href="/en/legal/refund">Refund Policy</a></li>
+        <li><a href="/products/pawgress/thanks">日本語</a></li>
+      </ul>
+    </div>
+  </nav>
+</noscript>
+
+<main id="main">
+  <section class="thanks-panel">
+    <div class="wrap">
+      <div id="thanksOk" data-product="pawgress" data-plan="paid" hidden>
+        <p class="eyebrow">Thank you</p>
+        <h1>Thank you for your purchase</h1>
+        <p class="sub">Your payment went through and the download will start shortly. Keep the URL of this page — you can use it to download again.</p>
+        <div class="cta-group">
+          <a class="btn btn-lg" id="thanksDownloadLink" href="/api/download">If the download does not start, click here</a>
+          <a class="btn btn-lg btn-ghost" href="/en/products/pawgress/">Back to the Pawgress page</a>
+        </div>
+        <ul class="doc-links doc-links-spaced">
+          <li><a href="/docs/pawgress/user-guide.en.pdf">[TBD] Pawgress user guide (PDF)</a></li>
+          <li><a href="/docs/common/gemini-api-key.en.pdf">[TBD] Getting an API key for an AI service (PDF)</a></li>
+        </ul>
+      </div>
+      <div id="thanksError" hidden>
+        <p class="eyebrow">Error</p>
+        <h1>We could not verify your session</h1>
+        <p class="sub">We could not confirm your payment details. Sorry for the trouble — please start the purchase again.</p>
+        <div class="cta-group">
+          <a class="btn btn-lg" href="/en/products/pawgress/#price">Back to the purchase page</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<site-footer></site-footer>
+
+<script src="/assets/js/main.js" defer></script>
+<script src="/products/pawgress/assets/js/thanks.js" defer></script>
+</body>
+</html>

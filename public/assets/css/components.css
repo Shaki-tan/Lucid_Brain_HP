@@ -1,0 +1,417 @@
+/* 全ページに現れる部品。ヘッダー・フッターの見た目はここに1つだけ持ち、
+   ページごとに分けない（SPEC §5.2）。 */
+
+/* ---------- 共通ヘッダー ---------- */
+
+/* JS で中身を差し込む前に高さを確保し、レイアウトのずれを防ぐ（SPEC §2.3 / §5） */
+site-header {
+  display: block;
+  min-height: var(--height-header);
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(11, 10, 16, 0.82);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.site-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--height-header);
+  gap: 16px;
+}
+
+/* LP だけ背景を透過させる等の差分は、ここに1箇所だけ書く（SPEC §5.2） */
+.site-header[data-variant="lp"] {
+  background: rgba(11, 10, 16, 0.6);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--color-ink);
+  flex-shrink: 0;
+}
+
+.brand-mark {
+  width: 30px;
+  height: 30px;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: 0.01em;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.site-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  list-style: none;
+  font-size: 14px;
+}
+
+.site-nav-links a {
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.site-nav-links a:hover {
+  color: var(--color-accent);
+}
+
+/* 言語切替。別URLへのリンクであり、自動リダイレクトはしない（SPEC §2.1 / §5） */
+.lang-switch {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+  text-decoration: none;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 6px 14px;
+  white-space: nowrap;
+}
+
+.lang-switch:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+}
+
+@media (max-width: 640px) {
+  .site-nav {
+    gap: 10px;
+  }
+  .site-nav-links {
+    display: none;
+  }
+}
+
+/* ---------- 共通フッター ---------- */
+
+site-footer {
+  display: block;
+  min-height: var(--height-footer);
+}
+
+.site-footer {
+  border-top: 1px solid var(--color-border);
+  padding: 40px 0;
+}
+
+.site-footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.site-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  list-style: none;
+  font-size: 13px;
+}
+
+.site-footer-links a {
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.site-footer-links a:hover {
+  color: var(--color-accent);
+}
+
+.site-footer-social {
+  display: flex;
+  gap: 12px;
+}
+
+.site-footer-social a {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.site-footer-social a:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.site-footer-social svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* 販売対象地域の明記。legal・フッター・同意ダイアログの3箇所に置く（SPEC §7.2） */
+.site-footer-scope {
+  font-size: 12px;
+  color: var(--color-muted-2);
+  margin-top: 24px;
+}
+
+.site-footer-copy {
+  font-size: 12px;
+  color: var(--color-muted-2);
+  margin-top: 8px;
+}
+
+/* JS を実行しない環境向けの最小限のリンク（SPEC §5） */
+.noscript-nav {
+  border-bottom: 1px solid var(--color-border);
+  padding: 12px 0;
+  font-size: 13px;
+}
+
+.noscript-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  list-style: none;
+}
+
+/* ---------- ボタン ---------- */
+
+.btn {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  padding: 12px 24px;
+  border-radius: 999px;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -12px rgba(179, 137, 249, 0.6);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-ink);
+  border-color: var(--color-border);
+}
+
+.btn-ghost:hover {
+  box-shadow: none;
+  border-color: var(--color-accent);
+}
+
+.btn-lg {
+  font-size: 16px;
+  padding: 16px 32px;
+}
+
+/* 無効状態は aria-disabled で公開する。見た目のみで表現しない（SPEC §8.3） */
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.cta-group {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ---------- カード ---------- */
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 28px 24px;
+}
+
+.card h3 {
+  font-size: 17px;
+  margin-bottom: 10px;
+}
+
+.card p {
+  font-size: 13.5px;
+  color: var(--color-muted);
+}
+
+.card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.card-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.card-icon[data-tone="orange"] {
+  background: rgba(243, 161, 92, 0.16);
+  color: var(--color-orange);
+}
+
+.card-icon[data-tone="blue"] {
+  background: rgba(111, 141, 255, 0.16);
+  color: var(--color-blue);
+}
+
+.card-icon[data-tone="red"] {
+  background: rgba(239, 91, 106, 0.16);
+  color: var(--color-red);
+}
+
+/* ---------- スクリーンショットの枠 ---------- */
+
+.screenshot-frame {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 10px;
+  overflow: hidden;
+}
+
+.screenshot-frame img {
+  border-radius: calc(var(--radius-lg) - 6px);
+  width: 100%;
+}
+
+/* プロダクトのスクリーンショットは 16:10 固定（SPEC §6.1） */
+.screenshot-frame[data-ratio="16-10"] img {
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top left;
+  height: auto;
+}
+
+/* ---------- 同意ダイアログ（SPEC §8.3） ---------- */
+
+.consent-dialog {
+  width: min(560px, calc(100vw - 32px));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  padding: 28px 26px;
+}
+
+.consent-dialog::backdrop {
+  background: rgba(5, 4, 8, 0.72);
+}
+
+.consent-dialog h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.consent-intro {
+  font-size: 13.5px;
+  color: var(--color-muted);
+  margin-bottom: 20px;
+}
+
+.consent-items {
+  list-style: none;
+  display: grid;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.consent-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.consent-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 6px;
+  flex-shrink: 0;
+  accent-color: var(--color-accent);
+}
+
+.consent-note {
+  font-size: 12px;
+  color: var(--color-muted-2);
+  margin-bottom: 20px;
+}
+
+.consent-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.consent-error {
+  font-size: 13px;
+  color: var(--color-red);
+  margin-bottom: 12px;
+}
+
+/* ---------- スクロールで出てくる ---------- */
+
+.rise {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.rise.is-shown {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    opacity: 1;
+    transform: none;
+  }
+}

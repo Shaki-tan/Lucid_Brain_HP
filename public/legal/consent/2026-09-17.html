@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>購入時の同意文言 2026-09-17 — Lucud Brain</title>
+<meta name="description" content="2026-09-17 版の購入時同意文言のスナップショットです。日本語と英語を併記しています。">
+<link rel="canonical" href="https://pawgress-site.workers.dev/legal/consent/2026-09-17">
+<link rel="alternate" hreflang="ja" href="https://pawgress-site.workers.dev/legal/consent/2026-09-17">
+<link rel="alternate" hreflang="en" href="https://pawgress-site.workers.dev/legal/consent/2026-09-17">
+<link rel="alternate" hreflang="x-default" href="https://pawgress-site.workers.dev/legal/consent/2026-09-17">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Lucud Brain">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:url" content="https://pawgress-site.workers.dev/legal/consent/2026-09-17">
+<meta property="og:title" content="購入時の同意文言 2026-09-17 — Lucud Brain">
+<meta property="og:description" content="2026-09-17 版の購入時同意文言のスナップショットです。日本語と英語を併記しています。">
+<meta property="og:image" content="https://pawgress-site.workers.dev/assets/images/og/og-default.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/images/logo/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/images/logo/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="/assets/css/tokens.css">
+<link rel="stylesheet" href="/assets/css/base.css">
+<link rel="stylesheet" href="/assets/css/layout.css">
+<link rel="stylesheet" href="/assets/css/components.css">
+<script src="/assets/js/partials.js"></script>
+</head>
+<!--
+  同意文言の版スナップショット（SPEC §8.4）。
+
+  このファイルは追加のみとし、一度公開したら改変しない。
+  consent_version が決済のメタデータに残っても、その版の文言が残っていなければ記録として弱いためである。
+  文言を変えるときは products.js の consentVersion を上げ、新しい日付のファイルを追加する。
+  1ファイルに日英を併記するのは、どちらの言語で同意した購入者にも同じURLを示せるようにするためである。
+-->
+<body>
+
+<site-header></site-header>
+
+<noscript>
+  <nav class="noscript-nav" aria-label="サイト内ナビゲーション">
+    <div class="wrap">
+      <ul>
+        <li><a href="/">Lucud Brain トップ</a></li>
+        <li><a href="/products/pawgress/">Pawgress</a></li>
+        <li><a href="/legal/refund">返金ポリシー</a></li>
+      </ul>
+    </div>
+  </nav>
+</noscript>
+
+<main id="main">
+  <section class="legal">
+    <div class="wrap">
+      <article class="legal-body">
+        <h1>購入時の同意文言 — 版 2026-09-17</h1>
+        <p class="legal-meta">この版は改変しません。文言を変更した場合は、新しい日付のページが追加されます。対象: 買い切りプラン（consentSet: one_time）</p>
+
+        <h2 id="ja">日本語</h2>
+        <p>購入手続きの中で、以下のすべてに個別のチェックをいただいています。すべてにチェックが入るまで、決済には進めません。</p>
+        <ol>
+          <li>【仮】返金ポリシーの内容を確認し、同意します。</li>
+          <li>【仮】ダウンロードを開始した時点で返金を受けられなくなることを承諾します。</li>
+          <li>【仮】特定商取引法に基づく表記を確認しました。</li>
+          <li>【仮】本サービスが日本国内の居住者を対象としていることを確認しました。</li>
+        </ol>
+        <p>各項目からは、<a href="/legal/refund">返金ポリシー</a>、<a href="/legal/tokushoho">特定商取引法に基づく表記</a>、<a href="/legal/privacy">プライバシーポリシー</a>へのリンクを別タブで開ける状態で表示しています。</p>
+
+        <h2 id="en">English</h2>
+        <p lang="en">During the purchase, each of the following is checked individually. Payment cannot proceed until all of them are checked.</p>
+        <ol lang="en">
+          <li>[TBD] I have read and agree to the Refund Policy.</li>
+          <li>[TBD] I accept that I lose the right to a refund once the download starts.</li>
+          <li>[TBD] I have read the Legal Notice under the Act on Specified Commercial Transactions.</li>
+          <li>[TBD] I confirm that this service is intended for residents of Japan.</li>
+        </ol>
+        <p lang="en">Each item is shown with a link, opening in a new tab, to the <a href="/en/legal/refund">Refund Policy</a>, the <a href="/en/legal/tokushoho">Legal Notice</a> and the <a href="/en/legal/privacy">Privacy Policy</a>.</p>
+
+        <h2 id="record">記録の所在 / Where this is recorded</h2>
+        <p>同意の版（<code>consent_version</code>）とサーバ側で採った時刻（<code>consent_at</code>）は、該当する決済のメタデータに保存されています。</p>
+        <p lang="en">The version of the consent (<code>consent_version</code>) and the server-side timestamp (<code>consent_at</code>) are stored in the metadata of the corresponding payment.</p>
+      </article>
+    </div>
+  </section>
+</main>
+
+<site-footer></site-footer>
+
+<script src="/assets/js/main.js" defer></script>
+</body>
+</html>

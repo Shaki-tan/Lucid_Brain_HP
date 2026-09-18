@@ -1,0 +1,14 @@
+# クローラ向けの指示（SPEC §7.4）。
+# 誤記で全ページを除外する事故が起きうるため、リリース前に実機で確認すること。
+
+User-agent: *
+Allow: /
+
+# 決済完了ページは購入者だけが辿り着く。各ページ側にも noindex を置いてある。
+Disallow: /products/pawgress/thanks
+Disallow: /en/products/pawgress/thanks
+
+# API は巡回対象ではない。
+Disallow: /api/
+
+Sitemap: https://pawgress-site.workers.dev/sitemap.xml

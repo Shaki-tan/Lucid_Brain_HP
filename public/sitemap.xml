@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  サイト内の全URLを列挙する（SPEC §3 / §7.4）。
+  共通部品を JS で注入する構成では、クローラにとってここが URL 発見の主経路になる。
+
+  手で更新する。ページを追加したら、日英の両方をここに足すこと。
+  lastmod も手で更新する。
+  ドメイン確定時は、このファイルの絶対URLを一括で置換する（SPEC §3）。
+
+  載せていないもの:
+    - /products/pawgress/thanks と /en/products/pawgress/thanks
+      購入者だけが辿り着くページで noindex を付けているため。
+      noindex のURLを sitemap に載せると指示が矛盾する。
+    - /404 と /en/404
+      同上。
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <url>
+    <loc>https://pawgress-site.workers.dev/</loc>
+    <lastmod>2026-09-18</lastmod>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://pawgress-site.workers.dev/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pawgress-site.workers.dev/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pawgress-site.workers.dev/"/>
+  </url>
+
+  <url>
+    <loc>https://pawgress-site.workers.dev/en/</loc>
+    <lastmod>2026-09-18</lastmod>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://pawgress-site.workers.dev/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pawgress-site.workers.dev/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pawgress-site.workers.dev/"/>
+  </url>
+
+  <url>
+    <loc>https://pawgress-site.workers.dev/products/pawgress/</loc>
+    <lastmod>2026-09-18</lastmod>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://pawgress-site.workers.dev/products/pawgress/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pawgress-site.workers.dev/en/products/pawgress/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pawgress-site.workers.dev/products/pawgress/"/>
+  </url>
+
+  <url>
+    <loc>https://pawgress-site.workers.dev/en/products/pawgress/</loc>
+    <lastmod>2026-09-18</lastmod>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://pawgress-site.workers.dev/products/pawgress/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pawgress-site.workers.dev/en/products/pawgress/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pawgress-site.workers.dev/products/pawgress/"/>
+  </url>
+
+  <url>
+    <loc>https://pawgress-site.workers.dev/legal/privacy</loc>
+    <lastmod>2026-09-18</lastmod>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://pawgress-site.workers.dev/legal/privacy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pawgress-site.workers.dev/en/legal/privacy"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pawgress-site.workers.dev/legal/privacy"/>
+  </url>
+
+  <url>
+    <loc>https://pawgress-site.workers.dev/en/legal/privacy</loc>
+    <lastmod>2026-09-18</lastmod>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://pawgress-site.workers.dev/legal/privacy"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pawgress-site.workers.dev/en/legal/privacy"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pawgress-site.workers.dev/legal/privacy"/>
+  </url>
+
+  <url>
+    <loc>https://pawgress-site.workers.dev/legal/refund</loc>
+    <lastmod>2026-09-18</lastmod>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://pawgress-site.workers.dev/legal/refund"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pawgress-site.workers.dev/en/legal/refund"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pawgress-site.workers.dev/legal/refund"/>
+  </url>
+
+  <url>
+    <loc>https://pawgress-site.workers.dev/en/legal/refund</loc>
+    <lastmod>2026-09-18</lastmod>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://pawgress-site.workers.dev/legal/refund"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pawgress-site.workers.dev/en/legal/refund"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pawgress-site.workers.dev/legal/refund"/>
+  </url>
+
+  <url>
+    <loc>https://pawgress-site.workers.dev/legal/tokushoho</loc>
+    <lastmod>2026-09-18</lastmod>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://pawgress-site.workers.dev/legal/tokushoho"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pawgress-site.workers.dev/en/legal/tokushoho"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pawgress-site.workers.dev/legal/tokushoho"/>
+  </url>
+
+  <url>
+    <loc>https://pawgress-site.workers.dev/en/legal/tokushoho</loc>
+    <lastmod>2026-09-18</lastmod>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://pawgress-site.workers.dev/legal/tokushoho"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://pawgress-site.workers.dev/en/legal/tokushoho"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://pawgress-site.workers.dev/legal/tokushoho"/>
+  </url>
+
+  <!-- 同意文言の版スナップショット。1ファイルに日英を併記するため hreflang は張らない（SPEC §8.4） -->
+  <url>
+    <loc>https://pawgress-site.workers.dev/legal/consent/2026-09-17</loc>
+    <lastmod>2026-09-18</lastmod>
+  </url>
+
+  <!-- 配布用PDF（SPEC §4.3） -->
+  <url>
+    <loc>https://pawgress-site.workers.dev/docs/common/gemini-api-key.ja.pdf</loc>
+    <lastmod>2026-09-18</lastmod>
+  </url>
+  <url>
+    <loc>https://pawgress-site.workers.dev/docs/common/gemini-api-key.en.pdf</loc>
+    <lastmod>2026-09-18</lastmod>
+  </url>
+  <url>
+    <loc>https://pawgress-site.workers.dev/docs/pawgress/user-guide.ja.pdf</loc>
+    <lastmod>2026-09-18</lastmod>
+  </url>
+  <url>
+    <loc>https://pawgress-site.workers.dev/docs/pawgress/user-guide.en.pdf</loc>
+    <lastmod>2026-09-18</lastmod>
+  </url>
+
+</urlset>

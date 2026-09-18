@@ -1,15 +1,26 @@
 {
-  "name": "chronos-lp-test",
+  // ドメイン確定まで *.workers.dev を前提にする（SPEC §3）。
+  // 確定時は name と、canonical / og:url / sitemap.xml / SITE_BASE_URL を併せて更新する。
+  "name": "pawgress-site",
+  // Workers 側の挙動変化に巻き込まれないよう固定する（SPEC §7.5）。
   "compatibility_date": "2026-09-11",
   "main": "worker.js",
   "assets": {
     "directory": "./public",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    // 拡張子なしURLで配信し、.html 付きURLは拡張子なしへ転送する（SPEC §3）。
+    "html_handling": "auto-trailing-slash",
+    // 存在しないURLで、最も近い親ディレクトリの 404.html を 404 ステータスで返す。
+    // /en/ 配下は public/en/404.html が当たる（SPEC §7.4）。
+    "not_found_handling": "404-page"
   },
   "r2_buckets": [
     {
       "binding": "RELEASES",
+      // バケット名とオブジェクトキーはリネーム対象外。内部名であり外部に露出しない（SPEC §8.1 / §9）。
       "bucket_name": "chronos-releases"
     }
-  ]
+  ],
+  // 障害時に手掛かりを残す。1行で済み、ダッシュボード操作が要らない（SPEC §7.5 / §8.4）。
+  "observability": { "enabled": true }
 }

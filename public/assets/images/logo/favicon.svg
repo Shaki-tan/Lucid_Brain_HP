@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- PLACEHOLDER - replace before release. See SPEC 2.4.
+       ロゴ未確定のため、猫モチーフを流用したうえで破線枠と「仮」を重ねている（SPEC §2.4 / §10.1）。
+       確定したロゴに差し替えるときは、このファイルを丸ごと置き換える。
+       上の PLACEHOLDER の行は tests/check-placeholders.sh が拾う印なので消さない。 -->
+  <rect width="32" height="32" rx="8" fill="#0b0a10"/>
+  <rect x="1.5" y="1.5" width="29" height="29" rx="6.5" fill="none"
+        stroke="#f3a15c" stroke-width="1.4" stroke-dasharray="3 2.5"/>
+  <g stroke="#b389f9" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 8 L12 13.5" stroke-width="1.8"/>
+    <path d="M23 8 L20 13.5" stroke-width="1.8"/>
+    <path d="M10 13.5c0-3 2.7-4.6 6-4.6s6 1.6 6 4.6v5.2c0 3.4-2.8 6-6 6s-6-2.6-6-6v-5.2z" stroke-width="1.8"/>
+    <path d="M14.6 19.9c.9.9 1.9.9 2.8 0" stroke-width="1.6"/>
+  </g>
+  <circle cx="13.6" cy="17.1" r="0.9" fill="#b389f9"/>
+  <circle cx="18.4" cy="17.1" r="0.9" fill="#b389f9"/>
+  <circle cx="24.5" cy="24.5" r="6" fill="#f3a15c"/>
+  <text x="24.5" y="24.5" font-family="sans-serif" font-size="8" font-weight="700"
+        fill="#0b0a10" text-anchor="middle" dominant-baseline="central">仮</text>
+</svg>
