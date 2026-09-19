@@ -77,8 +77,10 @@
   --font-display: "Quicksand", "Zen Kaku Gothic New", "Hiragino Sans", "Meiryo", sans-serif;
   --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Meiryo", sans-serif;
 
-  /* 余白。セクション間の垂直余白は個別指定せず、これを使う（SPEC §6.1） */
+  /* 余白。節と節のあいだ、節の中の塊と塊のあいだは、個別指定せずこの2つを使う（SPEC §6.1）。
+     ページごとに数値を決めると、トップページと LP で縦のリズムがずれる。 */
   --space-section: 88px;
+  --space-block: 40px;
   --space-wrap-padding: 24px;
 
   /* 幅。文章の幅はこの2つだけを使い、ブロックごとに数値を決めない。
@@ -95,6 +97,7 @@
 @media (max-width: 640px) {
   :root {
     --space-section: 56px;
+    --space-block: 28px;
     --space-wrap-padding: 16px;
     --height-footer: 176px;
   }

@@ -46,15 +46,16 @@
 
 /* ---------- ヒーロー ---------- */
 
+/* 第一画面。節の余白はトップページと同じトークンから取る（SPEC §6.1） */
 .lp-hero {
-  padding: 96px 0 84px;
+  padding: var(--space-section) 0;
 }
 
 .lp-hero h1 {
   font-size: clamp(36px, 6.4vw, 64px);
   line-height: 1.32;
   letter-spacing: 0.01em;
-  margin-bottom: 26px;
+  margin-bottom: var(--space-block);
 }
 
 .lp-hero h1 em {
@@ -66,10 +67,10 @@
   font-size: 17px;
   max-width: var(--width-prose);
   color: var(--color-muted);
-  margin-bottom: 34px;
+  margin-bottom: var(--space-block);
 }
 
-/* ---------- 特筆すべき機能 ---------- */
+/* ---------- ここが、他と違う。 ---------- */
 
 /* 上の「できること」がカードの並びなので、こちらは1枚の面に項目を積んで見分けをつける */
 .lp-highlights {
@@ -206,7 +207,7 @@
   color: var(--color-muted-2);
   font-size: 13px;
   max-width: var(--width-note);
-  margin-top: 36px;
+  margin-top: var(--space-block);
 }
 
 .plan-legal-note p {
@@ -218,7 +219,7 @@
 /* 配布資料への導入文。カードの並びの直後に続くため上に間隔をとり、
    リストは直後に置きたいので .sub の既定より下の間隔を詰める（.sec .sub より詳細度を上げてある） */
 .sec .sub.doc-links-lead {
-  margin-top: 40px;
+  margin-top: var(--space-block);
   margin-bottom: 14px;
 }
 
@@ -232,7 +233,7 @@
 
 /* CSP で unsafe-inline を使わないため、間隔も style 属性ではなくクラスで持つ（SPEC §7.5） */
 .doc-links-spaced {
-  margin-top: 32px;
+  margin-top: var(--space-block);
 }
 
 /* ---------- 決済完了ページ ---------- */
@@ -248,9 +249,6 @@
 }
 
 @media (max-width: 640px) {
-  .lp-hero {
-    padding: 64px 0 48px;
-  }
   .lp-highlights {
     padding: 4px 24px;
   }
