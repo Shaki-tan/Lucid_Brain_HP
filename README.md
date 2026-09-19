@@ -54,7 +54,8 @@ tests/              検査スクリプト。public/ の外に置く
 
 1. `functions/lib/products.js` に1エントリ足す
 2. `public/assets/js/partials.js` の `PRODUCTS` に表示名を足す。ヘッダーのロゴタイプに出る。
-   足さないとコーポレート側の構成（社名のロゴタイプ、返金ポリシーなしのフッター）で表示される
+   足さないとコーポレート側の構成（社名のロゴタイプ、返金ポリシーなしのフッター）で表示される。
+   有償プランを持つなら `public/products/<name>/assets/js/consent-items.js` に同意項目の文言も置く（SPEC §8.3）
 3. `public/products/<name>/` と `public/en/products/<name>/` を作る。
    そのプロダクトの配色は、そのプロダクトのCSSの先頭に持つ（→ 下の「配色を変える」）
 4. `public/docs/<name>/` を作る ← **忘れやすい。** §4.3 の唯一の例外
@@ -68,13 +69,17 @@ tests/              検査スクリプト。public/ の外に置く
 
 ### 同意文言を変える
 
-1. `public/assets/js/consent.js` の文言を直す
+1. `public/products/<name>/assets/js/consent-items.js` の文言を直す（日英とも）。
+   チェック項目の文言はプロダクト固有である。共通の `assets/js/consent.js` にあるのは
+   ダイアログの仕組みと、見出し・ボタン・エラーだけ（SPEC §8.3）
 2. `functions/lib/products.js` の `consentVersion` を上げる
-3. `public/legal/consent/<新しい版>.html` を追加する（**既存の版は改変しない**）
-4. LP の `data-consent-version` を新しい版に合わせる（日英とも）
+3. LP の `data-consent-version` を新しい版に合わせる（日英とも）
 
-版と時刻は Stripe の決済メタデータに残る。チャージバックの証拠として使うため、
-版番号だけでなく文言そのものを残すのが要点である（SPEC §8.4）。
+版と時刻は Stripe の決済メタデータに残る。
+
+ただし **版ごとの「文言そのもの」を残す仕組みは、まだ無い（SPEC §8.4 / §10.1）。**
+いまは git 履歴にしか残らない。チャージバックの証拠として使うには版番号だけでは足りないため、
+公開前に決める必要がある。
 
 ### 販売しない地域を変える
 

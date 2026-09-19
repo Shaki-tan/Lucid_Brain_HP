@@ -113,12 +113,6 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://pawgress-site.workers.dev/legal/terms"/>
   </url>
 
-  <!-- 同意文言の版スナップショット。1ファイルに日英を併記するため hreflang は張らない（SPEC §8.4） -->
-  <url>
-    <loc>https://pawgress-site.workers.dev/legal/consent/2026-09-17</loc>
-    <lastmod>2026-09-18</lastmod>
-  </url>
-
   <!-- 配布用PDF（SPEC §4.3） -->
   <url>
     <loc>https://pawgress-site.workers.dev/docs/common/gemini-api-key.ja.pdf</loc>

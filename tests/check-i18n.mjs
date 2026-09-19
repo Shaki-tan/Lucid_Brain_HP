@@ -71,9 +71,6 @@ for (const [urlPath, jaFile] of byPath) {
   const enPath = urlPath === '/' ? '/en' : '/en' + urlPath
   const enFile = byPath.get(enPath)
 
-  // 同意文言のスナップショットは1ファイルに日英を併記する（SPEC §8.4）。対応ページを持たない。
-  if (urlPath.startsWith('/legal/consent/')) continue
-
   if (!enFile) {
     fail(`${urlPath} に対応する英語ページ ${enPath} が無い`)
     continue

@@ -1,4 +1,11 @@
-// 購入同意ダイアログ。制御と日英の文言をここに持つ（SPEC §8.3）。
+// 購入同意ダイアログの仕組み（SPEC §8.3）。
+//
+// ここが持つのはダイアログの制御と、プロダクトによらない文言（見出し・ボタン・エラー）だけである。
+// チェック項目の文言はプロダクトごと・プランごとに変わるため、プロダクト側が持つ。
+//   例: public/products/pawgress/assets/js/consent-items.js
+//       window.consentItemSets = { <consentSet>: { ja: [...], en: [...] } }
+// 購入ボタンの data-consent-set がセット名を指す。名前は functions/lib/products.js の
+// plan.consentSet と一致させる（SPEC §8.2）。
 //
 // 同意チェックは購入ボタンの手前には置かない。ボタンを押してから同意ステップに入り、
 // 全項目にチェックが入って初めて「決済に進む」が有効になる。
@@ -19,30 +26,6 @@
     ja: {
       title: 'ご購入の前に',
       intro: '以下のすべてをご確認のうえ、チェックを入れてください。すべてにチェックが入ると決済に進めます。',
-      // 実文は別途準備中。構造を示す例文である（SPEC §2.4 / §8.3）。
-      items: [
-        {
-          label: '【仮】返金ポリシーの内容を確認し、同意します。',
-          linkText: '返金ポリシー',
-          href: '/legal/refund',
-        },
-        {
-          label: '【仮】ダウンロードを開始した時点で返金を受けられなくなることを承諾します。',
-          linkText: '返金ポリシー',
-          href: '/legal/refund',
-        },
-        {
-          label: '【仮】特定商取引法に基づく表記を確認しました。',
-          linkText: '特定商取引法に基づく表記',
-          href: '/legal/tokushoho',
-        },
-        {
-          label: '【仮】本サービスが日本国内の居住者を対象としていることを確認しました。',
-          linkText: 'プライバシーポリシー',
-          href: '/legal/privacy',
-        },
-      ],
-      snapshotPrefix: 'この同意文言の版:',
       cancel: 'キャンセル',
       submit: '決済に進む',
       submitting: '決済ページへ移動しています…',
@@ -54,29 +37,6 @@
     en: {
       title: 'Before you buy',
       intro: 'Please read and check every item below. The payment button becomes available once all are checked.',
-      items: [
-        {
-          label: '[TBD] I have read and agree to the Refund Policy.',
-          linkText: 'Refund Policy',
-          href: '/en/legal/refund',
-        },
-        {
-          label: '[TBD] I accept that I lose the right to a refund once the download starts.',
-          linkText: 'Refund Policy',
-          href: '/en/legal/refund',
-        },
-        {
-          label: '[TBD] I have read the Legal Notice under the Act on Specified Commercial Transactions.',
-          linkText: 'Legal Notice',
-          href: '/en/legal/tokushoho',
-        },
-        {
-          label: '[TBD] I confirm that this service is intended for residents of Japan.',
-          linkText: 'Privacy Policy',
-          href: '/en/legal/privacy',
-        },
-      ],
-      snapshotPrefix: 'Version of this consent text:',
       cancel: 'Cancel',
       submit: 'Continue to payment',
       submitting: 'Opening the payment page…',
@@ -91,6 +51,7 @@
   var newTabLabel = isEn ? '(opens in a new tab)' : '（別タブで開きます）'
 
   var dialog = null
+  var dialogSet = null
   var checkboxes = []
   var submitBtn = null
   var errorEl = null
@@ -100,6 +61,14 @@
     return String(value).replace(/[&<>"]/g, function (ch) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]
     })
+  }
+
+  // プロダクト側が登録した文言を読む。無ければ null を返し、呼び出し側が開くのをやめる。
+  function itemsFor(consentSet) {
+    var sets = window.consentItemSets
+    var set = sets && sets[consentSet]
+    var items = set && (isEn ? set.en : set.ja)
+    return Array.isArray(items) && items.length > 0 ? items : null
   }
 
   function itemMarkup(item, index) {
@@ -115,7 +84,7 @@
     )
   }
 
-  function buildDialog(consentVersion) {
+  function buildDialog(items) {
     var el = document.createElement('dialog')
     el.className = 'consent-dialog'
     el.id = 'consentDialog'
@@ -124,16 +93,12 @@
     el.setAttribute('aria-modal', 'true')
     el.setAttribute('aria-labelledby', 'consentTitle')
 
-    // 版スナップショットは1ファイルに日英を併記するため、URL は言語で分かれない（SPEC §4）。
-    var snapshotHref = '/legal/consent/' + consentVersion
-
+    // 版（consentVersion）は画面には出さない。読み手に意味のある情報ではないためである。
+    // 記録は購入ボタンの data 属性から /api/checkout へ渡り、Stripe に残る（SPEC §8.4）。
     el.innerHTML =
       '<h2 id="consentTitle">' + escapeHtml(t.title) + '</h2>' +
       '<p class="consent-intro">' + escapeHtml(t.intro) + '</p>' +
-      '<ul class="consent-items">' + t.items.map(itemMarkup).join('') + '</ul>' +
-      '<p class="consent-note">' + escapeHtml(t.snapshotPrefix) +
-      ' <a href="' + snapshotHref + '" target="_blank" rel="noopener">' + escapeHtml(consentVersion) +
-      '<span class="visually-hidden"> ' + newTabLabel + '</span></a></p>' +
+      '<ul class="consent-items">' + items.map(itemMarkup).join('') + '</ul>' +
       '<p class="consent-error" id="consentError" role="alert" hidden></p>' +
       '<div class="consent-actions">' +
       '<button type="button" class="btn btn-ghost" data-consent-cancel>' + escapeHtml(t.cancel) + '</button>' +
@@ -145,7 +110,8 @@
   }
 
   function syncSubmitState() {
-    var isAllChecked = checkboxes.every(function (box) { return box.checked })
+    // 0件のときに every() が true を返すのを防ぐ。項目が無いまま決済に進ませない。
+    var isAllChecked = checkboxes.length > 0 && checkboxes.every(function (box) { return box.checked })
     // 無効は aria-disabled で公開する。見た目のみで表現しない（SPEC §8.3）。
     submitBtn.setAttribute('aria-disabled', String(!isAllChecked))
   }
@@ -204,9 +170,30 @@
   }
 
   function openDialog(trigger) {
+    var consentSet = trigger.dataset.consentSet
+    var items = itemsFor(consentSet)
+
+    // 文言が無い状態で開くと、チェックすべき項目が0件のダイアログが出る。
+    // プロダクト側のファイルの読み込み忘れか、セット名の綴り違いであり、実装中の事故である。
+    // 黙って開かず、購入も始めない。
+    if (!items) {
+      console.error('consent: 同意項目が見つからない（consentSet=' + consentSet + '）。' +
+        'プロダクト側の consent-items.js が読み込まれているか、セット名が products.js と一致しているかを確認する。')
+      return
+    }
+
     activeTrigger = trigger
+
+    // 1ページに複数のプラン（買い切りと継続課金など）のボタンが並ぶ場合に備え、
+    // セットが変わったら組み直す。使い回すと前のプランの文言が出る。
+    if (dialog && dialogSet !== consentSet) {
+      dialog.remove()
+      dialog = null
+    }
+
     if (!dialog) {
-      dialog = buildDialog(trigger.dataset.consentVersion)
+      dialog = buildDialog(items)
+      dialogSet = consentSet
       checkboxes = Array.prototype.slice.call(dialog.querySelectorAll('input[type="checkbox"]'))
       submitBtn = dialog.querySelector('#consentSubmit')
       errorEl = dialog.querySelector('#consentError')

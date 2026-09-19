@@ -192,7 +192,7 @@
           </ul>
           <p class="note">Formal user scenario testing is not finished yet, so it is ¥2,980 instead of the planned ¥4,980 (beta testing turned up no significant problems). The price will be revised once a release with a support guarantee ships.</p>
           <!-- Opens the consent dialog. Payment stays out of reach until every item is checked (SPEC §8.3) -->
-          <button type="button" class="btn" data-checkout data-product="pawgress" data-plan="paid" data-consent-version="2026-09-17">Buy the paid edition</button>
+          <button type="button" class="btn" data-checkout data-product="pawgress" data-plan="paid" data-consent-set="one_time" data-consent-version="2026-09-17">Buy the paid edition</button>
         </div>
       </div>
       <div class="plan-legal-note">
@@ -219,6 +219,8 @@
 <site-footer></site-footer>
 
 <script src="/assets/js/main.js" defer></script>
+<!-- 同意項目の文言はプロダクト側が持つ。consent.js より先に読み込む（SPEC §8.3） -->
+<script src="/products/pawgress/assets/js/consent-items.js" defer></script>
 <script src="/assets/js/consent.js" defer></script>
 </body>
 </html>

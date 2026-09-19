@@ -36,13 +36,14 @@ for path in \
   /legal/privacy \
   /legal/refund \
   /legal/tokushoho \
-  /legal/consent/2026-09-17 \
+  /legal/terms \
   /en/ \
   /en/products/pawgress/ \
   /en/products/pawgress/thanks \
   /en/legal/privacy \
   /en/legal/refund \
   /en/legal/tokushoho \
+  /en/legal/terms \
   /robots.txt \
   /sitemap.xml \
   /site.webmanifest \

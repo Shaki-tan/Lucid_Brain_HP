@@ -191,7 +191,7 @@
           </ul>
           <p class="note">正式なユーザーシナリオテストがまだ完了していないため、予定していた4,980円から2,980円でご案内しています（βテストでは大きな問題は出ていません）。動作保証つきの正式版がリリースされ次第、価格を見直します。</p>
           <!-- 押すと同意ダイアログが開く。全項目にチェックが入るまで決済へ進めない（SPEC §8.3） -->
-          <button type="button" class="btn" data-checkout data-product="pawgress" data-plan="paid" data-consent-version="2026-09-17">有償版を購入</button>
+          <button type="button" class="btn" data-checkout data-product="pawgress" data-plan="paid" data-consent-set="one_time" data-consent-version="2026-09-17">有償版を購入</button>
         </div>
       </div>
       <div class="plan-legal-note">
@@ -218,6 +218,8 @@
 <site-footer></site-footer>
 
 <script src="/assets/js/main.js" defer></script>
+<!-- 同意項目の文言はプロダクト側が持つ。consent.js より先に読み込む（SPEC §8.3） -->
+<script src="/products/pawgress/assets/js/consent-items.js" defer></script>
 <script src="/assets/js/consent.js" defer></script>
 </body>
 </html>

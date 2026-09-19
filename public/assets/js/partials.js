@@ -28,12 +28,6 @@
 
   var isProduct = productSlug !== null
 
-  // 同意文言のスナップショットは1ファイルに日英を併記するため、対応ページを持たない（SPEC §8.4）。
-  // 切替リンクを出すと存在しないURLへ送ることになるので、このページでは出さない。
-  function hasCounterpart() {
-    return location.pathname.indexOf('/legal/consent/') !== 0
-  }
-
   // 言語切替は、対応する別言語の同じページを指す（SPEC §2.1 / §5）。
   // /products/pawgress/ にいるなら /en/products/pawgress/ へ送る。自動リダイレクトはしない。
   function counterpartPath() {
@@ -81,9 +75,8 @@
 
   var t = isEn ? TEXT.en : TEXT.ja
 
+  // 全ページが日英の対応を持つ。片方しか無いページを作らない（SPEC §2.1）。
   function langSwitchMarkup() {
-    // 同意文言のスナップショットには対応ページが無いので出さない
-    if (!hasCounterpart()) return ''
     var lang = isEn ? 'ja' : 'en'
     return (
       '<a class="lang-switch" href="' + counterpartPath() + '" lang="' + lang +
@@ -99,7 +92,7 @@
   //   コーポレート側 — 社名。サイトのトップへ送る
   //   プロダクト側   — プロダクト名。そのプロダクトのトップへ送る
   // プロダクトのページで社名を大きく出しても、読み手が見ているものの名前にならない。
-  // 会社への導線はフッターの運営表記が持つ。
+  // 会社への導線は、フッターのコピーライトの社名が持つ（下の footerMarkup）。
   function headerMarkup(variant) {
     var brandName = isProduct ? PRODUCTS[productSlug] : 'Lucud Brain'
     var brandHref = isProduct ? t.productsBase + productSlug + '/' : t.home
