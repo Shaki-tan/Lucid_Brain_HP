@@ -90,7 +90,7 @@
 
 /* ---------- トップページのセクション（SPEC §5.2 / §6） ---------- */
 
-/* ヒーロー。中央寄せ1カラム、社名 + 1行ステートメント + スクロール誘導 */
+/* ABOUT US。第一画面を兼ねる。中央寄せ1カラム、ステートメント + 導入文 + スクロール誘導 */
 .hero-home {
   min-height: 80vh;
   display: flex;
@@ -101,17 +101,54 @@
   padding: var(--space-section) 0;
 }
 
+/* 改行位置は原稿で決まっているため <br> で固定する。行間は詰める */
 .hero-home h1 {
-  font-size: clamp(38px, 7vw, 72px);
-  letter-spacing: 0.02em;
-  margin-bottom: 20px;
+  font-size: clamp(32px, 6.4vw, 60px);
+  line-height: 1.32;
+  letter-spacing: 0.01em;
+  margin-bottom: 36px;
 }
 
-.hero-home .lead {
-  font-size: clamp(16px, 2.2vw, 20px);
-  color: var(--color-muted);
+/* 見出しは中央寄せだが、長い本文は左寄せにする（中央寄せの多行は読みにくい） */
+.hero-lead {
   max-width: var(--width-prose);
   margin: 0 auto 40px;
+  text-align: left;
+}
+
+.hero-lead p {
+  font-size: clamp(15px, 1.8vw, 17px);
+  color: var(--color-muted);
+}
+
+.hero-lead p + p {
+  margin-top: 16px;
+}
+
+/* セクション見出し。原稿では英字ラベルのみを持つため、これを h2 として使う。
+   .sec h2 の既定より詳細度を上げるため、.sec と併記している */
+.sec .sec-label {
+  font-family: var(--font-display);
+  font-size: clamp(17px, 2vw, 21px);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--color-ink);
+  margin-bottom: 44px;
+}
+
+.sec .sec-label::before {
+  content: "";
+  display: block;
+  width: 32px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-accent);
+  margin-bottom: 18px;
+}
+
+.sec-center .sec-label::before {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .hero-scroll {
@@ -134,20 +171,6 @@
 .hero-scroll svg {
   width: 18px;
   height: 18px;
-}
-
-/* マニフェスト。本文幅を wrap より狭くする（SPEC §6.3） */
-.manifesto {
-  max-width: var(--width-prose);
-  margin: 0 auto;
-  text-align: center;
-}
-
-.manifesto p {
-  color: var(--color-muted);
-  font-size: 16px;
-  margin-bottom: 20px;
-  text-align: left;
 }
 
 /* プロダクト。横並びカード（スクリーンショット + 要約 + LPへのリンク） */

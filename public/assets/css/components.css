@@ -13,7 +13,7 @@ site-header {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(11, 10, 16, 0.82);
+  background: var(--color-bg-blur);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
 }
@@ -28,22 +28,15 @@ site-header {
 
 /* LP だけ背景を透過させる等の差分は、ここに1箇所だけ書く（SPEC §5.2） */
 .site-header[data-variant="lp"] {
-  background: rgba(11, 10, 16, 0.6);
+  background: var(--color-bg-blur-lp);
 }
 
+/* ヘッダーにはアイコンを出さず、社名のロゴタイプだけを置く */
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
   text-decoration: none;
   color: var(--color-ink);
-  flex-shrink: 0;
-}
-
-.brand-mark {
-  width: 30px;
-  height: 30px;
-  color: var(--color-accent);
   flex-shrink: 0;
 }
 
@@ -116,6 +109,7 @@ site-footer {
 .site-footer {
   border-top: 1px solid var(--color-border);
   padding: 40px 0;
+  background: var(--color-surface);
 }
 
 .site-footer-inner {
@@ -123,7 +117,44 @@ site-footer {
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 20px;
+  gap: 32px;
+}
+
+/* 会社概要は本文に節を持たず、フッターに置く（SPEC §6 の表・6行目） */
+.site-footer-company {
+  min-width: 0;
+}
+
+.site-footer-brand {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-ink);
+  margin-bottom: 10px;
+}
+
+.site-footer-meta {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 2px 16px;
+  font-size: 12.5px;
+  line-height: 1.7;
+  max-width: 460px;
+}
+
+.site-footer-meta dt {
+  color: var(--color-muted-2);
+}
+
+.site-footer-meta dd {
+  color: var(--color-muted);
+}
+
+.site-footer-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
 }
 
 .site-footer-links {
@@ -218,7 +249,7 @@ site-footer {
 
 .btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px -12px rgba(179, 137, 249, 0.6);
+  box-shadow: var(--shadow-accent);
 }
 
 .btn-ghost {
@@ -290,17 +321,22 @@ site-footer {
 }
 
 .card-icon[data-tone="orange"] {
-  background: rgba(243, 161, 92, 0.16);
+  background: var(--color-orange-soft);
   color: var(--color-orange);
 }
 
 .card-icon[data-tone="blue"] {
-  background: rgba(111, 141, 255, 0.16);
+  background: var(--color-blue-soft);
   color: var(--color-blue);
 }
 
+.card-icon[data-tone="green"] {
+  background: var(--color-green-soft);
+  color: var(--color-green);
+}
+
 .card-icon[data-tone="red"] {
-  background: rgba(239, 91, 106, 0.16);
+  background: var(--color-red-soft);
   color: var(--color-red);
 }
 
@@ -340,7 +376,7 @@ site-footer {
 }
 
 .consent-dialog::backdrop {
-  background: rgba(5, 4, 8, 0.72);
+  background: var(--color-backdrop);
 }
 
 .consent-dialog h2 {

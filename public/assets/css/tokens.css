@@ -30,34 +30,45 @@
 */
 
 :root {
-  /* 面と境界 */
-  --color-bg: #0b0a10;
-  --color-surface: #16141d;
-  --color-surface-2: #1d1a26;
-  --color-border: #2a2733;
+  /* 面と境界。白を基調とする */
+  --color-bg: #ffffff;
+  --color-surface: #f7f6fb;
+  --color-surface-2: #efedf6;
+  --color-border: #e2dfec;
 
-  /* 文字 */
-  --color-ink: #f5f3fa;
-  --color-muted: #a29cb3;
-  --color-muted-2: #726c80;
+  /* 文字。白地で 4.5:1 以上になる濃度にしてある（AGENTS.md 3.2） */
+  --color-ink: #1b1826;
+  --color-muted: #55505f;
+  --color-muted-2: #6f6a7d;
 
-  /* 強調 */
-  --color-accent: #b389f9;
-  --color-accent-strong: #9a5cf5;
-  --color-accent-soft: rgba(179, 137, 249, 0.14);
-  --color-on-accent: #17091f;
+  /* 強調。白地の文字色としても使うため、暗めの紫にしている */
+  --color-accent: #6b35d1;
+  --color-accent-strong: #5324ae;
+  --color-accent-soft: rgba(107, 53, 209, 0.1);
+  --color-on-accent: #ffffff;
 
-  /* 補助色。カードのアイコンなどに使う */
-  --color-orange: #f3a15c;
-  --color-red: #ef5b6a;
-  --color-blue: #6f8dff;
+  /* 補助色。カードのアイコンなどに使う。白地・淡い面の上で読める濃度に揃えてある */
+  --color-orange: #a85c05;
+  --color-orange-soft: rgba(168, 92, 5, 0.12);
+  --color-blue: #2b45c7;
+  --color-blue-soft: rgba(43, 69, 199, 0.12);
+  --color-green: #1f7a52;
+  --color-green-soft: rgba(31, 122, 82, 0.12);
+  --color-red: #c02a43;
+  --color-red-soft: rgba(192, 42, 67, 0.12);
+
+  /* 半透明の面。sticky ヘッダーの背面と、ダイアログの背景に使う */
+  --color-bg-blur: rgba(255, 255, 255, 0.86);
+  --color-bg-blur-lp: rgba(255, 255, 255, 0.7);
+  --color-backdrop: rgba(27, 24, 38, 0.55);
 
   /* 角丸 */
   --radius-lg: 22px;
   --radius-md: 14px;
   --radius-sm: 10px;
 
-  --shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.7);
+  --shadow: 0 18px 44px -26px rgba(27, 24, 38, 0.35);
+  --shadow-accent: 0 12px 24px -12px rgba(107, 53, 209, 0.45);
 
   /* 書体。@font-face を有効にしたら先頭に "SiteDisplay" / "SiteBody" を足す */
   --font-display: "Quicksand", "Zen Kaku Gothic New", "Hiragino Sans", "Meiryo", sans-serif;
@@ -73,13 +84,13 @@
 
   /* 共通コンポーネントの占有高さ。JS で差し込む領域のずれを防ぐ（SPEC §2.3 / §5） */
   --height-header: 68px;
-  --height-footer: 208px;
+  --height-footer: 300px;
 }
 
 @media (max-width: 640px) {
   :root {
     --space-section: 56px;
     --space-wrap-padding: 16px;
-    --height-footer: 268px;
+    --height-footer: 430px;
   }
 }

@@ -81,6 +81,8 @@ tests/              検査スクリプト。public/ の外に置く
 ### 配色を変える
 
 `public/assets/css/tokens.css` の1ファイル。他の CSS に生の色を書かない。
+背景色を変えたときは `public/site.webmanifest` の `theme_color` / `background_color` も合わせる。
+CSS 変数を参照できないため、ここだけは生の値を持っている。
 
 ### Web フォントを積む
 

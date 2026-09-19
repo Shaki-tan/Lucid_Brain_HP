@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lucud Brain — [TBD] company statement</title>
-<meta name="description" content="[TBD] The corporate site of Lucud Brain: our mission, what we do, our products and company information.">
+<title>Lucud Brain — [TBD] Reclaiming cognitive headroom, through systems.</title>
+<meta name="description" content="[TBD] The corporate site of Lucud Brain, which builds products and systems that give cognitive headroom back: product development, AI and ML adoption, redesigning how work runs, and data analysis.">
 <link rel="canonical" href="https://pawgress-site.workers.dev/en/">
 <link rel="alternate" hreflang="ja" href="https://pawgress-site.workers.dev/">
 <link rel="alternate" hreflang="en" href="https://pawgress-site.workers.dev/en/">
@@ -13,8 +13,8 @@
 <meta property="og:site_name" content="Lucud Brain">
 <meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://pawgress-site.workers.dev/en/">
-<meta property="og:title" content="Lucud Brain — [TBD] company statement">
-<meta property="og:description" content="[TBD] The corporate site of Lucud Brain: our mission, what we do, our products and company information.">
+<meta property="og:title" content="Lucud Brain — [TBD] Reclaiming cognitive headroom, through systems.">
+<meta property="og:description" content="[TBD] The corporate site of Lucud Brain, which builds products and systems that give cognitive headroom back: product development, AI and ML adoption, redesigning how work runs, and data analysis.">
 <meta property="og:image" content="https://pawgress-site.workers.dev/assets/images/og/og-default.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/assets/images/logo/favicon.svg" type="image/svg+xml">
@@ -46,12 +46,17 @@
 
 <main id="main">
 
-  <!-- 1. Hero -->
-  <section class="hero-home">
+  <!-- 1. About us. Doubles as the first view; the statement is the h1.
+       The English copy is a provisional rendering of the Japanese original (SPEC §2.4). -->
+  <section class="hero-home" id="about">
     <div class="wrap">
-      <h1>Lucud Brain</h1>
-      <p class="lead">[TBD] A one-line statement about the company goes here.</p>
-      <a class="hero-scroll" href="#manifesto">
+      <p class="eyebrow">About us</p>
+      <h1>[TBD] Reclaiming<br>cognitive headroom,<br>through systems.</h1>
+      <div class="hero-lead">
+        <p>[TBD] Absurd coordination at work and the cognitive friction that eats into daily life are not things to be endured through sheer willpower. They are defects in the system.</p>
+        <p>[TBD] We implement a new set of axioms — one in which working hours and everyday life let anyone, whatever their makeup, keep breathing curiosity without breaking.</p>
+      </div>
+      <a class="hero-scroll" href="#business">
         <span>Scroll</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M6 9l6 6 6-6"/>
@@ -60,119 +65,68 @@
     </div>
   </section>
 
-  <!-- 2. Mission / manifesto (no /manifesto page; referenced as /en/#manifesto — SPEC §6.3) -->
-  <section class="sec" id="manifesto">
-    <div class="wrap rise">
-      <div class="manifesto">
-        <p class="eyebrow">Mission</p>
-        <h2>[TBD] Mission heading</h2>
-        <p>[TBD] The manifesto text goes here. It is shown in full, without a collapsible section. The measure is capped at 720px for readability.</p>
-        <p>[TBD] Second paragraph. The final copy will be supplied separately; this only shows the structure.</p>
-        <p>[TBD] Third paragraph. Everything to be replaced can be found with git grep '\[TBD\]'.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3. What we do -->
+  <!-- 2. What we do. Four items, laid out in two columns (one column below 768px — SPEC §6.1) -->
   <section class="sec" id="business">
     <div class="wrap rise">
-      <p class="eyebrow">What we do</p>
-      <h2>[TBD] What we do heading</h2>
-      <p class="sub">[TBD] An introduction to what the company does goes here.</p>
-      <div class="grid">
+      <h2 class="sec-label">WHAT WE DO</h2>
+      <div class="grid grid-2">
         <article class="card">
           <div class="card-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
-              <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+              <rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18"/>
+              <circle cx="6.2" cy="6.5" r="0.7" fill="currentColor" stroke="none"/>
+              <circle cx="8.8" cy="6.5" r="0.7" fill="currentColor" stroke="none"/>
             </svg>
           </div>
-          <h3>[TBD] Area 1</h3>
-          <p>[TBD] Description of the first area goes here.</p>
+          <h3>[TBD] Product development</h3>
+          <p>[TBD] Purpose-built interfaces that keep a train of thought intact and strip operational friction to the bone.</p>
         </article>
         <article class="card">
           <div class="card-icon" data-tone="orange" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="4" y1="6" x2="14" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="11" y2="18"/>
+              <rect x="7" y="7" width="10" height="10" rx="2.5"/>
+              <path d="M12 3v4"/><path d="M12 17v4"/><path d="M3 12h4"/><path d="M17 12h4"/>
             </svg>
           </div>
-          <h3>[TBD] Area 2</h3>
-          <p>[TBD] Description of the second area goes here.</p>
+          <h3>[TBD] AI and ML adoption</h3>
+          <p>[TBD] Models embedded so the system carries the fatigue of judging and summarising, freeing up the brain's bandwidth.</p>
         </article>
         <article class="card">
           <div class="card-icon" data-tone="blue" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 5h16v11H9l-5 4V5z"/>
+              <path d="M20 11A8 8 0 0 0 6.3 6.3L4 8.5"/><path d="M4 4v4.5h4.5"/>
+              <path d="M4 13a8 8 0 0 0 13.7 4.7L20 15.5"/><path d="M20 20v-4.5h-4.5"/>
             </svg>
           </div>
-          <h3>[TBD] Area 3</h3>
-          <p>[TBD] Description of the third area goes here.</p>
+          <h3>[TBD] Redesigning how work runs</h3>
+          <p>[TBD] Treating absurd coordination and tool sprawl as structural bugs, and rebuilding processes that coordinate themselves without wearing people down.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon" data-tone="green" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5h16"/><path d="M7 16.5V12"/><path d="M12 16.5V7.5"/><path d="M17 16.5V10"/>
+            </svg>
+          </div>
+          <h3>[TBD] Data analysis</h3>
+          <p>[TBD] Information design that pulls an intuitive signal out of a flood of numbers and takes the anxiety and cognitive load out of deciding.</p>
         </article>
       </div>
     </div>
   </section>
 
-  <!-- 4. Products -->
+  <!-- 3. Products & achievement. Track record goes into this section once there is something worth showing (SPEC §6.2) -->
   <section class="sec" id="products">
     <div class="wrap rise">
-      <p class="eyebrow">Products</p>
-      <h2>[TBD] Products heading</h2>
-      <p class="sub">[TBD] An introduction to our products goes here.</p>
+      <h2 class="sec-label">PRODUCTS &amp; ACHIEVEMENT</h2>
       <div class="product-row">
         <div class="screenshot-frame" data-ratio="16-10">
-          <img src="/products/pawgress/assets/images/dashboard.png" width="1571" height="967" alt="[TBD] The Pawgress dashboard" loading="lazy" decoding="async">
+          <img src="/products/pawgress/assets/images/dashboard.png" width="1571" height="967" alt="The Pawgress dashboard" loading="lazy" decoding="async">
         </div>
         <div class="product-row-body">
           <h3>Pawgress</h3>
-          <p>[TBD] A short summary of Pawgress goes here. It is a task and schedule manager for Windows.</p>
+          <p>[TBD] When there are so many tasks that you'd take all the help you can get, why not let a cat handle the task list at least?</p>
           <a class="btn" href="/en/products/pawgress/">See Pawgress</a>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5. Track record. Hidden until there is something worth showing (SPEC §6.2) -->
-  <section class="sec" id="achievements" hidden>
-    <div class="wrap">
-      <p class="eyebrow">Track record</p>
-      <h2>[TBD] Track record heading</h2>
-      <div class="grid">
-        <article class="card"><h3>[TBD] Item 1</h3><p>[TBD] Description</p></article>
-        <article class="card"><h3>[TBD] Item 2</h3><p>[TBD] Description</p></article>
-        <article class="card"><h3>[TBD] Item 3</h3><p>[TBD] Description</p></article>
-      </div>
-    </div>
-  </section>
-
-  <!-- 6. Company -->
-  <section class="sec" id="company">
-    <div class="wrap rise">
-      <p class="eyebrow">Company</p>
-      <h2>Company information</h2>
-      <dl class="deflist">
-        <dt>Name</dt>
-        <dd>[TBD] Registered name (to be replaced once the legal entity is settled)</dd>
-        <dt>Address</dt>
-        <dd>[TBD] Address</dd>
-        <dt>Representative</dt>
-        <dd>[TBD] Name of the representative</dd>
-        <dt>Founded</dt>
-        <dd>[TBD] Year and month</dd>
-        <dt>Business</dt>
-        <dd>[TBD] Business description</dd>
-      </dl>
-    </div>
-  </section>
-
-  <!-- 7. Contact -->
-  <section class="sec sec-center" id="contact">
-    <div class="wrap rise">
-      <p class="eyebrow">Contact</p>
-      <h2>Contact us</h2>
-      <p class="sub">[TBD] A short note about how to reach us goes here.</p>
-      <div class="cta-group">
-        <a class="btn btn-lg" href="https://x.com/example" rel="noopener external">Contact us on X</a>
-        <a class="btn btn-lg btn-ghost" href="mailto:info@example.com">Contact us by email</a>
       </div>
     </div>
   </section>
