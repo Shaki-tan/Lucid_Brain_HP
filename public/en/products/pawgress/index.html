@@ -20,6 +20,8 @@
 <link rel="icon" href="/assets/images/logo/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/images/logo/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
+<!-- ブラウザUIの色を Pawgress の配色（pawgress.css）に合わせる。CSS変数を参照できないためここだけ生の値を持つ -->
+<meta name="theme-color" content="#0b0a10">
 <link rel="stylesheet" href="/assets/css/tokens.css">
 <link rel="stylesheet" href="/assets/css/base.css">
 <link rel="stylesheet" href="/assets/css/layout.css">
@@ -52,23 +54,12 @@
   <!-- Hero -->
   <section class="lp-hero">
     <div class="wrap">
-      <nav class="lp-breadcrumb" aria-label="Breadcrumb">
-        <ol>
-          <li><a href="/en/">Lucud Brain</a></li>
-          <li aria-hidden="true">/</li>
-          <li><a href="/en/#products">Products</a></li>
-          <li aria-hidden="true">/</li>
-          <li aria-current="page">Pawgress</li>
-        </ol>
-      </nav>
-      <p class="eyebrow">For Windows / individuals and small teams</p>
       <h1>Let the <em>cat</em> handle the planning.</h1>
       <p class="lead">Manage tasks with a WBS and Gantt chart, and your schedule with a calendar. Adding, checking and changing things is just a matter of talking to the AI chat. Pawgress finds scheduling conflicts on its own and fixes them. One-time purchase, from solo use up to a team of a few.</p>
       <div class="cta-group">
         <a class="btn btn-lg" href="/api/download-free?product=pawgress" download>Download the free edition</a>
         <a class="btn btn-lg btn-ghost" href="#price">See the paid edition</a>
       </div>
-      <p class="lp-hero-note">Free edition available / one-time purchase for the paid edition (no subscription)</p>
 
       <div class="screenshot-frame">
         <img src="/products/pawgress/assets/images/dashboard.png" width="1571" height="967" alt="The Pawgress dashboard" fetchpriority="high" decoding="async">

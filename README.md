@@ -38,7 +38,7 @@ tests/              検査スクリプト。public/ の外に置く
 | 1プロダクトでしか使わない | `public/products/<name>/assets/` |
 | 英語版のページ | `public/en/` に日本語側と同じ階層で |
 | 英語版が使う CSS・画像 | 日本語側と同じものを参照する。**複製しない** |
-| ヘッダー・フッター | `public/assets/js/partials.js`（1箇所だけ） |
+| ヘッダー・フッター | `public/assets/js/partials.js`（1箇所だけ。構成はコーポレート／プロダクトで分かれるがファイルは分けない） |
 | 配布PDF | `public/docs/<区分>/`。プロダクト固有でも例外なくここ |
 | プロダクト固有の値（価格ID・R2キー・遷移先） | `functions/lib/products.js` **のみ** |
 
@@ -50,11 +50,14 @@ tests/              検査スクリプト。public/ の外に置く
 
 ### プロダクトを追加する
 
-触るのは3箇所だけで済むようにしてある（SPEC §8.2）。
+触るのは4箇所だけで済むようにしてある（SPEC §8.2 / §5.2）。
 
 1. `functions/lib/products.js` に1エントリ足す
-2. `public/products/<name>/` と `public/en/products/<name>/` を作る
-3. `public/docs/<name>/` を作る ← **忘れやすい。** §4.3 の唯一の例外
+2. `public/assets/js/partials.js` の `PRODUCTS` に表示名を足す。ヘッダーのロゴタイプに出る。
+   足さないとコーポレート側の構成（社名のロゴタイプ、返金ポリシーなしのフッター）で表示される
+3. `public/products/<name>/` と `public/en/products/<name>/` を作る。
+   そのプロダクトの配色は、そのプロダクトのCSSの先頭に持つ（→ 下の「配色を変える」）
+4. `public/docs/<name>/` を作る ← **忘れやすい。** §4.3 の唯一の例外
 
 そのあと `public/sitemap.xml` に日英の全URLを足す（手で更新する）。
 
@@ -80,9 +83,21 @@ tests/              検査スクリプト。public/ の外に置く
 
 ### 配色を変える
 
-`public/assets/css/tokens.css` の1ファイル。他の CSS に生の色を書かない。
-背景色を変えたときは `public/site.webmanifest` の `theme_color` / `background_color` も合わせる。
-CSS 変数を参照できないため、ここだけは生の値を持っている。
+配色は範囲ごとに定義元が1つある。触るのはそのファイルだけで、他の CSS に生の色を書かない。
+
+| 範囲 | 配色 | 触るファイル |
+|---|---|---|
+| コーポレート側（トップ・legal・404） | 白基調 | `public/assets/css/tokens.css` |
+| Pawgress（LP・決済完了の日英4枚） | 黒基調 | `public/products/pawgress/assets/css/pawgress.css` の先頭 |
+
+変数名は両者で同じ。プロダクト側が同名の `:root` を後から上書きする形になっている。
+新しいプロダクトを足すときも、そのプロダクトのCSSの先頭に自分の配色を置く。
+OS のダークモード（`prefers-color-scheme`）では切り替えない。範囲ごとに固定している。
+
+背景色を変えたときは、ブラウザUIの色も合わせる。CSS 変数を参照できないため、この2箇所だけ生の値を持っている。
+
+- 白いページ: `public/site.webmanifest` の `theme_color` / `background_color`
+- Pawgress: 各ページの `<meta name="theme-color">`
 
 ### Web フォントを積む
 
@@ -216,10 +231,10 @@ bash tests/smoke.sh <ベースURL>     # デプロイ後。200 / 404 / CSPヘッ
 
 | # | 内容 | 参照 |
 |---|---|---|
-| 1 | `【仮】` `[TBD]` `example.com` を全て実文・実URLに差し替える | §2.4 |
-| 2 | legal 3種の本文（日英）と同意項目の文言を実文にする | §10.1 |
-| 3 | 会社の法的実体・正式名称・会社概要を確定させ、特商法表記に反映する | §10.1 |
-| 4 | ロゴ・ファビコン・アプリアイコン・OGP画像を差し替える（いまは全て橙の破線枠つきのプレースホルダ。ヘッダーのロゴは `partials.js` の `BRAND_MARK` にもある） | §2.4 |
+| 1 | `【仮】` `[TBD]` `example.com` を全て実文・実URLに差し替える。X・メール・note のURLはトップページの CONTACT 節にあり、日英2ファイル（`public/index.html` と `public/en/index.html`）に同じものが入っている | §2.4 |
+| 2 | legal 4種の本文（日英）と同意項目の文言を実文にする | §10.1 |
+| 3 | 会社の法的実体・正式名称・所在地を確定させ、特商法表記とトップページの CONTACT 節に反映する | §10.1 |
+| 4 | ロゴ・ファビコン・アプリアイコン・OGP画像を差し替える（いまは全て橙の破線枠つきのプレースホルダ。ヘッダーはロゴタイプのみでアイコンを持たない） | §2.4 |
 | 5 | `functions/lib/stripe.js` の `STRIPE_API_VERSION` が実在する版か確認する | §7.5 |
 | 6 | 閾値ゼロ地域の一覧を専門家に当て、`regions.js` に反映する | §7.2 / §10.2 |
 | 7 | `/api/download-free` に地域制限が要るかを確認する（**確認待ち**。決めていないのではない） | §8.1 / §10.2 |

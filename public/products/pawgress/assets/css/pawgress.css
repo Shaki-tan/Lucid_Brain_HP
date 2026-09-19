@@ -1,6 +1,48 @@
-/* Pawgress LP 固有のスタイル。ここに書くのは「このLPの中身」だけで、
+/* Pawgress 固有のスタイル。ここに書くのは「このプロダクトの見せ方」だけで、
    ヘッダー・フッターの見た目は共通の components.css が持つ（SPEC §5.2）。
-   色・余白・書体は tokens.css の変数を使い、生の値を書かない。 */
+   このファイルは Pawgress の4ページ（LP・決済完了の日英）だけが読み込む。
+
+   配色もこのファイルが持つ。プロダクトの見た目はプロダクトのものであり、
+   コーポレート側（白基調）の tokens.css とは独立して決める（SPEC §4.1 / §5.2）。
+   セクションのスタイルでは生の色を書かず、下で定義した変数だけを参照する。 */
+
+/* ---------- Pawgress の配色 ---------- */
+
+/* 変数名は tokens.css と同じものを使う。
+   同名で上書きすることで、共通の base / layout / components がそのまま Pawgress の色で描かれる。
+   このファイルは共通CSSより後に読み込む（同じ詳細度なので、後に読むほうが勝つ）。
+   利用者のOS設定（prefers-color-scheme）では切り替えない。Pawgress は常にこの面で見せる。 */
+:root {
+  --color-bg: #0b0a10;
+  --color-surface: #16141d;
+  --color-surface-2: #1d1a26;
+  --color-border: #2a2733;
+
+  --color-ink: #f5f3fa;
+  --color-muted: #a29cb3;
+  --color-muted-2: #726c80;
+
+  --color-accent: #b389f9;
+  --color-accent-strong: #9a5cf5;
+  --color-accent-soft: rgba(179, 137, 249, 0.14);
+  --color-on-accent: #17091f;
+
+  --color-orange: #f3a15c;
+  --color-orange-soft: rgba(243, 161, 92, 0.16);
+  --color-blue: #6f8dff;
+  --color-blue-soft: rgba(111, 141, 255, 0.16);
+  --color-green: #5fd39c;
+  --color-green-soft: rgba(95, 211, 156, 0.16);
+  --color-red: #ef5b6a;
+  --color-red-soft: rgba(239, 91, 106, 0.16);
+
+  --color-bg-blur: rgba(11, 10, 16, 0.82);
+  --color-bg-blur-lp: rgba(11, 10, 16, 0.6);
+  --color-backdrop: rgba(5, 4, 8, 0.72);
+
+  --shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.7);
+  --shadow-accent: 0 12px 24px -12px rgba(179, 137, 249, 0.6);
+}
 
 /* ---------- ヒーロー ---------- */
 
@@ -27,39 +69,8 @@
   margin-bottom: 34px;
 }
 
-.lp-hero-note {
-  font-family: var(--font-display);
-  font-size: 12px;
-  color: var(--color-muted-2);
-  margin-top: 16px;
-  letter-spacing: 0.04em;
-}
-
 .lp-hero .screenshot-frame {
   margin-top: 56px;
-}
-
-/* トップページへ戻る導線（SPEC §7.1） */
-.lp-breadcrumb {
-  font-size: 13px;
-  color: var(--color-muted);
-  margin-bottom: 18px;
-}
-
-.lp-breadcrumb ol {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.lp-breadcrumb a {
-  color: var(--color-muted);
-  text-decoration: none;
-}
-
-.lp-breadcrumb a:hover {
-  color: var(--color-accent);
 }
 
 /* ---------- AI とプライバシー ---------- */

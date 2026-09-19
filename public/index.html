@@ -47,29 +47,24 @@
 
 <main id="main">
 
-  <!-- 1. ABOUT US。第一画面を兼ねる。会社のステートメントを h1 として置く -->
+  <!-- 1. ABOUT US。第一画面を兼ねる。会社のステートメントを h1 として置く。
+       節ラベルの見た目は4節で揃える（.eyebrow・SPEC §6） -->
   <section class="hero-home" id="about">
     <div class="wrap">
-      <p class="eyebrow">About us</p>
+      <p class="eyebrow">ABOUT US</p>
       <!-- 改行位置は原稿で決まっているため <br> で固定する -->
       <h1>システムで<br>認知の余白を<br>取り戻す。</h1>
       <div class="hero-lead">
         <p>仕事の不条理な調整も、生活を侵食する認知的摩擦も、根性で耐えるべき課題ではなくシステムの欠陥です。</p>
         <p>働く時間も暮らす日常も、どんな特性を持つ人間であっても壊れずに好奇心を呼吸できる「新しい公理系」を実装します。</p>
       </div>
-      <a class="hero-scroll" href="#business">
-        <span>Scroll</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M6 9l6 6 6-6"/>
-        </svg>
-      </a>
     </div>
   </section>
 
   <!-- 2. WHAT WE DO。4項目なので 2列で組む（〜768px で1列・SPEC §6.1） -->
   <section class="sec" id="business">
     <div class="wrap rise">
-      <h2 class="sec-label">WHAT WE DO</h2>
+      <h2 class="eyebrow sec-label">WHAT WE DO</h2>
       <div class="grid grid-2">
         <article class="card">
           <div class="card-icon" aria-hidden="true">
@@ -118,17 +113,49 @@
   <!-- 3. PRODUCTS & ACHIEVEMENT。実績は掲載できるものが揃った時点でこの節に足す（SPEC §6.2） -->
   <section class="sec" id="products">
     <div class="wrap rise">
-      <h2 class="sec-label">PRODUCTS &amp; ACHIEVEMENT</h2>
-      <div class="product-row">
-        <div class="screenshot-frame" data-ratio="16-10">
-          <img src="/products/pawgress/assets/images/dashboard.png" width="1571" height="967" alt="Pawgress のダッシュボード画面" loading="lazy" decoding="async">
-        </div>
-        <div class="product-row-body">
-          <h3>Pawgress</h3>
-          <p>"猫の手も借りたい"ほどタスクが氾濫しているとき、せめてタスク管理だけでも猫に任せてみませんか？</p>
-          <a class="btn" href="/products/pawgress/">Pawgress を見る</a>
-        </div>
+      <h2 class="eyebrow sec-label">PRODUCTS &amp; ACHIEVEMENT</h2>
+      <div class="product-item">
+        <h3>Pawgress</h3>
+        <p>"猫の手も借りたい"ほどタスクが氾濫しているとき、せめてタスク管理だけでも猫に任せてみませんか？</p>
+        <a class="btn" href="/products/pawgress/">Pawgress を見る</a>
       </div>
+    </div>
+  </section>
+
+  <!-- 4. CONTACT。社名・所在地と連絡先。フッターではなく本文の最終節に置く（SPEC §6.2）。
+       X・メール・note のURLは公開前に実URLへ差し替える（SPEC §10.1）。
+       同じものが /en/index.html にもあるので、両方直すこと（差し替え漏れは check-placeholders.sh が拾う）。 -->
+  <section class="sec" id="contact">
+    <div class="wrap rise">
+      <h2 class="eyebrow sec-label">CONTACT</h2>
+      <p class="contact-name">Lucud Brain</p>
+      <p class="contact-address">【仮】所在地（法的実体の確定後に差し替え）</p>
+      <ul class="contact-links">
+        <li>
+          <a href="https://x.com/example" rel="noopener external">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M18.9 2h3.3l-7.2 8.2L23.4 22h-6.6l-5.2-6.8L5.6 22H2.3l7.7-8.8L1.6 2h6.8l4.7 6.2L18.9 2zm-1.2 18h1.8L7.4 3.9H5.5L17.7 20z"/>
+            </svg>
+            <span>X</span>
+          </a>
+        </li>
+        <li>
+          <a href="mailto:info@example.com">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 5h16v14H4z"/><path d="M4 6l8 7 8-7"/>
+            </svg>
+            <span>メール</span>
+          </a>
+        </li>
+        <li>
+          <a href="https://note.com/example" rel="noopener external">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M8 17V8"/><path d="M8 11.6c0-2.1 1.7-3.6 4-3.6s4 1.5 4 3.6V17"/>
+            </svg>
+            <span>note</span>
+          </a>
+        </li>
+      </ul>
     </div>
   </section>
 

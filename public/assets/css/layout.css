@@ -30,7 +30,8 @@
   justify-content: center;
 }
 
-.sec h2 {
+/* 節ラベルとして .eyebrow を付けた h2 は、小さいラベルのままにする（トップページ・SPEC §6） */
+.sec h2:not(.eyebrow) {
   font-size: clamp(26px, 3.6vw, 38px);
   margin-bottom: 16px;
 }
@@ -90,14 +91,12 @@
 
 /* ---------- トップページのセクション（SPEC §5.2 / §6） ---------- */
 
-/* ABOUT US。第一画面を兼ねる。中央寄せ1カラム、ステートメント + 導入文 + スクロール誘導 */
+/* ABOUT US。第一画面を兼ねる。左寄せ1カラム、ステートメント + 導入文 */
 .hero-home {
   min-height: 80vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  text-align: center;
   padding: var(--space-section) 0;
 }
 
@@ -109,11 +108,8 @@
   margin-bottom: 36px;
 }
 
-/* 見出しは中央寄せだが、長い本文は左寄せにする（中央寄せの多行は読みにくい） */
 .hero-lead {
   max-width: var(--width-prose);
-  margin: 0 auto 40px;
-  text-align: left;
 }
 
 .hero-lead p {
@@ -125,78 +121,70 @@
   margin-top: 16px;
 }
 
-/* セクション見出し。原稿では英字ラベルのみを持つため、これを h2 として使う。
-   .sec h2 の既定より詳細度を上げるため、.sec と併記している */
-.sec .sec-label {
-  font-family: var(--font-display);
-  font-size: clamp(17px, 2vw, 21px);
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  color: var(--color-ink);
-  margin-bottom: 44px;
+/* 節ラベル。4節とも同じ見た目にするため .eyebrow と併記して使い、
+   ここでは見出しの下の余白だけを広げる（.sec h2 より詳細度を上げてある） */
+.eyebrow.sec-label {
+  margin-bottom: 36px;
 }
 
-.sec .sec-label::before {
-  content: "";
-  display: block;
-  width: 32px;
-  height: 3px;
-  border-radius: 2px;
-  background: var(--color-accent);
-  margin-bottom: 18px;
+/* プロダクト。要約 + LPへのリンク。スクリーンショットは載せない */
+.product-item {
+  max-width: var(--width-prose);
 }
 
-.sec-center .sec-label::before {
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.hero-scroll {
-  font-family: var(--font-display);
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-muted-2);
-  text-decoration: none;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.hero-scroll:hover {
-  color: var(--color-accent);
-}
-
-.hero-scroll svg {
-  width: 18px;
-  height: 18px;
-}
-
-/* プロダクト。横並びカード（スクリーンショット + 要約 + LPへのリンク） */
-.product-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 36px;
-  align-items: center;
-}
-
-.product-row-body h3 {
+.product-item h3 {
   font-size: 24px;
   margin-bottom: 12px;
 }
 
-.product-row-body p {
+.product-item p {
   color: var(--color-muted);
   font-size: 15px;
   margin-bottom: 24px;
 }
 
-@media (max-width: 768px) {
-  .product-row {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
+/* CONTACT。社名・所在地と連絡先。フッターではなく本文の最終節に置く（SPEC §6.2） */
+.contact-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-ink);
+  margin-bottom: 6px;
+}
+
+.contact-address {
+  font-size: 14px;
+  color: var(--color-muted);
+  margin-bottom: 24px;
+}
+
+.contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  list-style: none;
+}
+
+/* 図記号だけにせず文字も出す。アイコンの意味に依存させない（AGENTS.md 3.2） */
+.contact-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.contact-links a:hover {
+  color: var(--color-accent-strong);
+  text-decoration: underline;
+}
+
+.contact-links svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
 }
 
 /* ---------- legal ページ（SPEC §2.2） ---------- */

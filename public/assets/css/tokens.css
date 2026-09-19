@@ -1,5 +1,8 @@
 /* 色・タイポ・余白の単一の定義元（SPEC §5.2）。
-   配色を変えるときはこのファイルだけを触る。他の CSS に生の色を書かない。 */
+   ここが持つのはコーポレート側（トップ・legal・404）の配色である。白を基調とする。
+   プロダクトの配色はそのプロダクトが持つ。Pawgress なら products/pawgress/assets/css/pawgress.css。
+   いずれにしても、生の色を書くのは配色を定義するファイルだけとする。
+   base / layout / components は変数だけを参照し、どちらの配色で表示されているかを意識しない。 */
 
 /* Web フォントはセルフホストする（SPEC §7.5）。外部 CDN からは読み込まない。
    実ファイルは未配置のため、いまはローカルフォントへのフォールバックだけで組んでいる。
@@ -82,15 +85,15 @@
   --width-wrap: 1080px;
   --width-prose: 720px;
 
-  /* 共通コンポーネントの占有高さ。JS で差し込む領域のずれを防ぐ（SPEC §2.3 / §5） */
+  /* ヘッダー・フッターの占有高さ。JS で差し込む領域のずれを防ぐ（SPEC §2.3 / §5） */
   --height-header: 68px;
-  --height-footer: 300px;
+  --height-footer: 104px;
 }
 
 @media (max-width: 640px) {
   :root {
     --space-section: 56px;
     --space-wrap-padding: 16px;
-    --height-footer: 430px;
+    --height-footer: 176px;
   }
 }

@@ -20,6 +20,8 @@
 <link rel="icon" href="/assets/images/logo/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/images/logo/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
+<!-- ブラウザUIの色を Pawgress の配色（pawgress.css）に合わせる。CSS変数を参照できないためここだけ生の値を持つ -->
+<meta name="theme-color" content="#0b0a10">
 <link rel="stylesheet" href="/assets/css/tokens.css">
 <link rel="stylesheet" href="/assets/css/base.css">
 <link rel="stylesheet" href="/assets/css/layout.css">
@@ -52,23 +54,12 @@
   <!-- ヒーロー -->
   <section class="lp-hero">
     <div class="wrap">
-      <nav class="lp-breadcrumb" aria-label="パンくずリスト">
-        <ol>
-          <li><a href="/">Lucud Brain</a></li>
-          <li aria-hidden="true">／</li>
-          <li><a href="/#products">プロダクト</a></li>
-          <li aria-hidden="true">／</li>
-          <li aria-current="page">Pawgress</li>
-        </ol>
-      </nav>
-      <p class="eyebrow">Windows対応 ／ 個人〜小規模チーム向け</p>
       <h1>段取りは、<em>猫</em>にまかせとき。</h1>
       <p class="lead">WBSとガントチャートでタスクを、カレンダーで予定を管理。登録も確認も変更も、AIチャットに話しかけるだけで片付きます。日程の矛盾は Pawgress が自動で見つけて直します。個人から数名の小規模チームまで、買い切りで使えます。</p>
       <div class="cta-group">
         <a class="btn btn-lg" href="/api/download-free?product=pawgress" download>無料版をダウンロード</a>
         <a class="btn btn-lg btn-ghost" href="#price">有償版を見る</a>
       </div>
-      <p class="lp-hero-note">無料版あり ／ 買い切りの有償版あり（月額なし）</p>
 
       <div class="screenshot-frame">
         <img src="/products/pawgress/assets/images/dashboard.png" width="1571" height="967" alt="Pawgress のダッシュボード画面" fetchpriority="high" decoding="async">

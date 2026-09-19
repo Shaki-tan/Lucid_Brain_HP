@@ -47,28 +47,23 @@
 <main id="main">
 
   <!-- 1. About us. Doubles as the first view; the statement is the h1.
-       The English copy is a provisional rendering of the Japanese original (SPEC §2.4). -->
+       The English copy is a provisional rendering of the Japanese original (SPEC §2.4).
+       All four section labels share one look (.eyebrow — SPEC §6). -->
   <section class="hero-home" id="about">
     <div class="wrap">
-      <p class="eyebrow">About us</p>
+      <p class="eyebrow">ABOUT US</p>
       <h1>[TBD] Reclaiming<br>cognitive headroom,<br>through systems.</h1>
       <div class="hero-lead">
         <p>[TBD] Absurd coordination at work and the cognitive friction that eats into daily life are not things to be endured through sheer willpower. They are defects in the system.</p>
         <p>[TBD] We implement a new set of axioms — one in which working hours and everyday life let anyone, whatever their makeup, keep breathing curiosity without breaking.</p>
       </div>
-      <a class="hero-scroll" href="#business">
-        <span>Scroll</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M6 9l6 6 6-6"/>
-        </svg>
-      </a>
     </div>
   </section>
 
   <!-- 2. What we do. Four items, laid out in two columns (one column below 768px — SPEC §6.1) -->
   <section class="sec" id="business">
     <div class="wrap rise">
-      <h2 class="sec-label">WHAT WE DO</h2>
+      <h2 class="eyebrow sec-label">WHAT WE DO</h2>
       <div class="grid grid-2">
         <article class="card">
           <div class="card-icon" aria-hidden="true">
@@ -117,17 +112,50 @@
   <!-- 3. Products & achievement. Track record goes into this section once there is something worth showing (SPEC §6.2) -->
   <section class="sec" id="products">
     <div class="wrap rise">
-      <h2 class="sec-label">PRODUCTS &amp; ACHIEVEMENT</h2>
-      <div class="product-row">
-        <div class="screenshot-frame" data-ratio="16-10">
-          <img src="/products/pawgress/assets/images/dashboard.png" width="1571" height="967" alt="The Pawgress dashboard" loading="lazy" decoding="async">
-        </div>
-        <div class="product-row-body">
-          <h3>Pawgress</h3>
-          <p>[TBD] When there are so many tasks that you'd take all the help you can get, why not let a cat handle the task list at least?</p>
-          <a class="btn" href="/en/products/pawgress/">See Pawgress</a>
-        </div>
+      <h2 class="eyebrow sec-label">PRODUCTS &amp; ACHIEVEMENT</h2>
+      <div class="product-item">
+        <h3>Pawgress</h3>
+        <p>[TBD] When there are so many tasks that you'd take all the help you can get, why not let a cat handle the task list at least?</p>
+        <a class="btn" href="/en/products/pawgress/">See Pawgress</a>
       </div>
+    </div>
+  </section>
+
+  <!-- 4. Contact. Company name, address and how to reach us.
+       This lives in the page, not in the footer (SPEC §6.2).
+       The X / email / note URLs are placeholders (SPEC §10.1); the same ones are in
+       /index.html, so replace both (check-placeholders.sh catches a miss). -->
+  <section class="sec" id="contact">
+    <div class="wrap rise">
+      <h2 class="eyebrow sec-label">CONTACT</h2>
+      <p class="contact-name">Lucud Brain</p>
+      <p class="contact-address">[TBD] Address (to be replaced once the legal entity is settled)</p>
+      <ul class="contact-links">
+        <li>
+          <a href="https://x.com/example" rel="noopener external">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M18.9 2h3.3l-7.2 8.2L23.4 22h-6.6l-5.2-6.8L5.6 22H2.3l7.7-8.8L1.6 2h6.8l4.7 6.2L18.9 2zm-1.2 18h1.8L7.4 3.9H5.5L17.7 20z"/>
+            </svg>
+            <span>X</span>
+          </a>
+        </li>
+        <li>
+          <a href="mailto:info@example.com">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 5h16v14H4z"/><path d="M4 6l8 7 8-7"/>
+            </svg>
+            <span>Email</span>
+          </a>
+        </li>
+        <li>
+          <a href="https://note.com/example" rel="noopener external">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M8 17V8"/><path d="M8 11.6c0-2.1 1.7-3.6 4-3.6s4 1.5 4 3.6V17"/>
+            </svg>
+            <span>note</span>
+          </a>
+        </li>
+      </ul>
     </div>
   </section>
 
