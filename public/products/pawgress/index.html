@@ -27,8 +27,6 @@
 <link rel="stylesheet" href="/assets/css/layout.css">
 <link rel="stylesheet" href="/assets/css/components.css">
 <link rel="stylesheet" href="/products/pawgress/assets/css/pawgress.css">
-<!-- LCP 画像。ヒーローの中で最も大きく、最初に見える（SPEC §7.5 Core Web Vitals） -->
-<link rel="preload" as="image" href="/products/pawgress/assets/images/dashboard.png">
 <script src="/assets/js/partials.js"></script>
 </head>
 <body>
@@ -59,10 +57,6 @@
       <div class="cta-group">
         <a class="btn btn-lg" href="/api/download-free?product=pawgress" download>無料版をダウンロード</a>
         <a class="btn btn-lg btn-ghost" href="#price">有償版を見る</a>
-      </div>
-
-      <div class="screenshot-frame">
-        <img src="/products/pawgress/assets/images/dashboard.png" width="1571" height="967" alt="Pawgress のダッシュボード画面" fetchpriority="high" decoding="async">
       </div>
     </div>
   </section>
@@ -116,13 +110,24 @@
     </div>
   </section>
 
-  <!-- AI とプライバシー -->
-  <section class="sec" id="ai">
+  <!-- 特筆すべき機能。上の「できること」がカードの並びなので、こちらは1枚の面に項目を積む -->
+  <section class="sec" id="highlights">
     <div class="wrap rise">
-      <p class="eyebrow">AI &amp; Privacy</p>
-      <h2>AI機能以外は、完全ローカル。</h2>
-      <div class="lp-ai-block">
-        <p>タスクや予定のデータはお使いのPC内で完結します。AIチャットを使うときだけ、ご自身で用意したAPIキーで外部のAIサービスに接続します。OpenAI・Anthropic・Google・xAI に対応し、OpenAI互換形式のAPIであれば自社ホスト環境でも動作します（自社ホストでの動作は保証対象外です）。APIキーはお使いのPCにのみ保存されます。</p>
+      <p class="eyebrow">Highlights</p>
+      <h2>特筆すべき機能</h2>
+      <div class="lp-highlights">
+        <article class="lp-highlight">
+          <h3>AI機能以外は、完全ローカル</h3>
+          <p>タスクや予定のデータは、お使いのPC内で完結します。</p>
+        </article>
+        <article class="lp-highlight">
+          <h3>AIは、ご自身のAPIキーで</h3>
+          <p>AIチャットを使うときだけ、ご自身で用意したAPIキーで外部のAIサービスに接続します。APIキーはお使いのPCにのみ保存されます。</p>
+        </article>
+        <article class="lp-highlight">
+          <h3>主要なAIサービスに対応</h3>
+          <p>OpenAI・Anthropic・Google・xAI に対応します。OpenAI互換形式のAPIであれば、自社ホスト環境でも動作します（自社ホストでの動作は保証対象外です）。</p>
+        </article>
       </div>
     </div>
   </section>

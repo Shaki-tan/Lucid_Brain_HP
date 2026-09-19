@@ -17,13 +17,21 @@
   # 使わない機能は明示的に切る。最小限にとどめる（SPEC §7.5）。
   Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), microphone=(), payment=(), usb=()
   Cross-Origin-Opener-Policy: same-origin
+  # 既定は「毎回確認させる」。中身が変わっていなければ 304 が返るだけで、転送量は増えない。
+  # ここを既定にしておく理由は2つある。
+  #   1. HTML が古いままだと、直した文言や構成がいつまでも出ない
+  #   2. 下でこれを上書きし損ねたパスがあっても、古いものが残るのではなく毎回確認する側に転ぶ
+  # 拡張子なしURLで配信するため（§3）、パスの形で HTML を選び分けようとすると漏れる。
+  Cache-Control: public, no-cache
 
-# 内容が変わったら差し替えるファイル群。HTML より長くキャッシュしてよい。
+# CSS・JS。ファイル名にハッシュを付けない（ビルドを持たない）ため、長く持たせると
+# デプロイ直後に「新しいHTML + 古いCSS」の組み合わせが発生し、レイアウトが崩れる。
+# 60秒に抑えて、その窓を実用上なくす。再訪時の表示速度への影響はこの規模では無視できる。
 /assets/*
-  Cache-Control: public, max-age=3600, must-revalidate
+  Cache-Control: public, max-age=60, must-revalidate
 
 /products/*/assets/*
-  Cache-Control: public, max-age=3600, must-revalidate
+  Cache-Control: public, max-age=60, must-revalidate
 
 # 配布物。人に渡すURLであり、差し替えが起きうるので長く持たせない。
 /docs/*

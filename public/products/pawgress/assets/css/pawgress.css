@@ -64,32 +64,44 @@
 
 .lp-hero .lead {
   font-size: 17px;
-  max-width: 580px;
+  max-width: var(--width-prose);
   color: var(--color-muted);
   margin-bottom: 34px;
 }
 
-.lp-hero .screenshot-frame {
-  margin-top: 56px;
-}
+/* ---------- 特筆すべき機能 ---------- */
 
-/* ---------- AI とプライバシー ---------- */
-
-.lp-ai-block {
+/* 上の「できること」がカードの並びなので、こちらは1枚の面に項目を積んで見分けをつける */
+.lp-highlights {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 40px;
-  max-width: 760px;
+  padding: 8px 40px;
+  max-width: var(--width-prose);
 }
 
-.lp-ai-block p {
+.lp-highlight {
+  padding: 28px 0;
+}
+
+.lp-highlight + .lp-highlight {
+  border-top: 1px solid var(--color-border);
+}
+
+.lp-highlight h3 {
+  font-size: 17px;
+  margin-bottom: 8px;
+}
+
+.lp-highlight p {
   color: var(--color-muted);
   font-size: 15px;
 }
 
 /* ---------- 料金 ---------- */
 
+/* カード2枚の並び。文章の幅ではないため --width-prose は当てない。
+   1080px 全幅に広げるとカードが横長になりすぎるので、2枚が収まるところで止めている */
 .plans {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -193,7 +205,7 @@
 .plan-legal-note {
   color: var(--color-muted-2);
   font-size: 13px;
-  max-width: 620px;
+  max-width: var(--width-note);
   margin-top: 36px;
 }
 
@@ -208,7 +220,7 @@
   display: grid;
   gap: 10px;
   font-size: 14px;
-  max-width: 620px;
+  max-width: var(--width-note);
 }
 
 /* CSP で unsafe-inline を使わないため、間隔も style 属性ではなくクラスで持つ（SPEC §7.5） */
@@ -232,7 +244,7 @@
   .lp-hero {
     padding: 64px 0 48px;
   }
-  .lp-ai-block {
-    padding: 24px;
+  .lp-highlights {
+    padding: 4px 24px;
   }
 }

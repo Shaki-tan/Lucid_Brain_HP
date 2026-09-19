@@ -23,6 +23,11 @@ body {
   color: var(--color-ink);
   line-height: 1.85;
   -webkit-font-smoothing: antialiased;
+  /* 日本語の改行位置。ブラウザの既定は文字間のどこでも折るため、文節の途中で切れて読みにくい。
+     auto-phrase は文節の境目で折る。strict は小書き文字や長音符の前で折らない。
+     未対応のブラウザでは既定の折り返しに戻るだけで、内容は変わらない（SPEC §2.3） */
+  word-break: auto-phrase;
+  line-break: strict;
   /* フッターを最下部に押し下げ、内容の少ないページで浮かないようにする */
   min-height: 100vh;
   display: flex;
@@ -68,6 +73,15 @@ h4 {
   font-family: var(--font-display);
   line-height: 1.4;
   font-weight: 700;
+  /* 見出しは行の長さを揃える。最終行に1語だけ残るのを防ぐ */
+  text-wrap: balance;
+}
+
+/* 段落は最終行が極端に短くならないようにする */
+p,
+li,
+dd {
+  text-wrap: pretty;
 }
 
 /* フォーカスは常に見えるようにする。見た目のためだけに outline を消さない（AGENTS.md 3.2） */

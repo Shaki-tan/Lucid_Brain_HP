@@ -28,7 +28,6 @@
 <link rel="stylesheet" href="/assets/css/components.css">
 <!-- 英語版は日本語側と同じ CSS・画像を参照する。複製しない（SPEC §4.1） -->
 <link rel="stylesheet" href="/products/pawgress/assets/css/pawgress.css">
-<link rel="preload" as="image" href="/products/pawgress/assets/images/dashboard.png">
 <script src="/assets/js/partials.js"></script>
 </head>
 <body>
@@ -59,10 +58,6 @@
       <div class="cta-group">
         <a class="btn btn-lg" href="/api/download-free?product=pawgress" download>Download the free edition</a>
         <a class="btn btn-lg btn-ghost" href="#price">See the paid edition</a>
-      </div>
-
-      <div class="screenshot-frame">
-        <img src="/products/pawgress/assets/images/dashboard.png" width="1571" height="967" alt="The Pawgress dashboard" fetchpriority="high" decoding="async">
       </div>
     </div>
   </section>
@@ -116,13 +111,24 @@
     </div>
   </section>
 
-  <!-- AI and privacy -->
-  <section class="sec" id="ai">
+  <!-- Highlights. The section above is a row of cards, so this one stacks its items on one panel -->
+  <section class="sec" id="highlights">
     <div class="wrap rise">
-      <p class="eyebrow">AI &amp; Privacy</p>
-      <h2>Everything but the AI runs locally.</h2>
-      <div class="lp-ai-block">
-        <p>Your tasks and schedule stay on your PC. Only the AI chat reaches out, and only with an API key you supply yourself. OpenAI, Anthropic, Google and xAI are supported, and any OpenAI-compatible API works, including self-hosted ones (self-hosted setups are not covered by our support). Your API key is stored on your PC and nowhere else.</p>
+      <p class="eyebrow">Highlights</p>
+      <h2>Worth calling out</h2>
+      <div class="lp-highlights">
+        <article class="lp-highlight">
+          <h3>Everything but the AI runs locally</h3>
+          <p>Your tasks and your schedule stay on your PC.</p>
+        </article>
+        <article class="lp-highlight">
+          <h3>The AI runs on your own API key</h3>
+          <p>Only the AI chat reaches out, and only with an API key you supply yourself. Your API key is stored on your PC and nowhere else.</p>
+        </article>
+        <article class="lp-highlight">
+          <h3>The major AI services are supported</h3>
+          <p>OpenAI, Anthropic, Google and xAI are supported. Any OpenAI-compatible API works, including self-hosted ones (self-hosted setups are not covered by our support).</p>
+        </article>
       </div>
     </div>
   </section>

@@ -257,30 +257,6 @@ site-footer {
   color: var(--color-red);
 }
 
-/* ---------- スクリーンショットの枠 ---------- */
-
-.screenshot-frame {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
-  padding: 10px;
-  overflow: hidden;
-}
-
-.screenshot-frame img {
-  border-radius: calc(var(--radius-lg) - 6px);
-  width: 100%;
-}
-
-/* プロダクトのスクリーンショットは 16:10 固定（SPEC §6.1） */
-.screenshot-frame[data-ratio="16-10"] img {
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  object-position: top left;
-  height: auto;
-}
-
 /* ---------- 同意ダイアログ（SPEC §8.3） ---------- */
 
 .consent-dialog {

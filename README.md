@@ -81,6 +81,25 @@ tests/              検査スクリプト。public/ の外に置く
 `functions/lib/regions.js` の1箇所。理由も併記すること。
 `/api/checkout` が 451 を返し、LP 側は `/api/region` の結果で購入ボタンを無効化する。
 
+### 変更を手元で確認する
+
+```
+node scripts/preview.mjs        # http://127.0.0.1:8788/
+```
+
+`Cache-Control: no-store` を返すので、**リロードすれば必ず最新が出る**。
+拡張子なしURL（`/legal/terms`）とディレクトリ（`/products/pawgress/`）、404 の返し方は wrangler と同じ規則で解決する。
+依存はなく、Node だけで動くのでダウンロードも発生しない。
+
+`/api/*` は持たない（501 を返す）。決済・ダウンロード・地域判定を触るときは `npx wrangler dev` を使う。
+
+**「直したはずなのに変わらない」ときの確認順**
+
+1. `node scripts/preview.mjs` で見る。ここで変わっていなければ、直っていないのはコードである
+2. 変わっているなら、見ていたのは別のものである。候補は2つ
+   - **`*.workers.dev`** — デプロイしていなければ古いまま。`npx wrangler deploy` が要る
+   - **古いタブ** — DevTools を開いて Network タブの「Disable cache」を入れる。または Ctrl+Shift+R
+
 ### 配色を変える
 
 配色は範囲ごとに定義元が1つある。触るのはそのファイルだけで、他の CSS に生の色を書かない。

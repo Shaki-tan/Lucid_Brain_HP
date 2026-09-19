@@ -81,9 +81,11 @@
   --space-section: 88px;
   --space-wrap-padding: 24px;
 
-  /* 幅 */
+  /* 幅。文章の幅はこの2つだけを使い、ブロックごとに数値を決めない。
+     幅が揃っていないと、隣り合う段落で改行位置の傾向が変わって落ち着かなく見える（SPEC §2.3） */
   --width-wrap: 1080px;
   --width-prose: 720px;
+  --width-note: 620px;
 
   /* ヘッダー・フッターの占有高さ。JS で差し込む領域のずれを防ぐ（SPEC §2.3 / §5） */
   --height-header: 68px;
