@@ -113,22 +113,51 @@
   <!-- 特筆すべき機能。上の「できること」がカードの並びなので、こちらは1枚の面に項目を積む -->
   <section class="sec" id="highlights">
     <div class="wrap rise">
-      <p class="eyebrow">Highlights</p>
-      <h2>特筆すべき機能</h2>
+      <p class="eyebrow">Why Pawgress</p>
+      <h2>ここが、他と違う。</h2>
       <div class="lp-highlights">
         <article class="lp-highlight">
-          <h3>AI機能以外は、完全ローカル</h3>
-          <p>タスクや予定のデータは、お使いのPC内で完結します。</p>
+          <h3>データはPCの中だけ。AIは見るだけでなく、動かす</h3>
+          <p>タスクも予定も手元のPC内に保存。AIチャットから直接作成・変更でき、どこまで触らせるかはあなたが決めます。</p>
         </article>
         <article class="lp-highlight">
-          <h3>AIは、ご自身のAPIキーで</h3>
-          <p>AIチャットを使うときだけ、ご自身で用意したAPIキーで外部のAIサービスに接続します。APIキーはお使いのPCにのみ保存されます。</p>
+          <h3>今日の1件目を、Pawgressが決める</h3>
+          <p>緊急なもの、何度も先送りしているもの、いま自分の手で動かせるもの。これらの基準で並べ替えた上位5件と、今日の予定を1画面に。</p>
         </article>
         <article class="lp-highlight">
-          <h3>主要なAIサービスに対応</h3>
-          <p>OpenAI・Anthropic・Google・xAI に対応します。OpenAI互換形式のAPIであれば、自社ホスト環境でも動作します（自社ホストでの動作は保証対象外です）。</p>
+          <h3>日程の矛盾を見つけて、まとめて直す</h3>
+          <p>親子タスクや前後関係で辻褄が合わなくなったら検出し、影響範囲をすべて提示。承認すれば一括で修正します。</p>
         </article>
       </div>
+    </div>
+  </section>
+
+  <!-- 使い方と、AIの準備。料金の前に置く。
+       AIに自分のAPIキーが要ることは、価格と購入ボタンを見る前に知っておく必要がある（SPEC §7.1） -->
+  <section class="sec" id="setup">
+    <div class="wrap rise">
+      <p class="eyebrow">Before you start</p>
+      <h2>はじめる前に、3つだけ。</h2>
+      <p class="sub">AIの準備と、無料版からの乗り換えについて。</p>
+      <div class="grid">
+        <article class="card">
+          <h3>AIに必要なもの</h3>
+          <p>AIチャットは、ご自身で用意したAPIキーで外部のAIサービスに接続します。OpenAI・Anthropic・Google・xAI に対応し、OpenAI互換形式のAPIであれば自社ホスト環境でも動作します（保証対象外）。APIキーはお使いのPCにのみ保存されます。</p>
+        </article>
+        <article class="card">
+          <h3>AIにかかる費用</h3>
+          <p>【仮】AIサービスの利用料は、利用者と各AI事業者のあいだの契約に基づくもので、Pawgress の価格には含まれません。</p>
+        </article>
+        <article class="card">
+          <h3>無料版からの乗り換え</h3>
+          <p>アンインストールは不要です。有償版のインストーラーを上書きインストールすれば、無料版で登録したタスクや予定はそのまま引き継がれます。</p>
+        </article>
+      </div>
+      <p class="sub doc-links-lead">キーの取得から設定までの手順と、Pawgress 自体の使い方は、配布資料にまとめています。</p>
+      <ul class="doc-links">
+        <li><a href="/docs/pawgress/user-guide.ja.pdf">【仮】Pawgress の使い方（PDF）</a></li>
+        <li><a href="/docs/common/gemini-api-key.ja.pdf">【仮】AIサービスのAPIキー取得手順（PDF）</a></li>
+      </ul>
     </div>
   </section>
 
@@ -169,18 +198,6 @@
         <p>ライセンスキーによる認証は行っていません。PCの買い替え時は同じインストーラーをそのままお使いいただけます。別の環境で新たに使う場合は、あらためてご購入ください。</p>
         <p>価格は税込・円（JPY）表示です。本サービスは日本国内の居住者を対象としています。</p>
       </div>
-    </div>
-  </section>
-
-  <!-- ドキュメント -->
-  <section class="sec" id="docs">
-    <div class="wrap rise">
-      <p class="eyebrow">Documents</p>
-      <h2>ドキュメント</h2>
-      <ul class="doc-links">
-        <li><a href="/docs/pawgress/user-guide.ja.pdf">【仮】Pawgress の使い方（PDF）</a></li>
-        <li><a href="/docs/common/gemini-api-key.ja.pdf">【仮】AIサービスのAPIキー取得手順（PDF）</a></li>
-      </ul>
     </div>
   </section>
 
