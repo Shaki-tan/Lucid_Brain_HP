@@ -1,0 +1,60 @@
+{
+  "_readme": [
+    "Pawgress の購入同意項目（SPEC §8.3）。このファイルが文言の唯一の出どころである。",
+    "ブラウザ（assets/js/consent.js）が読んでダイアログに表示し、",
+    "サーバ（functions/api/checkout.js）が ASSETS バインディング越しに同じものを読んで、",
+    "決済のたびに Stripe のメタデータへ文言そのものを書く（SPEC §8.4 の原則6）。",
+    "JSON にしてあるのは、Workers では eval できず JS を読めないためである。",
+    "sets のキーは functions/lib/products.js の plan.consentSet と一致させる。",
+    "文言を変えたら products.js の consentVersion を上げ、LP の data-consent-version も合わせる。",
+    "検査は tests/check-consent.mjs が行う。"
+  ],
+  "sets": {
+    "one_time": {
+      "ja": [
+        {
+          "label": "【仮】利用規約の内容を確認しました。",
+          "linkText": "利用規約",
+          "href": "/legal/terms"
+        },
+        {
+          "label": "【仮】返金ポリシーの内容を確認しました。",
+          "linkText": "返金ポリシー",
+          "href": "/legal/refund"
+        },
+        {
+          "label": "【仮】プライバシーポリシーの内容を確認しました。",
+          "linkText": "プライバシーポリシー",
+          "href": "/legal/privacy"
+        },
+        {
+          "label": "【仮】特定商取引法に基づく表記を確認しました。",
+          "linkText": "特定商取引法に基づく表記",
+          "href": "/legal/tokushoho"
+        }
+      ],
+      "en": [
+        {
+          "label": "[TBD] I have read the Terms of Service.",
+          "linkText": "Terms of Service",
+          "href": "/en/legal/terms"
+        },
+        {
+          "label": "[TBD] I have read the Refund Policy.",
+          "linkText": "Refund Policy",
+          "href": "/en/legal/refund"
+        },
+        {
+          "label": "[TBD] I have read the Privacy Policy.",
+          "linkText": "Privacy Policy",
+          "href": "/en/legal/privacy"
+        },
+        {
+          "label": "[TBD] I have read the Legal Notice under the Act on Specified Commercial Transactions.",
+          "linkText": "Legal Notice",
+          "href": "/en/legal/tokushoho"
+        }
+      ]
+    }
+  }
+}

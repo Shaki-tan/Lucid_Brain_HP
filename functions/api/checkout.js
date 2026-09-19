@@ -7,6 +7,7 @@
 // 同意の事実は Stripe の metadata に残す。Workers Logs には残さない（SPEC §8.4）。
 
 import { resolvePlan } from '../lib/products.js'
+import { ConsentItemsError, normalizeLang, readConsentItems, toConsentMetadata } from '../lib/consent.js'
 import { isBlockedRegion } from '../lib/regions.js'
 import { createCheckoutSession, StripeError } from '../lib/stripe.js'
 import { error, isSameOrigin, json } from '../lib/http.js'
@@ -63,6 +64,26 @@ export async function onRequestPost(context) {
   // 時刻はサーバ側で採る（SPEC §8.4 原則4）。
   const consentAt = new Date().toISOString()
 
+  // 同意した文言そのものを、配信中のアセットから読む（SPEC §8.4 原則6）。
+  // クライアントから文言を受け取らない。受け取ると「購入者が申告した文言」が記録される。
+  //
+  // 読めない場合は決済を通さない。版番号だけが残って文言が残らない決済を作らないためである。
+  // ASSETS への参照は Worker 内で完結するため、ここが失敗するのはデプロイの不整合に限られる。
+  const consentLang = normalizeLang(body?.consentLang)
+  let consentItems
+  try {
+    consentItems = await readConsentItems(env, baseUrl, productId, plan.consentSet, consentLang)
+  } catch (cause) {
+    if (!(cause instanceof ConsentItemsError)) throw cause
+    logError('consent_items_unavailable', {
+      product: productId,
+      plan: planId,
+      consentSet: plan.consentSet,
+      reason: cause.message,
+    })
+    return error('server_not_configured', 500)
+  }
+
   const params = new URLSearchParams()
   params.set('mode', plan.checkoutMode)
   params.set('line_items[0][price]', priceId)
@@ -81,6 +102,8 @@ export async function onRequestPost(context) {
     consent_at: consentAt,
     product: productId,
     plan: planId,
+    // 版番号だけでは、後からその版の文言を示せない（SPEC §8.4 原則6）。
+    ...toConsentMetadata(consentItems, consentLang),
   }
   // クライアントが申告した時刻は参考値として別キーに入れる。改竄可能なため判断には使わない。
   if (typeof body?.consentAtClient === 'string') {

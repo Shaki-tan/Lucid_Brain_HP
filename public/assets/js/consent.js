@@ -2,10 +2,14 @@
 //
 // ここが持つのはダイアログの制御と、プロダクトによらない文言（見出し・ボタン・エラー）だけである。
 // チェック項目の文言はプロダクトごと・プランごとに変わるため、プロダクト側が持つ。
-//   例: public/products/pawgress/assets/js/consent-items.js
-//       window.consentItemSets = { <consentSet>: { ja: [...], en: [...] } }
+//   public/products/<slug>/assets/consent-items.json
+// URL は購入ボタンの data-product から組む。パスの規約は SPEC §8.3 にある。
 // 購入ボタンの data-consent-set がセット名を指す。名前は functions/lib/products.js の
 // plan.consentSet と一致させる（SPEC §8.2）。
+//
+// 同じ JSON を /api/checkout もサーバ側で読み、決済のたびに文言そのものを Stripe へ記録する
+// （SPEC §8.4 の原則6）。文言をクライアントから送らせない。送らせると「購入者が申告した文言」に
+// なり、チャージバックの証拠として弱くなる。
 //
 // 同意チェックは購入ボタンの手前には置かない。ボタンを押してから同意ステップに入り、
 // 全項目にチェックが入って初めて「決済に進む」が有効になる。
@@ -63,10 +67,34 @@
     })
   }
 
-  // プロダクト側が登録した文言を読む。無ければ null を返し、呼び出し側が開くのをやめる。
-  function itemsFor(consentSet) {
-    var sets = window.consentItemSets
-    var set = sets && sets[consentSet]
+  // 同意項目の JSON。プロダクトごとに1つで、パスは slug から組む（SPEC §8.3）。
+  function itemsUrl(productId) {
+    return '/products/' + productId + '/assets/consent-items.json'
+  }
+
+  // ページ表示時に先読みしておく。購入ボタンを押した時点では解決済みになっているのが普通で、
+  // まだなら openDialog が待つ。取得できなければ null を返し、ダイアログを開かない。
+  var itemsCache = {}
+
+  function loadItems(productId) {
+    if (!itemsCache[productId]) {
+      itemsCache[productId] = fetch(itemsUrl(productId))
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status)
+          return res.json()
+        })
+        .catch(function (error) {
+          // 次のクリックで再試行できるように捨てる
+          itemsCache[productId] = null
+          console.error('consent: 同意項目を読めなかった（' + itemsUrl(productId) + '）', error)
+          return null
+        })
+    }
+    return itemsCache[productId]
+  }
+
+  function pickItems(data, consentSet) {
+    var set = data && data.sets && data.sets[consentSet]
     var items = set && (isEn ? set.en : set.ja)
     return Array.isArray(items) && items.length > 0 ? items : null
   }
@@ -149,6 +177,8 @@
           product: trigger.dataset.product,
           plan: trigger.dataset.plan,
           consentVersion: trigger.dataset.consentVersion,
+          // どちらの言語で表示したか。文言そのものはサーバがアセットから読む（SPEC §8.4 原則6）。
+          consentLang: isEn ? 'en' : 'ja',
           // 参考値。判断には使われない（SPEC §8.4 原則4）。
           consentAtClient: new Date().toISOString(),
         }),
@@ -169,16 +199,17 @@
     }
   }
 
-  function openDialog(trigger) {
+  async function openDialog(trigger) {
     var consentSet = trigger.dataset.consentSet
-    var items = itemsFor(consentSet)
+    var items = pickItems(await loadItems(trigger.dataset.product), consentSet)
 
     // 文言が無い状態で開くと、チェックすべき項目が0件のダイアログが出る。
-    // プロダクト側のファイルの読み込み忘れか、セット名の綴り違いであり、実装中の事故である。
+    // JSON が取れなかったか、セット名が products.js と食い違っている。どちらも実装側の問題である。
     // 黙って開かず、購入も始めない。
     if (!items) {
-      console.error('consent: 同意項目が見つからない（consentSet=' + consentSet + '）。' +
-        'プロダクト側の consent-items.js が読み込まれているか、セット名が products.js と一致しているかを確認する。')
+      console.error('consent: 同意項目が見つからない（product=' + trigger.dataset.product +
+        ' consentSet=' + consentSet + '）。' +
+        itemsUrl(trigger.dataset.product) + ' が配信されているか、セット名が products.js と一致しているかを確認する。')
       return
     }
 
@@ -232,6 +263,9 @@
   function init() {
     var triggers = Array.prototype.slice.call(document.querySelectorAll('[data-checkout]'))
     if (triggers.length === 0) return
+
+    // 押された時点で待たせないよう、先に読んでおく
+    triggers.forEach(function (trigger) { loadItems(trigger.dataset.product) })
 
     triggers.forEach(function (trigger) {
       trigger.addEventListener('click', function () {

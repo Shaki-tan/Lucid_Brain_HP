@@ -55,7 +55,7 @@ tests/              検査スクリプト。public/ の外に置く
 1. `functions/lib/products.js` に1エントリ足す
 2. `public/assets/js/partials.js` の `PRODUCTS` に表示名を足す。ヘッダーのロゴタイプに出る。
    足さないとコーポレート側の構成（社名のロゴタイプ、返金ポリシーなしのフッター）で表示される。
-   有償プランを持つなら `public/products/<name>/assets/js/consent-items.js` に同意項目の文言も置く（SPEC §8.3）
+   有償プランを持つなら `public/products/<name>/assets/consent-items.json` に同意項目の文言も置く（SPEC §8.3）
 3. `public/products/<name>/` と `public/en/products/<name>/` を作る。
    そのプロダクトの配色は、そのプロダクトのCSSの先頭に持つ（→ 下の「配色を変える」）
 4. `public/docs/<name>/` を作る ← **忘れやすい。** §4.3 の唯一の例外
@@ -69,17 +69,16 @@ tests/              検査スクリプト。public/ の外に置く
 
 ### 同意文言を変える
 
-1. `public/products/<name>/assets/js/consent-items.js` の文言を直す（日英とも）。
-   チェック項目の文言はプロダクト固有である。共通の `assets/js/consent.js` にあるのは
-   ダイアログの仕組みと、見出し・ボタン・エラーだけ（SPEC §8.3）
+1. `public/products/<name>/assets/consent-items.json` の文言を直す（日英とも）
 2. `functions/lib/products.js` の `consentVersion` を上げる
 3. LP の `data-consent-version` を新しい版に合わせる（日英とも）
+4. `node tests/check-consent.mjs` を通す
 
-版と時刻は Stripe の決済メタデータに残る。
+**文言のファイルは1つだけ。** ブラウザのダイアログと、決済時の Stripe への記録が同じものを読む。
+版・時刻・**文言そのもの**が決済メタデータに残るので、スナップショットのページは要らない（SPEC §8.4）。
 
-ただし **版ごとの「文言そのもの」を残す仕組みは、まだ無い（SPEC §8.4 / §10.1）。**
-いまは git 履歴にしか残らない。チャージバックの証拠として使うには版番号だけでは足りないため、
-公開前に決める必要がある。
+文言をクライアントから送らせてはならない。送らせると Stripe に残るのが「購入者が申告した文言」になり、
+チャージバックの証拠にならない。サーバが `ASSETS` 越しに同じ JSON を読んでいる。
 
 ### 販売しない地域を変える
 
@@ -188,6 +187,7 @@ bash tests/check-placeholders.sh   # 【仮】[TBD] example.com の残存
 bash tests/check-links.sh          # 内部リンク・PDF の存在
 bash tests/check-meta.sh           # title / description / canonical / OGP / hreflang の欠落
 node tests/check-i18n.mjs          # 日英ページの構造一致と hreflang の相互参照
+node tests/check-consent.mjs       # 同意項目の文言と、Stripe へ記録できる状態か
 bash tests/smoke.sh <ベースURL>     # デプロイ後。200 / 404 / CSPヘッダ
 ```
 
