@@ -3,7 +3,11 @@
 // functions/api/*.js の自動ルーティングに問題が生じたため、明示的なルーティングに切り替えている。
 // 各ハンドラの実装自体は functions/api/*.js をそのまま再利用する（ロジックの重複を避けるため）。
 //
-// Worker が見るのは /api/* のみとし、静的アセットは Worker を経由せず配信する（SPEC §8.1）。
+// main を置いた構成では、静的アセットへのリクエストもまずこの Worker に入る。
+// この Worker が自分で処理するのは /api/* だけで、それ以外は ASSETS バインディングへ委譲する。
+// 「委譲する」と「Worker を経由しない」は違う（SPEC §8.1）。
+// _headers / _redirects がこの経路でも適用されるかは実機で確認する（SPEC §10.2 の2）。
+//
 // 分岐の if が増え続けないよう、ルートはテーブルで持つ（SPEC §8.2）。
 
 import { onRequestPost as checkoutPost } from './functions/api/checkout.js'

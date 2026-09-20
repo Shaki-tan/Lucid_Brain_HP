@@ -129,16 +129,31 @@ OS のダークモード（`prefers-color-scheme`）では切り替えない。�
 
 ### Web フォントを積む
 
-いまは `@font-face` をコメントアウトし、ローカルフォントへのフォールバックだけで組んでいる。
-外部 CDN からは読み込まない（SPEC §7.5）。積むときは:
+**セルフホストする。外部 CDN からは読み込まない**（SPEC §7.5）。書体は決定済みで、
+和文が **BIZ UDPGothic**（OFL）、欧文が **Inter**（OFL）、ウェイトは 400 と 700 だけである。
 
-1. サブセット化した woff2 を `public/assets/fonts/` に置く（`site-body-400.woff2` 等）
-2. `tokens.css` の `@font-face` ブロックのコメントを外し、`src` をファイル名に合わせる
-3. `--font-display` / `--font-body` の先頭に `"SiteDisplay"` / `"SiteBody"` を足す
-4. `font-display: swap` は付けたままにする
+作業中。手順の全体と決定の根拠は `Tasks/` の SOW にある。
 
-CSP は `font-src 'self'` なので `_headers` の変更は要らない。
-書体とウェイトは未確定である（SPEC §10.1）。容量に効くので決めてから置く。
+```
+scripts/font-subset/charset-base-ja.txt   和文の漢字以外（かな・約物・全角英数・記号・ギリシャ）※ 済
+scripts/font-subset/charset-joyo.txt      常用漢字 2136字                                      ※ 未配置
+scripts/font-subset/charset-latin.txt     Inter に担当させる範囲                                ※ 済
+```
+
+残っているのは次の3つ。
+
+1. `scripts/font-subset/charset-joyo.txt` を用意する（`scripts/font-subset/README.md` の手順）
+2. `pyftsubset` で woff2 を作り、`public/assets/fonts/` に置く（同上）
+3. `tokens.css` の `@font-face` のコメントを外し、`size-adjust` を目視で決める
+
+`node tests/check-glyphs.mjs` が、サイトの文字がサブセットに収まっているかを確認する。
+**フォントが未配置のあいだは何も確認せず通り、置いた時点から自動的に有効になる。**
+
+**サブセットを作り直したら、必ずファイル名のバージョンを上げる**（`-v1` → `-v2`）。
+`/assets/fonts/*` は1年キャッシュ（`immutable`）なので、同じ名前で中身を差し替えると
+古いフォントが最長1年残る。`tokens.css` の `url()` も同時に変える。**この2つは必ずセットである。**
+
+CSP は `font-src 'self'` なので `_headers` の CSP 行の変更は要らない。
 
 ### ドメインが確定したら
 

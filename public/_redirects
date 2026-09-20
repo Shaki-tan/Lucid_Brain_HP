@@ -17,6 +17,7 @@
 /style.css                   /assets/css/tokens.css               301
 /images/favicon.svg          /assets/images/logo/favicon.svg      301
 /images/dashboard.png        /products/pawgress/assets/images/dashboard.png  301
+# 旧 public/src/ は移設済みで存在しない。被リンクとブックマークを拾うために転送だけ残す。
 /src/*                       /                                    301
 
 # 旧 legal は同じURLのままなので転送は要らない（/legal/privacy.html は拡張子なしへ自動で 301 される）。

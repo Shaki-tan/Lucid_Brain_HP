@@ -1,9 +1,13 @@
-// プロダクト × プランのレジストリ。プロダクト固有の値はここだけに書く（SPEC §8.2）。
-// ハンドラ側に価格ID・R2キー・遷移先を直書きしない。プロダクト追加時に触るのは
+// プロダクト × プランのレジストリ。プロダクト固有の「値」はここだけに書く（SPEC §8.2）。
+// ハンドラ側に価格ID・R2キー・遷移先を直書きしない。
+//
+// プロダクト追加時に触るのは次の5つ（SPEC §8.2）。
 //   1. このファイルに1エントリ
-//   2. public/products/<name>/ と public/en/products/<name>/
-//   3. public/docs/<name>/            （SPEC §4.3 の例外。作り忘れやすい）
-// の3つだけで済ませる。
+//   2. public/assets/js/partials.js の PRODUCTS に表示名（ヘッダーのロゴタイプ・SPEC §5.2）
+//   3. public/products/<name>/ と public/en/products/<name>/
+//   4. public/products/<name>/assets/consent-items.json（有償プランがある場合・SPEC §8.3）
+//   5. public/docs/<name>/            （SPEC §4.3 の例外。作り忘れやすい）
+// そのあと public/sitemap.xml に日英の全URLを足す。
 
 export const PRODUCTS = {
   pawgress: {
