@@ -101,8 +101,13 @@ node scripts/preview.mjs        # http://127.0.0.1:8788/
 
 1. `node scripts/preview.mjs` で見る。ここで変わっていなければ、直っていないのはコードである
 2. 変わっているなら、見ていたのは別のものである。候補は2つ
-   - **`*.workers.dev`** — デプロイしていなければ古いまま。`npx wrangler deploy` が要る
+   - **`*.workers.dev`** — デプロイしていなければ古いまま。push すれば Cloudflare 側でデプロイされる
    - **古いタブ** — DevTools を開いて Network タブの「Disable cache」を入れる。または Ctrl+Shift+R
+
+`_headers` では HTML も CSS・JS も `no-cache`（毎回再検証）にしてある。
+ファイル名にハッシュを付けられない構成で `max-age` を与えると、その秒数のあいだ
+「新しいHTML + 古いCSS」が成立し、レイアウトが崩れるためである（SPEC §7.5）。
+**ここを「速くするため」に長くしない。** 速くしたいならファイル名にハッシュを付けるのが先である。
 
 ### 配色を変える
 

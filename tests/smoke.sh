@@ -88,6 +88,31 @@ else
 fi
 
 echo
+echo "-- キャッシュ制御 --"
+# ファイル名にハッシュを付けない構成では、資産を長くキャッシュさせると
+# 「新しいHTML + 古いCSS」でレイアウトが崩れる（SPEC §7.5）。
+# ここは本番でしか確認できない。_headers が効いていないこと自体も検出する。
+expect_revalidate() {
+  local path="$1"
+  local line
+  line=$(curl -s -D - -o /dev/null -L "${BASE}${path}" | grep -i '^cache-control:' | tr -d '\r' | head -1)
+  local value="${line#*: }"
+  if [ -z "$line" ]; then
+    echo "NG  $path に Cache-Control が無い（_headers が効いていない可能性）"
+    status=1
+  elif printf '%s' "$value" | grep -qi 'no-cache\|no-store\|max-age=0'; then
+    echo "OK  $path  $value"
+  else
+    echo "NG  $path  $value ← ハッシュ無しのファイルを長く持たせている"
+    status=1
+  fi
+}
+expect_revalidate /
+expect_revalidate /assets/css/tokens.css
+expect_revalidate /assets/js/partials.js
+expect_revalidate /products/pawgress/assets/css/pawgress.css
+
+echo
 if [ "$status" -eq 0 ]; then
   echo "スモークは全て通った。"
 else
