@@ -65,6 +65,24 @@
   --color-bg-blur-lp: rgba(255, 255, 255, 0.7);
   --color-backdrop: rgba(27, 24, 38, 0.55);
 
+  /* トップページのヒーロー（ABOUT US）と、その背面を通るヘッダー。
+     ここだけ暗色の背景画像を敷くため、白を基調とする上の配色を局所的に反転させる。
+     画像は明るい光の筋を持つので、文字は画像に直接載せずスクリムを1枚挟む。
+     下の値は、画像で最も明るい白（#ffffff）の上でも本文 5.8:1 以上になる濃度にしてある。 */
+  --color-hero-base: #0b1f4d;
+  --color-hero-scrim-strong: rgba(7, 16, 42, 0.86);
+  --color-hero-scrim: rgba(7, 16, 42, 0.72);
+  --color-hero-scrim-soft: rgba(7, 16, 42, 0.45);
+  --color-on-hero: #ffffff;
+  --color-on-hero-muted: rgba(255, 255, 255, 0.82);
+  /* 節ラベル。紺地で読ませるため --color-accent（暗い紫）は使えない */
+  --color-on-hero-accent: #9ec5ff;
+  --color-on-hero-border: rgba(255, 255, 255, 0.28);
+  --color-on-hero-soft: rgba(255, 255, 255, 0.12);
+
+  /* ヒーローを抜けたあとのヘッダーの面。画像の支配色に合わせる（SPEC §5.2） */
+  --color-header-scrolled: rgba(11, 31, 77, 0.92);
+
   /* 角丸 */
   --radius-lg: 22px;
   --radius-md: 14px;

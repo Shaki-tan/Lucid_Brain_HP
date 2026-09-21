@@ -20,6 +20,8 @@
 <link rel="icon" href="/assets/images/logo/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/images/logo/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
+<!-- ヒーローの背景画像。CSS 由来なのでプリロードスキャナに拾われない。第一画面に出るため明示する -->
+<link rel="preload" as="image" href="/assets/images/hero/hero-home.jpg">
 <link rel="stylesheet" href="/assets/css/tokens.css">
 <link rel="stylesheet" href="/assets/css/base.css">
 <link rel="stylesheet" href="/assets/css/layout.css">
@@ -29,7 +31,8 @@
 </head>
 <body>
 
-<site-header></site-header>
+<!-- ヒーローの背景画像がヘッダーの背面を通る。スクロールで抜けたら面が出る（SPEC §5.2） -->
+<site-header variant="hero"></site-header>
 
 <noscript>
   <nav class="noscript-nav" aria-label="サイト内ナビゲーション">

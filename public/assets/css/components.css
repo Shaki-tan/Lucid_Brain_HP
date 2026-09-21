@@ -4,18 +4,23 @@
 /* ---------- 共通ヘッダー ---------- */
 
 /* JS で中身を差し込む前に高さを確保し、レイアウトのずれを防ぐ（SPEC §2.3 / §5） */
+/* JS が中身を差し込むまでの高さを確保する（SPEC §2.3 / §5）。
+   sticky はこの要素が持つ。中の .site-header に付けると包含ブロックがこの要素の箱になり、
+   追従できる範囲がヘッダー自身の高さぶんしかなくなる。つまり第一画面で流れて消える。 */
 site-header {
   display: block;
   min-height: var(--height-header);
-}
-
-.site-header {
   position: sticky;
   top: 0;
   z-index: 50;
+}
+
+/* 罫は border ではなく box-shadow で引く。border は占有高さを 1px 増やし、
+   ヒーローを --height-header ぶん上へ食い込ませる計算（layout.css）を 1px ずらすためである。 */
+.site-header {
   background: var(--color-bg-blur);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--color-border);
+  box-shadow: inset 0 -1px 0 var(--color-border);
 }
 
 .site-header-inner {
@@ -26,9 +31,51 @@ site-header {
   gap: 16px;
 }
 
-/* LP だけ背景を透過させる等の差分は、ここに1箇所だけ書く（SPEC §5.2） */
+/* 範囲ごとの差分は、ここに1箇所だけ書く（SPEC §5.2）。
+   variant は partials.js の headerMarkup() が data-variant として出す。
+     lp   — LP。背景をもう少し透かす
+     hero — トップページ。ヒーローの背景画像がヘッダーの背面を通る */
 .site-header[data-variant="lp"] {
   background: var(--color-bg-blur-lp);
+}
+
+/* 最上部では面を持たない。背面をヒーロー画像がそのまま通る。
+   文字は画像側の配色（白）に合わせる（layout.css の .hero-home と同じトークンを使う） */
+.site-header[data-variant="hero"] {
+  background: transparent;
+  backdrop-filter: none;
+  box-shadow: none;
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.site-header[data-variant="hero"] .brand-name,
+.site-header[data-variant="hero"] .lang-switch {
+  color: var(--color-on-hero);
+}
+
+.site-header[data-variant="hero"] .lang-switch {
+  border-color: var(--color-on-hero-border);
+}
+
+.site-header[data-variant="hero"] .lang-switch:hover {
+  border-color: var(--color-on-hero);
+  background: var(--color-on-hero-soft);
+}
+
+.site-header[data-variant="hero"] :focus-visible {
+  outline-color: var(--color-on-hero);
+}
+
+/* スクロールされたら面を作る。透明のまま追従させると、ヒーローの h1 とも、
+   ヒーローを抜けた先の白い節とも、白文字どうしで重なって読めなくなる。
+   面の色はヒーロー画像の支配色に合わせた紺とする。白い面に切り替えると、中身（ロゴタイプ・
+   言語切替）の色まで反転させることになり、切り替わった瞬間に別のヘッダーに見えるためである。
+   状態は data-scrolled として公開する。見た目だけで持たない（AGENTS.md 3.2）。
+   切替点は main.js の setupHeroHeader() が持つ。 */
+.site-header[data-variant="hero"][data-scrolled="true"] {
+  background: var(--color-header-scrolled);
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 -1px 0 var(--color-on-hero-border);
 }
 
 /* ヘッダーにはアイコンを出さず、社名のロゴタイプだけを置く */
@@ -132,7 +179,12 @@ site-footer {
 }
 
 /* JS を実行しない環境向けの最小限のリンク（SPEC §5） */
+/* JS 無効時だけ出る。トップページのヒーローはヘッダーの高さぶん上へ食い込むため（layout.css）、
+   面を持たせて重ならないようにする。JS 有効時は <noscript> ごと描画されないので影響しない。 */
 .noscript-nav {
+  position: relative;
+  z-index: 1;
+  background: var(--color-bg);
   border-bottom: 1px solid var(--color-border);
   padding: 12px 0;
   font-size: 13px;

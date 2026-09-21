@@ -20,6 +20,8 @@
 <link rel="icon" href="/assets/images/logo/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/images/logo/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
+<!-- The hero background comes from CSS, so the preload scanner cannot find it. It is above the fold -->
+<link rel="preload" as="image" href="/assets/images/hero/hero-home.jpg">
 <link rel="stylesheet" href="/assets/css/tokens.css">
 <link rel="stylesheet" href="/assets/css/base.css">
 <link rel="stylesheet" href="/assets/css/layout.css">
@@ -28,7 +30,8 @@
 </head>
 <body>
 
-<site-header></site-header>
+<!-- The hero background image runs behind the header; a surface appears once it scrolls past (SPEC §5.2) -->
+<site-header variant="hero"></site-header>
 
 <noscript>
   <nav class="noscript-nav" aria-label="Site navigation">

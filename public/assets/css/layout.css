@@ -93,9 +93,49 @@
 
 /* ABOUT US。第一画面を兼ねる。左寄せ1カラム、ステートメント + 導入文。
    高さは中身なりとし、画面高（80vh 等）で引き伸ばさない。
-   LP のヒーロー（pawgress.css の .lp-hero）と同じ形にするためである（SPEC §6.1）。 */
+   LP のヒーロー（pawgress.css の .lp-hero）と同じ形にするためである（SPEC §6.1）。
+
+   この節だけ背景画像を敷く。画像はヘッダーの背面まで続き、頭から途切れずに1枚に見せる。
+   そのためヘッダーの占有高さ（--height-header）ぶん上へ食い込ませ、同じ量を padding で戻す。
+   食い込ませる側をヒーローにしてあるのは、ヘッダーを fixed にすると全ページの組みが変わるためである。
+   ヘッダー側の見た目の差分は components.css の [data-variant="hero"] が持つ。
+
+   スクリムは左から右へ濃度を落とす。文字は左寄せで、画像の光の筋は右上に寄っているため。 */
 .hero-home {
-  padding: var(--space-section) 0;
+  padding: calc(var(--space-section) + var(--height-header)) 0 var(--space-section);
+  margin-top: calc(-1 * var(--height-header));
+  background-color: var(--color-hero-base);
+  background-image:
+    linear-gradient(
+      to right,
+      var(--color-hero-scrim-strong) 0%,
+      var(--color-hero-scrim) 46%,
+      var(--color-hero-scrim-soft) 100%
+    ),
+    url("/assets/images/hero/hero-home.jpg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: auto, cover;
+  color: var(--color-on-hero);
+}
+
+/* 幅が狭いと cover の切り出しが中央に寄り、画像で最も明るい光の筋が本文の真下に来る。
+   横方向にだけ薄くしていくスクリムでは足りないため、右端まで濃度を残す */
+@media (max-width: 640px) {
+  .hero-home {
+    background-image:
+      linear-gradient(
+        to right,
+        var(--color-hero-scrim-strong) 0%,
+        var(--color-hero-scrim) 100%
+      ),
+      url("/assets/images/hero/hero-home.jpg");
+  }
+}
+
+/* 節ラベルと導入文は、白地用の色（--color-accent / --color-muted）のままでは紺地で沈む */
+.hero-home .eyebrow {
+  color: var(--color-on-hero-accent);
 }
 
 /* 改行位置は原稿で決まっているため <br> で固定する。行間は詰める。
@@ -114,7 +154,7 @@
 /* こちらも .lp-hero .lead と同じ 17px。画面幅で縮めない */
 .hero-lead p {
   font-size: 17px;
-  color: var(--color-muted);
+  color: var(--color-on-hero-muted);
 }
 
 .hero-lead p + p {
