@@ -1,6 +1,6 @@
 // リポジトリ内の設定を読む。値をここで新たに持たず、wrangler.jsonc と products.js から引く。
 
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PRODUCTS } from '../../functions/lib/products.js'
@@ -55,6 +55,8 @@ function toEnvConfig(config, envName) {
     workerName: envName ? (section.name ?? `${config.name}-${envName}`) : config.name,
     bucketName: bucket?.bucket_name ?? null,
     baseUrl: (section.vars?.SITE_BASE_URL ?? '').replace(/\/$/, ''),
+    // 割り当てているホスト名（custom_domain）。www の転送の確認に使う
+    hosts: (section.routes ?? []).map((route) => route.pattern),
   }
 }
 
@@ -66,21 +68,6 @@ export function readConfig(envName = null) {
 export function readAllConfigs() {
   const config = readRawConfig()
   return [null, ...Object.keys(config.env ?? {})].map((envName) => toEnvConfig(config, envName))
-}
-
-// その環境の SITE_BASE_URL の値だけを書き換える。コメントと並びを保つため、JSON として書き戻さない。
-// 本番は "env" より前、テストは "<env名>" より後にある最初の SITE_BASE_URL を対象にする。
-export function writeBaseUrl(envName, url) {
-  const source = readFileSync(WRANGLER_CONFIG, 'utf8')
-  const envStart = source.search(/"env"\s*:/)
-  const start = envName ? source.indexOf(`"${envName}"`, envStart) : 0
-  const end = envName || envStart < 0 ? source.length : envStart
-  if (start < 0) throw new Error(`wrangler.jsonc に env.${envName} が無い`)
-
-  const pattern = /("SITE_BASE_URL"\s*:\s*)"[^"]*"/
-  const target = source.slice(start, end)
-  if (!pattern.test(target)) throw new Error('wrangler.jsonc の該当箇所に "SITE_BASE_URL" の行が無い')
-  writeFileSync(WRANGLER_CONFIG, source.slice(0, start) + target.replace(pattern, `$1"${url}"`) + source.slice(end))
 }
 
 // 環境ごとに、デプロイ元のブランチ。GitHub 連携のビルド設定（ダッシュボード）と一致させる（SPEC §7.7）。

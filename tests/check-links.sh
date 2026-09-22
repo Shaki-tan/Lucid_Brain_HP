@@ -57,8 +57,8 @@ echo
 echo "== sitemap.xml が指すURLの存在確認 =="
 sitemap_checked=0
 while IFS= read -r loc; do
-  path="${loc#https://*.workers.dev}"
-  path="${loc#*workers.dev}"
+  # ホスト名は問わない。ドメインを変えてもこの検査は書き換えずに済む
+  path=$(printf '%s' "$loc" | sed -E 's|^https?://[^/]+||')
   [ -z "$path" ] && path="/"
   sitemap_checked=$((sitemap_checked + 1))
   if ! resolve "$path"; then

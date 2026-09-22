@@ -1,4 +1,4 @@
-# Lucud Brain コーポレートサイト
+# Lucid Brain コーポレートサイト
 
 素の HTML / CSS / JS を Cloudflare Workers（静的アセット + Functions）に載せたコーポレートサイト。
 仕様は [SPEC.md](SPEC.md) にある。本書は「触るときに最初に読むもの」に絞る。
@@ -15,7 +15,7 @@
 | ビルド | **無い。** `public/` の中身がそのまま配信される |
 | 依存パッケージ | **無い。** `package.json` は作らない |
 | デプロイ | push で行う。`main` → 本番、`develop` → テスト環境（Access の内側）。検査に落ちたら出ない（§4） |
-| ドメイン | 未確定。いまは `*.workers.dev` 前提（§3 の「ドメイン確定時にやること」参照） |
+| URL | 本番 `https://lucidbrain.jp`（`www.` 付きは `worker.js` がここへ 301）、テスト `https://staging.lucidbrain.jp`。`*.workers.dev` は使わない |
 | 言語 | 日本語が `/`、英語が `/en/`。i18n の辞書とエンジンは持たない |
 
 ---
@@ -102,7 +102,7 @@ node scripts/preview.mjs        # http://127.0.0.1:8788/
 
 1. `node scripts/preview.mjs` で見る。ここで変わっていなければ、直っていないのはコードである
 2. 変わっているなら、見ていたのは別のものである。候補は2つ
-   - **`*.workers.dev`** — push していなければ古いまま。push 後はビルドが終わるまで数分かかる。ビルドが検査で落ちていないかも見る
+   - **本番・テストのURL** — push していなければ古いまま。push 後はビルドが終わるまで数分かかる。ビルドが検査で落ちていないかも見る
    - **古いタブ** — DevTools を開いて Network タブの「Disable cache」を入れる。または Ctrl+Shift+R
 
 `_headers` では HTML も CSS・JS も `no-cache`（毎回再検証）にしてある。
@@ -156,15 +156,16 @@ scripts/font-subset/charset-latin.txt     Inter に担当させる範囲        
 
 CSP は `font-src 'self'` なので `_headers` の CSP 行の変更は要らない。
 
-### ドメインが確定したら
+### 公開URLを変える
 
-以下を併せて更新する（SPEC §3）。
+**原則として変えない。** 同じURLが次の場所にあり、変えるなら全部を揃える（SPEC §3）。
 
-- `wrangler.jsonc` の `routes`（`custom_domain` でドメインを割り当てる。Worker 名は変えない）
-- 全 HTML の `canonical` / `hreflang` / `og:url` の絶対URL（いまは仮に `https://lucud-brain-site.workers.dev`。実際の `*.workers.dev` はアカウントのサブドメインを含むので、この値は正しくない）
+- `wrangler.jsonc` の `routes` と `vars.SITE_BASE_URL`（Stripe の `success_url` / `cancel_url` と Webhook の宛先はここから組む）
+- 全 HTML の `canonical` / `hreflang` / `og:url` の絶対URL
 - `public/sitemap.xml` と `public/robots.txt` の絶対URL
-- `wrangler.jsonc` の `vars.SITE_BASE_URL`（Stripe の `success_url` / `cancel_url` と Webhook の宛先はここから組む）
-- 上を変えたらコミットして push し、デプロイされてから `node scripts/ops.mjs stripe` を流す。Webhook が新しい宛先で作られる
+- Cloudflare Access のアプリケーションのホスト名
+
+変えたらコミットして push し、デプロイされてから `node scripts/ops.mjs stripe` を流す。Webhook が新しい宛先で作られる。
 
 ---
 
@@ -177,7 +178,7 @@ CSP は `font-src 'self'` なので `_headers` の CSP 行の変更は要らな�
 | | 本番 | テスト |
 |---|---|---|
 | ブランチ | `main` に push → 本番に出る | `develop` に push → テスト環境に出る |
-| Worker | `lucud-brain-site` | `lucud-brain-site-staging` |
+| Worker | `lucid-brain-site` | `lucid-brain-site-staging` |
 | Stripe | 公開前はテストモード | 常にテストモード |
 | 見られる人 | 公開までは Access で許可した人だけ。公開時に外す（`scripts/ops/config.mjs` の `IS_LAUNCHED`） | Cloudflare Access で許可した人だけ |
 
@@ -211,7 +212,7 @@ node scripts/ops.mjs status --env staging   # テスト環境。Access と Webho
 型に合わないファイルは置かない。控え（`pawgress/<版>/`）は上書きしないので、同じ版を置き直すなら `--overwrite` が要る。
 exe の差し替えだけならデプロイは要らない。Worker はダウンロードのたびに latest を読む。
 
-**名前はプロダクトが増えても増えない。** Worker（`lucud-brain-site`）・R2 バケット（`lucud-brain-releases`）・
+**名前はプロダクトが増えても増えない。** Worker（`lucid-brain-site`）・R2 バケット（`lucid-brain-releases`）・
 secret（3つ）は会社で1つずつで、プロダクトの違いは R2 のフォルダと Stripe の商品ID、`STRIPE_PRICES` のキーで分ける。
 
 | よくある作業 | コマンド |
@@ -222,8 +223,6 @@ secret（3つ）は会社で1つずつで、プロダクトの違いは R2 の�
 | デプロイを戻す | `npx wrangler@<版> rollback --env=`（テストは `--env staging`。版は `scripts/ops/shell.mjs` の `WRANGLER`） |
 
 どの作業も、テスト環境で試すなら `--env staging` を付けて先に流す。
-
-初回構築（`setup`）で公開URLを `wrangler.jsonc` の `SITE_BASE_URL` へ書き込むので、それはコミットして push する。
 
 API では設定できずダッシュボードで行うもの（R2 の利用開始、GitHub の接続、Access、Stripe の公開情報とメール設定）は
 SPEC §7.6 / §7.7 にある。

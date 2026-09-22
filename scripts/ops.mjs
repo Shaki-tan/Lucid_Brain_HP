@@ -37,7 +37,6 @@ import {
   readConfig,
   REQUIRED_SECRETS,
   toDeployBranch,
-  writeBaseUrl,
 } from './ops/config.mjs'
 import { ask, askSecret, confirm } from './ops/prompt.mjs'
 import { findBash, probeR2Object, run, wrangler, WRANGLER } from './ops/shell.mjs'
@@ -234,14 +233,14 @@ async function gitOutput(args) {
 // wrangler deploy を呼ぶ。版のメッセージにコミットのハッシュを入れ、どの版が出ているかを辿れるようにする
 async function runWranglerDeploy(message) {
   heading(`デプロイ（${envLabel()}: ${site.workerName}）`)
-  const result = await wrangler(['deploy', ...envArgs(), '--message', message], { mode: 'tee' })
-  if (result.code !== 0) {
+  const { code } = await wrangler(['deploy', ...envArgs(), '--message', message])
+  if (code !== 0) {
     throw new OpsError(
-      'デプロイに失敗した。初回で workers.dev のサブドメインが未登録なら、ダッシュボードの Workers & Pages で登録してから再実行する',
+      'デプロイに失敗した。初回なら、ドメインがこのアカウントのゾーンとして有効になっているか、' +
+        '同じホスト名の DNS レコードが残っていないか（あると割り当てられない）を見る',
     )
   }
   ok(`デプロイした（${message}）`)
-  return /https:\/\/[\w.-]+\.workers\.dev/.exec(result.stdout)?.[0] ?? null
 }
 
 // GitHub 連携のビルドから呼ぶ。対話をせず、検査に落ちたらデプロイしない（SPEC §7.7）
@@ -266,21 +265,8 @@ async function deploy({ isDirtyAllowed = false, isCheckSkipped = false } = {}) {
   if (!isCheckSkipped) await runChecks()
 
   const hash = await gitOutput(['rev-parse', '--short', 'HEAD'])
-  const deployedUrl = await runWranglerDeploy(isDirty ? `${hash}-dirty` : hash)
-
-  let { baseUrl } = site
-  if (!baseUrl && deployedUrl) {
-    todo(`公開URLは ${deployedUrl}`)
-    if (await confirm('wrangler.jsonc の SITE_BASE_URL に書き込みますか', true)) {
-      writeBaseUrl(site.envName, deployedUrl)
-      site = readConfig(site.envName)
-      baseUrl = deployedUrl
-      ok('SITE_BASE_URL を書き込んだ。コミットして push する（Worker に入るのは次のデプロイから。それまでは origin で代替されるので動作は同じ）')
-    }
-  }
-  const target = baseUrl || deployedUrl
-  if (!target) return todo('公開URLが分からないためスモークを飛ばした')
-  await smoke(target)
+  await runWranglerDeploy(isDirty ? `${hash}-dirty` : hash)
+  await smoke(site.baseUrl)
 }
 
 // Access の内側にある環境（テスト環境と、公開前の本番）は、サービストークンを渡さないとスモークが入れない（SPEC §7.7）
@@ -316,6 +302,23 @@ async function checkAccess(baseUrl) {
   }
 }
 
+// www 付きのホストが、www なしの同じパスへ 301 で転送されるかを見る（SPEC §3）。
+// 転送は Access より手前の Worker で行うので、公開前でも外から確かめられる
+async function checkWwwRedirect() {
+  const baseHost = new URL(site.baseUrl).host
+  for (const host of site.hosts.filter((item) => item === `www.${baseHost}`)) {
+    const path = '/legal/terms?check=1'
+    try {
+      const res = await fetch(`https://${host}${path}`, { redirect: 'manual' })
+      const location = res.headers.get('location')
+      if (res.status === 301 && location === `${site.baseUrl}${path}`) ok(`${host} → ${site.baseUrl} へ 301`)
+      else ng(`${host}${path} → ${res.status} ${location ?? ''}（${site.baseUrl}${path} への 301 を期待）`)
+    } catch (cause) {
+      ng(`${host} に届かない（${cause.cause?.code ?? cause.message}）`)
+    }
+  }
+}
+
 // ---------- Stripe ----------
 
 async function getStripeKey() {
@@ -333,7 +336,7 @@ function isSameSet(a, b) {
 
 async function setupStripe({ isWebhookRotated = false } = {}) {
   const { baseUrl } = site
-  if (!baseUrl) throw new OpsError(`wrangler.jsonc の SITE_BASE_URL が空。先に ${opsCommand('deploy')} で公開URLを決める`)
+  if (!baseUrl) throw new OpsError('wrangler.jsonc の SITE_BASE_URL が空。routes と同じURLを書く')
   const secretNames = await listSecretNames()
   if (!secretNames) throw new OpsError(`Worker ${site.workerName} がまだ無い。先に ${opsCommand('deploy')} する`)
 
@@ -482,6 +485,7 @@ async function status() {
         ng(`${site.baseUrl} に届かない（${cause.cause?.code ?? cause.message}）`)
       }
     }
+    await checkWwwRedirect()
   } else {
     addRemaining('setup')
   }
@@ -549,19 +553,23 @@ async function setup() {
   }
 
   heading('4. Worker を作る（初回デプロイ）')
-  if (await isWorkerDeployed()) ok(`${site.workerName} は在る。以降のデプロイは push で行う`)
-  else await deploy()
+  if (await isWorkerDeployed()) {
+    ok(`${site.workerName} は在る。以降のデプロイは push で行う`)
+  } else {
+    // Access はホスト名に掛けるので、Worker より先に作れる。先に作れば一度も外に見えない（SPEC §7.7）
+    const host = new URL(site.baseUrl).host
+    const question = `${host} に Access のアプリケーション（/api/webhook の Bypass を含む）を作ったか`
+    if (isBehindAccess(site.envName) && !(await confirm(question))) {
+      throw new OpsError(`先に ${host} に Access を掛ける。デプロイした瞬間から Access の内側に置くため（SPEC §7.7）`)
+    }
+    await deploy()
+  }
 
   heading('5. Stripe')
   await setupStripe()
 
   heading('終わり。続けてダッシュボードで行うこと')
-  todo(`SITE_BASE_URL を書き込んだなら、コミットして ${toDeployBranch(site.envName)} に push する`)
   todo(`${site.workerName} → 設定 → ビルド で GitHub をつなぐ（SPEC §7.7 の表のとおりに設定する）`)
-  if (isBehindAccess(site.envName)) {
-    todo(`${site.workerName} の workers.dev に Cloudflare Access を掛け、/api/webhook を素通しにする（SPEC §7.7）`)
-    todo('Access を掛けるまでは、このURLは誰でも見られる')
-  }
   todo(`${opsCommand('status')} で全体を確認する`)
 }
 
@@ -577,7 +585,7 @@ async function putSecretCommand(name) {
 
 const HELP = `使い方: node scripts/ops.mjs <command> [--env staging]
 
-  --env staging を付けるとテスト環境（develop / lucud-brain-site-staging）が対象。付けなければ本番（main）
+  --env staging を付けるとテスト環境（develop / lucid-brain-site-staging）が対象。付けなければ本番（main）
 
   status                          何が済んでいて何が残っているか（STRIPE_API_KEY を渡すと Stripe も見る）
   setup                           初回構築。ログイン → R2 → exe → Worker 作成 → Stripe を順に。済んだ段は飛ばす

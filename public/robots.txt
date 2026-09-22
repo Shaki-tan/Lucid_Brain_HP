@@ -11,4 +11,4 @@ Disallow: /en/products/pawgress/thanks
 # API は巡回対象ではない。
 Disallow: /api/
 
-Sitemap: https://lucud-brain-site.workers.dev/sitemap.xml
+Sitemap: https://lucidbrain.jp/sitemap.xml
