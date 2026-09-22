@@ -14,7 +14,7 @@
 |---|---|
 | ビルド | **無い。** `public/` の中身がそのまま配信される |
 | 依存パッケージ | **無い。** `package.json` は作らない |
-| デプロイ | `node scripts/ops.mjs deploy`（検査 → デプロイ → スモーク）。push とは連動しない（§4） |
+| デプロイ | push で行う。`main` → 本番、`develop` → テスト環境（Access の内側）。検査に落ちたら出ない（§4） |
 | ドメイン | 未確定。いまは `*.workers.dev` 前提（§3 の「ドメイン確定時にやること」参照） |
 | 言語 | 日本語が `/`、英語が `/en/`。i18n の辞書とエンジンは持たない |
 
@@ -102,7 +102,7 @@ node scripts/preview.mjs        # http://127.0.0.1:8788/
 
 1. `node scripts/preview.mjs` で見る。ここで変わっていなければ、直っていないのはコードである
 2. 変わっているなら、見ていたのは別のものである。候補は2つ
-   - **`*.workers.dev`** — デプロイしていなければ古いまま。`node scripts/ops.mjs deploy` で出す
+   - **`*.workers.dev`** — push していなければ古いまま。push 後はビルドが終わるまで数分かかる。ビルドが検査で落ちていないかも見る
    - **古いタブ** — DevTools を開いて Network タブの「Disable cache」を入れる。または Ctrl+Shift+R
 
 `_headers` では HTML も CSS・JS も `no-cache`（毎回再検証）にしてある。
@@ -160,28 +160,47 @@ CSP は `font-src 'self'` なので `_headers` の CSP 行の変更は要らな�
 
 以下を併せて更新する（SPEC §3）。
 
-- `wrangler.jsonc` の `name`
+- `wrangler.jsonc` の `routes`（`custom_domain` でドメインを割り当てる。Worker 名は変えない）
 - 全 HTML の `canonical` / `hreflang` / `og:url` の絶対URL（いまは仮に `https://lucud-brain-site.workers.dev`。実際の `*.workers.dev` はアカウントのサブドメインを含むので、この値は正しくない）
 - `public/sitemap.xml` と `public/robots.txt` の絶対URL
 - `wrangler.jsonc` の `vars.SITE_BASE_URL`（Stripe の `success_url` / `cancel_url` と Webhook の宛先はここから組む）
-- 上を変えたら `node scripts/ops.mjs deploy` のあと `node scripts/ops.mjs stripe` を流す。Webhook が新しい宛先で作られる
+- 上を変えたらコミットして push し、デプロイされてから `node scripts/ops.mjs stripe` を流す。Webhook が新しい宛先で作られる
 
 ---
 
-## 4. 構築・デプロイ・設定
+## 4. 環境・デプロイ・設定
+
+### 環境とデプロイ
+
+本番とテストは別の Worker である（SPEC §7.7）。**デプロイは push で行う。**
+
+| | 本番 | テスト |
+|---|---|---|
+| ブランチ | `main` に push → 本番に出る | `develop` に push → テスト環境に出る |
+| Worker | `lucud-brain-site` | `lucud-brain-site-staging` |
+| Stripe | 公開前はテストモード | 常にテストモード |
+| 見られる人 | 誰でも | Cloudflare Access で許可した人だけ |
+
+ビルドは `node scripts/ops.mjs ci` を呼び、検査に落ちたらデプロイしない。手元で同じ検査を回すなら `node scripts/ops.mjs check`。
+
+### 構築・設定
 
 `scripts/ops.mjs` で行う（SPEC §7.6）。依存は無く、Cloudflare は `npx` 経由の wrangler（版は固定）、
 Stripe は REST API を直接呼ぶ。どのコマンドも何度流しても同じ状態に収束する。
+**`--env staging` を付けるとテスト環境が対象になる。** 付けなければ本番。
 
 ```sh
 node scripts/ops.mjs status          # 何が済んでいて何が残っているか。迷ったらまずこれ
-node scripts/ops.mjs setup           # 初回構築。ログイン → R2 → exe → デプロイ → Stripe
-node scripts/ops.mjs deploy          # 検査 → デプロイ → スモーク
+node scripts/ops.mjs setup           # 初回構築。ログイン → R2 → exe → Worker 作成 → Stripe
 node scripts/ops.mjs upload pawgress paid ./Pawgress-Windows-1.0.1-Setup.exe   # 版を上げる
 node scripts/ops.mjs restore pawgress paid 1.0.0                                # 前の版に戻す
 node scripts/ops.mjs stripe          # 商品・価格・Webhook を揃え、secret を入れる
 node scripts/ops.mjs secret STRIPE_SECRET_KEY                   # secret を1つ入れ直す
-node scripts/ops.mjs logs            # 本番のログを流し見る
+node scripts/ops.mjs smoke           # スモーク（テスト環境はサービストークンが要る）
+node scripts/ops.mjs logs            # ログを流し見る
+node scripts/ops.mjs deploy          # 手元からデプロイ（予備）。環境に対応するブランチにいるときだけ出す
+
+node scripts/ops.mjs status --env staging   # テスト環境。Access と Webhook の素通しも確かめる
 ```
 
 **Stripe のキーはどこにも保存しない。** 環境変数 `STRIPE_API_KEY` か、実行時の伏字入力で渡す。
@@ -197,15 +216,17 @@ secret（3つ）は会社で1つずつで、プロダクトの違いは R2 の�
 
 | よくある作業 | コマンド |
 |---|---|
-| 価格を変える | `products.js` の `unitAmount` と LP の表示（日英）を直す → `deploy` → `stripe` |
-| Webhook のイベントを足す | `webhook.js` の `WEBHOOK_EVENTS` に足す → `deploy` → `stripe` |
+| 価格を変える | `products.js` の `unitAmount` と LP の表示（日英）を直す → push でデプロイ → `stripe` |
+| Webhook のイベントを足す | `webhook.js` の `WEBHOOK_EVENTS` に足す → push でデプロイ → `stripe` |
 | Webhook の署名シークレットを取り直す | `stripe --rotate-webhook` |
-| デプロイを戻す | `npx wrangler@<版> rollback`（版は `scripts/ops/shell.mjs` の `WRANGLER`） |
+| デプロイを戻す | `npx wrangler@<版> rollback --env=`（テストは `--env staging`。版は `scripts/ops/shell.mjs` の `WRANGLER`） |
 
-デプロイは未コミットの変更があると止まる（`--allow-dirty` で強行できる）。
-初回デプロイ後に公開URLを `wrangler.jsonc` の `SITE_BASE_URL` へ書き込むので、それはコミットしておく。
+どの作業も、テスト環境で試すなら `--env staging` を付けて先に流す。
 
-API では設定できずダッシュボードで行うもの（R2 の利用開始、Stripe の公開情報とメール設定）は SPEC §7.6 にある。
+初回構築（`setup`）で公開URLを `wrangler.jsonc` の `SITE_BASE_URL` へ書き込むので、それはコミットして push する。
+
+API では設定できずダッシュボードで行うもの（R2 の利用開始、GitHub の接続、Access、Stripe の公開情報とメール設定）は
+SPEC §7.6 / §7.7 にある。
 
 ---
 

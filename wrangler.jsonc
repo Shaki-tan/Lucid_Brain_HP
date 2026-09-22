@@ -28,5 +28,28 @@
     }
   ],
   // 障害時に手掛かりを残す。1行で済み、ダッシュボード操作が要らない（SPEC §7.5 / §8.4）。
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+  // 版ごとのプレビューURLを出さない。main 以外はテスト環境（env.staging）で確認するため、使い道がなく、
+  // 出せば未公開の版が Access の外に出る（SPEC §7.7）。
+  "preview_urls": false,
+
+  // テスト環境。develop ブランチから出す。Worker は lucud-brain-site-staging になる（SPEC §7.7）。
+  // vars と r2_buckets は wrangler の仕様で継承されないため、ここに書き直す。それ以外は上を継承する。
+  // アクセス制限は Cloudflare Access（ダッシュボード）で掛ける。ここには書けない。
+  "env": {
+    "staging": {
+      "vars": {
+        // 初回デプロイ後に scripts/ops.mjs --env staging が書き込む
+        "SITE_BASE_URL": ""
+      },
+      "r2_buckets": [
+        {
+          "binding": "RELEASES",
+          // 本番の latest を上書きしないよう、テスト用の exe は別のバケットに置く
+          "bucket_name": "lucud-brain-releases-staging"
+        }
+      ],
+      "preview_urls": false
+    }
+  }
 }

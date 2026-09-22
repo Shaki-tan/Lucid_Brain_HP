@@ -5,6 +5,11 @@
 #   bash tests/smoke.sh                                   # 既定のベースURLに対して
 #   bash tests/smoke.sh https://lucud-brain-site.workers.dev  # ベースURLを指定して
 #   bash tests/smoke.sh http://127.0.0.1:8787              # wrangler dev に対して
+#
+# テスト環境は Cloudflare Access の内側にある（SPEC §7.7）。サービストークンを環境変数で渡すと、
+# 全リクエストに付けて Access を通る。
+#
+#   CF_ACCESS_CLIENT_ID=... CF_ACCESS_CLIENT_SECRET=... bash tests/smoke.sh <テスト環境のURL>
 
 set -uo pipefail
 
@@ -12,12 +17,18 @@ BASE="${1:-https://lucud-brain-site.workers.dev}"
 BASE="${BASE%/}"
 status=0
 
+# 全 curl に付ける引数。サービストークンがあれば Access のヘッダを足す
+CURL_ARGS=(-s -L)
+if [ -n "${CF_ACCESS_CLIENT_ID:-}" ] && [ -n "${CF_ACCESS_CLIENT_SECRET:-}" ]; then
+  CURL_ARGS+=(-H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}")
+fi
+
 # 想定ステータスと実際を突き合わせる
 expect_status() {
   local path="$1"
   local want="$2"
   local got
-  got=$(curl -s -o /dev/null -w '%{http_code}' -L "${BASE}${path}")
+  got=$(curl "${CURL_ARGS[@]}" -o /dev/null -w '%{http_code}' "${BASE}${path}")
   if [ "$got" = "$want" ]; then
     echo "OK  $want  $path"
   else
@@ -65,7 +76,7 @@ expect_status /api/does-not-exist 404
 
 echo
 echo "-- セキュリティヘッダ --"
-headers=$(curl -s -D - -o /dev/null -L "${BASE}/")
+headers=$(curl "${CURL_ARGS[@]}" -D - -o /dev/null "${BASE}/")
 for header in \
   'content-security-policy' \
   'x-content-type-options' \
@@ -95,7 +106,7 @@ echo "-- キャッシュ制御 --"
 expect_revalidate() {
   local path="$1"
   local line
-  line=$(curl -s -D - -o /dev/null -L "${BASE}${path}" | grep -i '^cache-control:' | tr -d '\r' | head -1)
+  line=$(curl "${CURL_ARGS[@]}" -D - -o /dev/null "${BASE}${path}" | grep -i '^cache-control:' | tr -d '\r' | head -1)
   local value="${line#*: }"
   if [ -z "$line" ]; then
     echo "NG  $path に Cache-Control が無い（_headers が効いていない可能性）"

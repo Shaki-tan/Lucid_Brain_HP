@@ -291,7 +291,7 @@ root
 |
 |--scripts/                          # 開発用スクリプト。配信されない・依存を持たない（§1.2 / §7.5）
 |  |--preview.mjs                    # 本番と同条件でキャッシュ無しに配信する確認用サーバー
-|  |--ops.mjs                        # 構築・デプロイ・設定の CLI（§7.6）
+|  |--ops.mjs                        # 構築・設定の CLI。ビルドのデプロイコマンドもこれ（§7.6 / §7.7）
 |  |--ops/                           # ops.mjs の部品（設定の読み取り・wrangler 起動・Stripe API・対話入力）
 |  |--font-subset/                   # Webフォントのサブセット生成の入力（§7.5）
 |  |  |--charset-base-ja.txt         # 和文の漢字以外。フォント本体はここに置かない
@@ -917,13 +917,13 @@ CI が壊れてもサイトは壊れないため、§1.2 の「放置しても�
 | サイトの文字がフォントのサブセットに収まっているか（豆腐の検出） | Node スクリプト（サブセットの入力ファイルと突き合わせる。フォント未配置なら通す） |
 | 配信されているキャッシュ制御が意図どおりか（`_headers` が効いているか） | `curl`。本番でしか分からない（§10.2 の2） |
 
-第1段階は手動チェックリスト、第2段階として CI を入れる。
-当初のトリガーは「ページ数が10枚を超えた時点、または手動チェックで漏れが1回出た時点」としていたが、
-**現在17枚あり、トリガーは既に達している。** それでも公開前の必須項目とはしない。
-CI が無くても `tests/` は手で回せるうえ、公開前に確認すべきことは実機確認（§10.2）のほうが重い。
-**公開後に入れる。**
+**検査はデプロイの関門として、GitHub 連携のビルドの中で回す**（§7.7）。
+ビルドのデプロイコマンド `node scripts/ops.mjs ci` が、`check-placeholders.sh` と `smoke.sh` を除く検査を回し、
+1本でも落ちればデプロイしない。`check-placeholders.sh` は公開前まで落ちるのが正しいため、知らせるだけにする。
+スモークはデプロイ後にしか流せないため、ビルドには含めず `ops.mjs smoke` で流す。
 
-採る場合の条件は3つ。`package.json` を作らないこと、アクションのバージョンを固定すること、落ちてもデプロイは止めないこと（通知のみ）。
+GitHub Actions は使わない。ビルドが同じ検査を回すため、別に持つと二重になる。
+条件は変えない。`package.json` を作らないこと、使う道具の版を固定すること（wrangler は `scripts/ops/shell.mjs`）。
 
 検査スクリプトはリポジトリ直下の `tests/` に置く（`AGENTS.md` 1.1 のエコシステム標準）。
 
@@ -940,8 +940,8 @@ tests/
 
 `public/` の下には絶対に置かない。置いたものはそのまま公開されるためである。
 ローカルから `bash tests/check-links.sh` で単体実行できる形にし、CI 専用にしない。
-手動チェックリストと同じものを、人が回すか CI が回すかの違いにする。
-CI（`.github/workflows/*.yml`）はこれらを呼ぶだけにする。
+手動チェックリストと同じものを、人が回すかビルドが回すかの違いにする。
+ビルドはこれらを `scripts/ops.mjs ci` 経由で呼ぶだけにする。
 
 **確認用サーバー（`scripts/preview.mjs`）。** 検査ではなく目視のための道具で、`tests/` とは分ける。
 
@@ -975,21 +975,25 @@ Cloudflare 側では当たらない書き方であり、ローカルだけ当た
 - Cloudflare / Stripe アカウントの管理者と、登録している支払い方法
 - Stripe を解約・乗り換えする場合は、事前に決済履歴を CSV でエクスポートする（§8.4）
 
-### 7.6 構築・デプロイ・設定の CLI
+### 7.6 構築・設定の CLI
 
-Cloudflare と Stripe の構築、デプロイ、secret の投入は `scripts/ops.mjs` で行う。
-デプロイは CLI から行い、GitHub への push とは連動させない。
+Cloudflare と Stripe の構築、配布ファイルの配置、secret の投入は `scripts/ops.mjs` で行う。
+**デプロイの本線は GitHub 連携のビルドであり、このCLIではない**（§7.7）。
 
 ```
 node scripts/ops.mjs status                        何が済んでいて何が残っているか
-node scripts/ops.mjs setup                         初回構築（ログイン → R2 → exe → デプロイ → Stripe）
-node scripts/ops.mjs deploy                        検査 → デプロイ → スモーク
+node scripts/ops.mjs setup                         初回構築（ログイン → R2 → exe → Worker 作成 → Stripe）
 node scripts/ops.mjs upload <product> <plan> <file>  exe を R2 に置く（版の控え → latest・§8.5）
 node scripts/ops.mjs restore <product> <plan> <version>  latest を控えの版に戻す
 node scripts/ops.mjs stripe                        商品・価格・Webhook を揃え、secret を入れる
 node scripts/ops.mjs secret <NAME>                 secret を1つ入れ直す
-node scripts/ops.mjs smoke / logs                  スモーク / 本番ログ
+node scripts/ops.mjs smoke / logs                  スモーク / ログ
+node scripts/ops.mjs check                         デプロイ前の検査だけ
+node scripts/ops.mjs ci                            検査 → デプロイ。ビルドのデプロイコマンドが呼ぶ
+node scripts/ops.mjs deploy                        手元からのデプロイ。ビルドが止まったときの予備
 ```
+
+どのコマンドも `--env staging` を付けるとテスト環境が対象になる（§7.7）。
 
 **状態の定義元はリポジトリである。** どのコマンドも何度流しても同じ状態に収束し、
 ダッシュボードの状態に合わせるのではなく、リポジトリの記述に向こうを合わせる（§1.2）。
@@ -1018,22 +1022,72 @@ node scripts/ops.mjs smoke / logs                  スモーク / 本番ログ
 - **secret の値は標準入力で wrangler に渡す。** 引数に載せるとプロセス一覧とシェル履歴に残る。
 - **wrangler の版は `scripts/ops/shell.mjs` の `WRANGLER` で固定する。** `npx` は版を指定しないと毎回最新を取りに行き、
   放置しているあいだに挙動が変わる。リポジトリの依存には入れない（`package.json` を作らない）。
-- **デプロイは git に残っている状態だけを出す。** 未コミットの変更があれば止める。
-  版のメッセージにコミットのハッシュを入れ、どの版が出ているかを後から辿れるようにする。
-- **デプロイ前に `tests/` を回す。** `check-placeholders.sh` だけは公開前まで落ちるのが正しいため、止めずに知らせる。
-  デプロイ後は `tests/smoke.sh` を流す。落ちても自動では戻さない（戻すのは `wrangler rollback`）。
+- **デプロイ前に `tests/` を回す**（`ci` / `deploy` / `check`）。`check-placeholders.sh` だけは公開前まで落ちるのが正しいため、止めずに知らせる。
+- **版のメッセージにコミットのハッシュを入れる。** どの版が出ているかを後から辿れるようにするため。
+- **手元からの `deploy` は、環境に対応するブランチ（本番は `main`、テストは `develop`）にいて、未コミットの変更が無いときだけ出す。**
+  別の環境のコードや、git に残っていないものを出さないためである。デプロイ後に `tests/smoke.sh` を流す。
+  落ちても自動では戻さない（戻すのは `wrangler rollback`）。
 - **公開URLは初回デプロイの出力から拾い、`wrangler.jsonc` の `SITE_BASE_URL` に書き込む。**
   `*.workers.dev` の URL はアカウントのサブドメインを含み、デプロイするまで分からないためである。
   書き込み後は Webhook の宛先とスモークの対象がここから決まる。ドメインが確定したら書き換えて `stripe` を流し直す。
 
-API で設定できず、ダッシュボードで行うものは次のとおり。`stripe` の最後にも表示する。
+API で設定できず、ダッシュボードで行うものは次のとおり。`setup` と `stripe` の最後にも表示する。
 
 | 場所 | やること |
 |---|---|
 | Cloudflare → R2 | 新しいアカウントでは利用開始の手続きが要る（無料枠でも支払い方法の登録が要る） |
 | Cloudflare → Workers & Pages | `workers.dev` のサブドメイン登録（初回デプロイで対話的に求められなかった場合） |
+| Cloudflare → 各 Worker → 設定 → ビルド | GitHub との接続（§7.7） |
+| Cloudflare → テスト環境の Worker / Zero Trust | Cloudflare Access（§7.7） |
 | Stripe → 設定 → 公開情報 | 事業者名・明細書表記・サポート連絡先 |
 | Stripe → 設定 → カスタマーへのメール | 「支払い成功」を有効にする（`checkout.js` が発行する請求書を届けるため） |
+
+### 7.7 環境とデプロイ
+
+本番とテストの2環境を、**別々の Worker として**持つ。同じ Worker のプレビュー版では secret と R2 を本番と共有するため、
+「テストは Stripe のテストモード、本番は本番モード」のように分けられないからである。
+
+| | 本番 | テスト |
+|---|---|---|
+| ブランチ | `main` | `develop` |
+| Worker | `lucud-brain-site` | `lucud-brain-site-staging`（`wrangler.jsonc` の `env.staging`） |
+| R2 バケット | `lucud-brain-releases` | `lucud-brain-releases-staging` |
+| Stripe | 公開前はテストモード、公開時に本番モードへ切り替える | 常にテストモード。`ops.mjs` が本番キーを拒否する |
+| アクセス | 公開 | Cloudflare Access の内側。`/api/webhook` だけ素通しにする |
+| `ops.mjs` | 環境指定なし | `--env staging` |
+
+- `env.staging` では `vars` と `r2_buckets` を書き直す。wrangler の仕様でこの2つは継承されないためである。それ以外はトップレベルを継承する。
+- テスト環境の exe は別のバケットに置く。テスト用の版で本番の latest を上書きしないためである。
+- `preview_urls` は両環境とも `false` にする。確認はテスト環境で行うので使い道がなく、出せば未公開の版が Access の外に出る。
+
+**デプロイは GitHub への push で行う。** 各 Worker を Workers Builds で同じリポジトリにつなぎ、次のとおり設定する（ダッシュボード）。
+
+| 設定 | 本番（`lucud-brain-site`） | テスト（`lucud-brain-site-staging`） |
+|---|---|---|
+| 本番ブランチ | `main` | `develop` |
+| ビルドコマンド | 空（ビルドを持たない） | 空 |
+| デプロイコマンド | `node scripts/ops.mjs ci` | `node scripts/ops.mjs ci --env staging` |
+| 本番ブランチ以外のビルド | 無効 | 無効 |
+
+デプロイコマンドを `ops.mjs ci` にするのは、検査に落ちたコミットを出さないためと、wrangler の版を
+`scripts/ops/shell.mjs` の1箇所で固定したままにするためである。ダッシュボードにコマンドの中身を書かない。
+ブランチと環境の対応は `scripts/ops/config.mjs` の `toDeployBranch` にも持ち、手元からの `deploy` の照合に使う。
+ダッシュボードの設定と食い違わせない。
+
+**Worker は最初にCLIで作る。** `ops.mjs setup` が R2 を用意してから初回デプロイで Worker を作り、その後に GitHub をつなぐ。
+ダッシュボードの「リポジトリをインポート」から作ると、接続した瞬間の最初のビルドが R2 バケットの無い状態で走って失敗する。
+
+**テスト環境のアクセス制限は Cloudflare Access で掛ける。** 設定はダッシュボードにしか残らないため、ここに書き切る。
+
+| 設定 | 内容 |
+|---|---|
+| 対象 | `lucud-brain-site-staging` の `workers.dev`（Worker の設定 → ドメインとルート → Cloudflare Access を有効化） |
+| 入れる人 | 許可したメールアドレスだけ（ワンタイムコードでログイン） |
+| 素通し | `/api/webhook` のパスに別のアプリケーションを作り、ポリシーを Bypass にする。Stripe はログインできないため。署名検証で守られている（§7.5） |
+| スモーク用 | サービストークンを発行し、Service Auth のポリシーで許可する。`tests/smoke.sh` は `CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET` があれば付けて通る |
+
+Access が効いているかと、`/api/webhook` が素通しになっているかは、`ops.mjs status --env staging` が外から叩いて確認する。
+Access を有効にするまでのあいだ（初回デプロイの直後）は、テスト環境のURLは誰でも見られる。
 
 ---
 
@@ -1041,7 +1095,7 @@ API で設定できず、ダッシュボードで行うものは次のとおり�
 
 ### 8.1 全体の設計
 
-- 構成は Cloudflare Workers（静的アセット + Functions）、Stripe、Cloudflare R2。デプロイと構築は `scripts/ops.mjs` から行う（§7.6）。
+- 構成は Cloudflare Workers（静的アセット + Functions）、Stripe、Cloudflare R2。デプロイは GitHub への push（main → 本番、develop → テスト・§7.7）、構築と設定は `scripts/ops.mjs`（§7.6）で行う。
 - 無料版・有料版とも、exe実体は R2 で管理する。公開ディレクトリに置くと、リンクの有無に関わらず直接URLで取得できてしまうため。
 - 有料版は Stripe Checkout（カード決済のみ）を使う。決済確認は Checkout Session ID をそのまま認可情報として扱い、リクエストの都度 Stripe API で `payment_status === 'paid'` を照会する。独自のトークン発行と署名管理は行わない。この方針は §1.2 の「時間で劣化するものを置かない」と整合している。
 - ダウンロードURLに独自の有効期限は設けない。

@@ -41,22 +41,52 @@ function stripJsonc(source) {
   return out.replace(/,(\s*[}\]])/g, '$1')
 }
 
-export function readConfig() {
-  const config = JSON.parse(stripJsonc(readFileSync(WRANGLER_CONFIG, 'utf8')))
-  const bucket = (config.r2_buckets ?? []).find((entry) => entry.binding === 'RELEASES')
+function readRawConfig() {
+  return JSON.parse(stripJsonc(readFileSync(WRANGLER_CONFIG, 'utf8')))
+}
+
+// 環境名（null は本番＝トップレベル）ごとの設定。env.<name> の Worker 名は wrangler と同じく <name>-<env> になる
+function toEnvConfig(config, envName) {
+  const section = envName ? config.env?.[envName] : config
+  if (!section) throw new Error(`wrangler.jsonc に env.${envName} が無い`)
+  const bucket = (section.r2_buckets ?? []).find((entry) => entry.binding === 'RELEASES')
   return {
-    workerName: config.name,
+    envName,
+    workerName: envName ? (section.name ?? `${config.name}-${envName}`) : config.name,
     bucketName: bucket?.bucket_name ?? null,
-    baseUrl: (config.vars?.SITE_BASE_URL ?? '').replace(/\/$/, ''),
+    baseUrl: (section.vars?.SITE_BASE_URL ?? '').replace(/\/$/, ''),
   }
 }
 
-// SITE_BASE_URL の値だけを書き換える。コメントと並びを保つため、JSON として書き戻さない。
-export function writeBaseUrl(url) {
+export function readConfig(envName = null) {
+  return toEnvConfig(readRawConfig(), envName)
+}
+
+// 本番とテストの全環境。Webhook の宛先が「どの環境のものか」を見分けるのに使う
+export function readAllConfigs() {
+  const config = readRawConfig()
+  return [null, ...Object.keys(config.env ?? {})].map((envName) => toEnvConfig(config, envName))
+}
+
+// その環境の SITE_BASE_URL の値だけを書き換える。コメントと並びを保つため、JSON として書き戻さない。
+// 本番は "env" より前、テストは "<env名>" より後にある最初の SITE_BASE_URL を対象にする。
+export function writeBaseUrl(envName, url) {
   const source = readFileSync(WRANGLER_CONFIG, 'utf8')
+  const envStart = source.search(/"env"\s*:/)
+  const start = envName ? source.indexOf(`"${envName}"`, envStart) : 0
+  const end = envName || envStart < 0 ? source.length : envStart
+  if (start < 0) throw new Error(`wrangler.jsonc に env.${envName} が無い`)
+
   const pattern = /("SITE_BASE_URL"\s*:\s*)"[^"]*"/
-  if (!pattern.test(source)) throw new Error('wrangler.jsonc に "SITE_BASE_URL" の行が無い')
-  writeFileSync(WRANGLER_CONFIG, source.replace(pattern, `$1"${url}"`))
+  const target = source.slice(start, end)
+  if (!pattern.test(target)) throw new Error('wrangler.jsonc の該当箇所に "SITE_BASE_URL" の行が無い')
+  writeFileSync(WRANGLER_CONFIG, source.slice(0, start) + target.replace(pattern, `$1"${url}"`) + source.slice(end))
+}
+
+// 環境ごとに、デプロイ元のブランチ。GitHub 連携のビルド設定（ダッシュボード）と一致させる（SPEC §7.7）。
+// 手元から deploy するときに、別の環境のコードを出してしまわないための照合に使う。
+export function toDeployBranch(envName) {
+  return envName ? { staging: 'develop' }[envName] : 'main'
 }
 
 // レジストリの全プランを平たく並べる
