@@ -1053,7 +1053,7 @@ API で設定できず、ダッシュボードで行うものは次のとおり�
 | Worker | `lucud-brain-site` | `lucud-brain-site-staging`（`wrangler.jsonc` の `env.staging`） |
 | R2 バケット | `lucud-brain-releases` | `lucud-brain-releases-staging` |
 | Stripe | 公開前はテストモード、公開時に本番モードへ切り替える | 常にテストモード。`ops.mjs` が本番キーを拒否する |
-| アクセス | 公開 | Cloudflare Access の内側。`/api/webhook` だけ素通しにする |
+| アクセス | **公開するまでは Cloudflare Access の内側**。公開時に外す | 常に Cloudflare Access の内側 |
 | `ops.mjs` | 環境指定なし | `--env staging` |
 
 - `env.staging` では `vars` と `r2_buckets` を書き直す。wrangler の仕様でこの2つは継承されないためである。それ以外はトップレベルを継承する。
@@ -1077,17 +1077,23 @@ API で設定できず、ダッシュボードで行うものは次のとおり�
 **Worker は最初にCLIで作る。** `ops.mjs setup` が R2 を用意してから初回デプロイで Worker を作り、その後に GitHub をつなぐ。
 ダッシュボードの「リポジトリをインポート」から作ると、接続した瞬間の最初のビルドが R2 バケットの無い状態で走って失敗する。
 
-**テスト環境のアクセス制限は Cloudflare Access で掛ける。** 設定はダッシュボードにしか残らないため、ここに書き切る。
+**アクセス制限は Cloudflare Access で掛ける。** 検証は実機で行うが、中身が決まるまでは誰にも見せない。
+そのため本番も、公開するまではテスト環境と同じ設定で Access の内側に置く。
+設定はダッシュボードにしか残らないため、ここに書き切る。
 
 | 設定 | 内容 |
 |---|---|
-| 対象 | `lucud-brain-site-staging` の `workers.dev`（Worker の設定 → ドメインとルート → Cloudflare Access を有効化） |
+| 対象 | テスト環境 `lucud-brain-site-staging` と、公開前の本番 `lucud-brain-site` の `workers.dev`（Worker のドメインタブ → `workers.dev` の行で Cloudflare Access を有効化） |
 | 入れる人 | 許可したメールアドレスだけ（ワンタイムコードでログイン） |
 | 素通し | `/api/webhook` のパスに別のアプリケーションを作り、ポリシーを Bypass にする。Stripe はログインできないため。署名検証で守られている（§7.5） |
 | スモーク用 | サービストークンを発行し、Service Auth のポリシーで許可する。`tests/smoke.sh` は `CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET` があれば付けて通る |
 
-Access が効いているかと、`/api/webhook` が素通しになっているかは、`ops.mjs status --env staging` が外から叩いて確認する。
-Access を有効にするまでのあいだ（初回デプロイの直後）は、テスト環境のURLは誰でも見られる。
+本番を公開したかは `scripts/ops/config.mjs` の `IS_LAUNCHED` に持つ。公開するときは、ダッシュボードで本番の Access を外し、
+これを `true` にする。この2つは必ずセットで行う。`ops.mjs status` / `smoke` はこの値を見て、
+Access の内側にあるべき環境では「Access が効いているか」と「`/api/webhook` が素通しになっているか」を外から叩いて確認する。
+
+Access を有効にするまでのあいだ（初回デプロイの直後）は、その Worker の URL は誰でも見られる。
+`workers.dev` の URL は推測しにくいものの、初回デプロイの後はすぐに Access を掛ける。
 
 ---
 

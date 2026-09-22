@@ -89,6 +89,15 @@ export function toDeployBranch(envName) {
   return envName ? { staging: 'develop' }[envName] : 'main'
 }
 
+// 本番を公開したか。公開するまでは本番もテスト環境と同じく Cloudflare Access の内側に置く（SPEC §7.7）。
+// 公開するときにダッシュボードで本番の Access を外し、ここを true にする。status と smoke はこの値で確認内容を変える。
+export const IS_LAUNCHED = false
+
+// その環境が Access の内側にあるべきか。テスト環境は常に内側
+export function isBehindAccess(envName) {
+  return envName ? true : !IS_LAUNCHED
+}
+
 // レジストリの全プランを平たく並べる
 export function listPlans() {
   return Object.entries(PRODUCTS).flatMap(([productId, product]) =>

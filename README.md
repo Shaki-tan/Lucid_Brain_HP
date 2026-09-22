@@ -179,7 +179,7 @@ CSP は `font-src 'self'` なので `_headers` の CSP 行の変更は要らな�
 | ブランチ | `main` に push → 本番に出る | `develop` に push → テスト環境に出る |
 | Worker | `lucud-brain-site` | `lucud-brain-site-staging` |
 | Stripe | 公開前はテストモード | 常にテストモード |
-| 見られる人 | 誰でも | Cloudflare Access で許可した人だけ |
+| 見られる人 | 公開までは Access で許可した人だけ。公開時に外す（`scripts/ops/config.mjs` の `IS_LAUNCHED`） | Cloudflare Access で許可した人だけ |
 
 ビルドは `node scripts/ops.mjs ci` を呼び、検査に落ちたらデプロイしない。手元で同じ検査を回すなら `node scripts/ops.mjs check`。
 

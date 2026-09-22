@@ -30,6 +30,7 @@ import { parseReleaseVersion, toLatestKey, toReleaseFileName, toVersionKey } fro
 import { STRIPE_API_VERSION, toPriceKey } from '../functions/lib/stripe.js'
 import { WEBHOOK_EVENTS } from '../functions/api/webhook.js'
 import {
+  isBehindAccess,
   listPaidPlans,
   listReleasePlans,
   readAllConfigs,
@@ -282,11 +283,11 @@ async function deploy({ isDirtyAllowed = false, isCheckSkipped = false } = {}) {
   await smoke(target)
 }
 
-// テスト環境は Access の内側にあるため、サービストークンを渡さないとスモークが入れない（SPEC §7.7）
+// Access の内側にある環境（テスト環境と、公開前の本番）は、サービストークンを渡さないとスモークが入れない（SPEC §7.7）
 async function smoke(baseUrl) {
   heading(`スモーク（${baseUrl}）`)
-  if (site.envName && !(process.env.CF_ACCESS_CLIENT_ID && process.env.CF_ACCESS_CLIENT_SECRET)) {
-    todo('テスト環境は Access の内側にある。環境変数 CF_ACCESS_CLIENT_ID / CF_ACCESS_CLIENT_SECRET にサービストークンを入れて流す')
+  if (isBehindAccess(site.envName) && !(process.env.CF_ACCESS_CLIENT_ID && process.env.CF_ACCESS_CLIENT_SECRET)) {
+    todo(`${envLabel()}は Access の内側にある。環境変数 CF_ACCESS_CLIENT_ID / CF_ACCESS_CLIENT_SECRET にサービストークンを入れて流す`)
     return
   }
   const { code } = await run(requireBash(), ['tests/smoke.sh', baseUrl])
@@ -296,7 +297,7 @@ async function smoke(baseUrl) {
   }
 }
 
-// テスト環境に Access が掛かっているか、Webhook だけは素通りするかを外から見る
+// Access が掛かっているか、Webhook だけは素通りするかを外から見る
 async function checkAccess(baseUrl) {
   try {
     const top = await fetch(baseUrl, { redirect: 'manual' })
@@ -429,6 +430,7 @@ async function status() {
   console.log(`ブランチ      ${toDeployBranch(site.envName)}`)
   console.log(`R2 バケット   ${site.bucketName}`)
   console.log(`SITE_BASE_URL ${site.baseUrl || '（空）'}`)
+  console.log(`Access        ${isBehindAccess(site.envName) ? '内側に置く' : '公開（IS_LAUNCHED）'}`)
   console.log(`wrangler      ${WRANGLER}`)
 
   heading('Cloudflare')
@@ -470,7 +472,7 @@ async function status() {
 
   if (site.baseUrl) {
     heading('サイト')
-    if (site.envName) await checkAccess(site.baseUrl)
+    if (isBehindAccess(site.envName)) await checkAccess(site.baseUrl)
     else {
       try {
         const res = await fetch(site.baseUrl, { redirect: 'manual' })
@@ -556,7 +558,7 @@ async function setup() {
   heading('終わり。続けてダッシュボードで行うこと')
   todo(`SITE_BASE_URL を書き込んだなら、コミットして ${toDeployBranch(site.envName)} に push する`)
   todo(`${site.workerName} → 設定 → ビルド で GitHub をつなぐ（SPEC §7.7 の表のとおりに設定する）`)
-  if (site.envName) {
+  if (isBehindAccess(site.envName)) {
     todo(`${site.workerName} の workers.dev に Cloudflare Access を掛け、/api/webhook を素通しにする（SPEC §7.7）`)
     todo('Access を掛けるまでは、このURLは誰でも見られる')
   }
