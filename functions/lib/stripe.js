@@ -10,6 +10,22 @@ export const STRIPE_API_VERSION = '2025-08-27.basil'
 
 const STRIPE_API_BASE = 'https://api.stripe.com/v1'
 
+// 価格IDは secret STRIPE_PRICES に JSON で1つにまとめて持つ（例: {"pawgress_paid":"price_..."}）。
+// プロダクトやプランが増えても secret の名前は増えない。値は scripts/ops.mjs stripe が組んで入れる。
+// キーは <product>_<plan> で、Stripe 側の Price の lookup_key と同じにしてある。
+export function toPriceKey(productId, planId) {
+  return `${productId}_${planId}`
+}
+
+// 未設定・JSON の崩れ・該当なしは null。呼び出し側は server_not_configured にする
+export function getPriceId(env, productId, planId) {
+  try {
+    return JSON.parse(env.STRIPE_PRICES ?? '{}')[toPriceKey(productId, planId)] ?? null
+  } catch {
+    return null
+  }
+}
+
 export class StripeError extends Error {
   constructor(status, body) {
     super(`stripe request failed: ${status}`)

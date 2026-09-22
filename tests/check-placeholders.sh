@@ -71,6 +71,6 @@ echo
 if [ "$status" -eq 0 ]; then
   echo "プレースホルダは残っていない。"
 else
-  echo "プレースホルダが残っている。公開前に差し替えること（README §8）。"
+  echo "プレースホルダが残っている。公開前に差し替えること（README §9）。"
 fi
 exit "$status"

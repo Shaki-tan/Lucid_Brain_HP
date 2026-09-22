@@ -10,16 +10,17 @@
 
 import { resolvePlan } from '../lib/products.js'
 import { streamObject } from '../lib/r2.js'
+import { toLatestFileName, toLatestKey } from '../lib/releases.js'
 import { text } from '../lib/http.js'
 import { logError, logInfo } from '../lib/log.js'
 
-const DEFAULT_PRODUCT = 'pawgress'
 const FREE_PLAN = 'free'
 
 export async function onRequestGet(context) {
   const { request, env } = context
   const url = new URL(request.url)
-  const productId = url.searchParams.get('product') || DEFAULT_PRODUCT
+  // 既定値を持たない。プロダクトが増えたとき、省略された URL に別の製品を配らないため
+  const productId = url.searchParams.get('product')
 
   const resolved = resolvePlan(productId, FREE_PLAN)
   if (!resolved) {
@@ -32,9 +33,10 @@ export async function onRequestGet(context) {
     return text('Server not configured', 500)
   }
 
-  const response = await streamObject(env.RELEASES, plan.r2Key, plan.downloadName)
+  const key = toLatestKey(productId, plan)
+  const response = await streamObject(env.RELEASES, key, toLatestFileName(plan))
   if (!response) {
-    logError('download_object_missing', { product: productId, plan: FREE_PLAN, r2_key: plan.r2Key })
+    logError('download_object_missing', { product: productId, plan: FREE_PLAN, r2_key: key })
     return text('File not found', 404)
   }
 

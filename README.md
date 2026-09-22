@@ -14,7 +14,7 @@
 |---|---|
 | ビルド | **無い。** `public/` の中身がそのまま配信される |
 | 依存パッケージ | **無い。** `package.json` は作らない |
-| デプロイ | GitHub へ push すると Cloudflare 側でデプロイされる |
+| デプロイ | `node scripts/ops.mjs deploy`（検査 → デプロイ → スモーク）。push とは連動しない（§4） |
 | ドメイン | 未確定。いまは `*.workers.dev` 前提（§3 の「ドメイン確定時にやること」参照） |
 | 言語 | 日本語が `/`、英語が `/en/`。i18n の辞書とエンジンは持たない |
 
@@ -40,7 +40,7 @@ tests/              検査スクリプト。public/ の外に置く
 | 英語版が使う CSS・画像 | 日本語側と同じものを参照する。**複製しない** |
 | ヘッダー・フッター | `public/assets/js/partials.js`（1箇所だけ。構成はコーポレート／プロダクトで分かれるがファイルは分けない） |
 | 配布PDF | `public/docs/<区分>/`。プロダクト固有でも例外なくここ |
-| プロダクト固有の値（価格ID・R2キー・遷移先） | `functions/lib/products.js` **のみ** |
+| プロダクト固有の値（金額・配布ファイル名・遷移先） | `functions/lib/products.js` **のみ** |
 
 **`public/` の下にドキュメントを置かないこと。** 置いたものはそのまま公開される。
 
@@ -64,7 +64,8 @@ tests/              検査スクリプト。public/ の外に置く
 
 ### プランを追加する
 
-`products.js` の `plans` に1エントリと、環境変数を1つ。
+`products.js` の `plans` に1エントリ。有償なら `unitAmount` / `currency`、配布物があるなら `releaseFile` を持たせる。
+そのあと `node scripts/ops.mjs upload` → `deploy` → `stripe` を流す。secret の名前は増えない（§4）。
 サブスクを足す場合は買い切りとの差が4箇所に閉じている（SPEC §8.2）。認可設計は導入時に別途起こす。
 
 ### 同意文言を変える
@@ -101,7 +102,7 @@ node scripts/preview.mjs        # http://127.0.0.1:8788/
 
 1. `node scripts/preview.mjs` で見る。ここで変わっていなければ、直っていないのはコードである
 2. 変わっているなら、見ていたのは別のものである。候補は2つ
-   - **`*.workers.dev`** — デプロイしていなければ古いまま。push すれば Cloudflare 側でデプロイされる
+   - **`*.workers.dev`** — デプロイしていなければ古いまま。`node scripts/ops.mjs deploy` で出す
    - **古いタブ** — DevTools を開いて Network タブの「Disable cache」を入れる。または Ctrl+Shift+R
 
 `_headers` では HTML も CSS・JS も `no-cache`（毎回再検証）にしてある。
@@ -160,26 +161,65 @@ CSP は `font-src 'self'` なので `_headers` の CSP 行の変更は要らな�
 以下を併せて更新する（SPEC §3）。
 
 - `wrangler.jsonc` の `name`
-- 全 HTML の `canonical` / `hreflang` / `og:url` の絶対URL（いまは `https://pawgress-site.workers.dev`）
+- 全 HTML の `canonical` / `hreflang` / `og:url` の絶対URL（いまは仮に `https://lucud-brain-site.workers.dev`。実際の `*.workers.dev` はアカウントのサブドメインを含むので、この値は正しくない）
 - `public/sitemap.xml` と `public/robots.txt` の絶対URL
-- Wrangler の変数 `SITE_BASE_URL`（Stripe の `success_url` / `cancel_url` はここから組む。コード変更は要らない）
+- `wrangler.jsonc` の `vars.SITE_BASE_URL`（Stripe の `success_url` / `cancel_url` と Webhook の宛先はここから組む）
+- 上を変えたら `node scripts/ops.mjs deploy` のあと `node scripts/ops.mjs stripe` を流す。Webhook が新しい宛先で作られる
 
 ---
 
-## 4. ローカルで動かす
+## 4. 構築・デプロイ・設定
 
-Wrangler はリポジトリの依存に入れていない。使うときだけ `npx` で呼ぶ。
+`scripts/ops.mjs` で行う（SPEC §7.6）。依存は無く、Cloudflare は `npx` 経由の wrangler（版は固定）、
+Stripe は REST API を直接呼ぶ。どのコマンドも何度流しても同じ状態に収束する。
+
+```sh
+node scripts/ops.mjs status          # 何が済んでいて何が残っているか。迷ったらまずこれ
+node scripts/ops.mjs setup           # 初回構築。ログイン → R2 → exe → デプロイ → Stripe
+node scripts/ops.mjs deploy          # 検査 → デプロイ → スモーク
+node scripts/ops.mjs upload pawgress paid ./Pawgress-Windows-1.0.1-Setup.exe   # 版を上げる
+node scripts/ops.mjs restore pawgress paid 1.0.0                                # 前の版に戻す
+node scripts/ops.mjs stripe          # 商品・価格・Webhook を揃え、secret を入れる
+node scripts/ops.mjs secret STRIPE_SECRET_KEY                   # secret を1つ入れ直す
+node scripts/ops.mjs logs            # 本番のログを流し見る
+```
+
+**Stripe のキーはどこにも保存しない。** 環境変数 `STRIPE_API_KEY` か、実行時の伏字入力で渡す。
+テスト / 本番はキーの接頭辞（`sk_test_` / `sk_live_`）で決まる。本番へ切り替えるときは本番のキーで `stripe` を流し直す。
+価格・Webhook は本番側に作られ、secret も差し替わる。
+
+**exe は版の控え → latest の順に置く**（SPEC §8.5）。版はファイル名（`Pawgress-Windows-<版>-Setup.exe`）から読み、
+型に合わないファイルは置かない。控え（`pawgress/<版>/`）は上書きしないので、同じ版を置き直すなら `--overwrite` が要る。
+exe の差し替えだけならデプロイは要らない。Worker はダウンロードのたびに latest を読む。
+
+**名前はプロダクトが増えても増えない。** Worker（`lucud-brain-site`）・R2 バケット（`lucud-brain-releases`）・
+secret（3つ）は会社で1つずつで、プロダクトの違いは R2 のフォルダと Stripe の商品ID、`STRIPE_PRICES` のキーで分ける。
+
+| よくある作業 | コマンド |
+|---|---|
+| 価格を変える | `products.js` の `unitAmount` と LP の表示（日英）を直す → `deploy` → `stripe` |
+| Webhook のイベントを足す | `webhook.js` の `WEBHOOK_EVENTS` に足す → `deploy` → `stripe` |
+| Webhook の署名シークレットを取り直す | `stripe --rotate-webhook` |
+| デプロイを戻す | `npx wrangler@<版> rollback`（版は `scripts/ops/shell.mjs` の `WRANGLER`） |
+
+デプロイは未コミットの変更があると止まる（`--allow-dirty` で強行できる）。
+初回デプロイ後に公開URLを `wrangler.jsonc` の `SITE_BASE_URL` へ書き込むので、それはコミットしておく。
+
+API では設定できずダッシュボードで行うもの（R2 の利用開始、Stripe の公開情報とメール設定）は SPEC §7.6 にある。
+
+---
+
+## 5. ローカルで動かす
 
 ```sh
 npx wrangler dev          # http://127.0.0.1:8787
-npx wrangler tail         # 本番の構造化ログをリアルタイムで見る
 ```
 
 Stripe と R2 を触る動作確認には秘密情報が要る。`.dev.vars`（`.gitignore` 済み）に置く。
 
 ```
 STRIPE_SECRET_KEY=sk_test_...
-STRIPE_PRICE_PAWGRESS_PAID=price_...
+STRIPE_PRICES='{"pawgress_paid":"price_..."}'
 STRIPE_WEBHOOK_SECRET=whsec_...
 SITE_BASE_URL=http://127.0.0.1:8787
 ```
@@ -189,16 +229,16 @@ SITE_BASE_URL=http://127.0.0.1:8787
 | 変数 | 用途 | 種別 |
 |---|---|---|
 | `STRIPE_SECRET_KEY` | Stripe API の認証 | secret |
-| `STRIPE_PRICE_PAWGRESS_PAID` | 有償版の Price ID。参照元は `products.js` の `priceEnvKey` | secret |
+| `STRIPE_PRICES` | 全プランの Price ID を JSON で1つに。キーは `<product>_<plan>`。`ops.mjs stripe` が組んで入れる | secret |
 | `STRIPE_WEBHOOK_SECRET` | Webhook 署名の検証 | secret |
-| `SITE_BASE_URL` | `success_url` / `cancel_url` のベース。未設定ならリクエストの origin を使う | 変数 |
+| `SITE_BASE_URL` | `success_url` / `cancel_url` のベース。空ならリクエストの origin を使う | `wrangler.jsonc` の `vars` |
 
 `request.cf.country` はローカルの `wrangler dev` では期待どおりに取れないことがある（SPEC §10.2 の 7）。
 地域判定の確認は本番かプレビューで行う。
 
 ---
 
-## 5. 検査
+## 6. 検査
 
 `tests/` は CI 専用ではない。手で回すものと同じものを CI にも呼ばせる想定である（SPEC §7.5）。
 
@@ -244,7 +284,7 @@ bash tests/smoke.sh <ベースURL>     # デプロイ後。200 / 404 / CSPヘッ
 
 ---
 
-## 6. 記録はどこを見るか
+## 7. 記録はどこを見るか
 
 いわゆるログファイルは存在しない。見る場所は3つあり、用途が違う（SPEC §8.4）。
 
@@ -258,12 +298,12 @@ bash tests/smoke.sh <ベースURL>     # デプロイ後。200 / 404 / CSPヘッ
 
 ---
 
-## 7. リポジトリだけでは復旧できないもの
+## 8. リポジトリだけでは復旧できないもの
 
 事故ったときに必要になる情報（SPEC §7.5）。値はここに書かない。**どこにあるかだけ**を書く。
 
-- R2 バケット名と、中に置く exe のキー（`products.js` の `r2Key` と一致させる）
-- Stripe の商品・価格ID、Webhook の宛先とイベント種別、署名シークレット
+- R2 に置く exe の実物（R2 に控えはあるが、バケットごと失ったときは手元の実物が要る）
+- Webhook の署名シークレット（無くしたら `node scripts/ops.mjs stripe --rotate-webhook` で取り直せる）
 - Wrangler の secret 一覧（名前は §4 の表にある。値は持たない）
 - ドメインと DNS の設定先
 - Cloudflare / Stripe アカウントの管理者と、登録している支払い方法
@@ -271,7 +311,7 @@ bash tests/smoke.sh <ベースURL>     # デプロイ後。200 / 404 / CSPヘッ
 
 ---
 
-## 8. 公開前に必ず潰すもの
+## 9. 公開前に必ず潰すもの
 
 | # | 内容 | 参照 |
 |---|---|---|

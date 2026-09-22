@@ -10,13 +10,18 @@ function sanitizeFilename(name) {
 }
 
 // 見つからなければ null を返す。404 を返すかどうかは呼び出し側が決める。
-export async function streamObject(bucket, key, downloadName) {
+// ファイル名はアップロード時にオブジェクトへ入れた Content-Disposition（版つき）を使う（SPEC §8.5）。
+// 入っていなければ fallbackName（版なし）で返す。
+export async function streamObject(bucket, key, fallbackName) {
   const object = await bucket.get(key)
   if (!object) return null
 
   const headers = new Headers()
   headers.set('Content-Type', 'application/octet-stream')
-  headers.set('Content-Disposition', `attachment; filename="${sanitizeFilename(downloadName)}"`)
+  headers.set(
+    'Content-Disposition',
+    object.httpMetadata?.contentDisposition ?? `attachment; filename="${sanitizeFilename(fallbackName)}"`,
+  )
   // 認可を通した結果であり、共有キャッシュに載せてはならない。
   headers.set('Cache-Control', 'no-store')
   // R2 が返す長さと ETag を渡し、ブラウザ側の進捗表示と再開を効かせる。

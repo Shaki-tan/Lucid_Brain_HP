@@ -2,14 +2,14 @@
 //
 // Stripe Checkout Session を作成し、遷移先URLを返す。
 // 金額はクライアントから受け取らない。プロダクト×プランをレジストリで解決し、
-// そこに書かれた環境変数名から Price ID を引く（SPEC §8.2）。
+// secret STRIPE_PRICES から Price ID を引く（SPEC §8.2）。
 //
 // 同意の事実は Stripe の metadata に残す。Workers Logs には残さない（SPEC §8.4）。
 
 import { resolvePlan } from '../lib/products.js'
 import { ConsentItemsError, normalizeLang, readConsentItems, toConsentMetadata } from '../lib/consent.js'
 import { isBlockedRegion } from '../lib/regions.js'
-import { createCheckoutSession, StripeError } from '../lib/stripe.js'
+import { createCheckoutSession, getPriceId, StripeError } from '../lib/stripe.js'
 import { error, isSameOrigin, json } from '../lib/http.js'
 import { logError } from '../lib/log.js'
 
@@ -52,7 +52,7 @@ export async function onRequestPost(context) {
     return error('consent_version_mismatch', 409)
   }
 
-  const priceId = env[plan.priceEnvKey]
+  const priceId = getPriceId(env, productId, planId)
   if (!env.STRIPE_SECRET_KEY || !priceId) {
     logError('checkout_not_configured', { product: productId, plan: planId })
     return error('server_not_configured', 500)

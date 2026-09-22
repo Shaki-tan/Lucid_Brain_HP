@@ -1,5 +1,5 @@
 // プロダクト × プランのレジストリ。プロダクト固有の「値」はここだけに書く（SPEC §8.2）。
-// ハンドラ側に価格ID・R2キー・遷移先を直書きしない。
+// ハンドラ側に金額・配布ファイル・遷移先を直書きしない。
 //
 // プロダクト追加時に触るのは次の5つ（SPEC §8.2）。
 //   1. このファイルに1エントリ
@@ -17,16 +17,19 @@ export const PRODUCTS = {
     plans: {
       free: {
         billing: 'free',
-        // R2 のバケット名・オブジェクトキーはリネーム対象外（SPEC §8.1 / §9）。
-        r2Key: 'latest/Chronos-Free-Setup.exe',
-        downloadName: 'PawgressFreeSetup.exe',
+        // 配布ファイル名の型。{version} はアップロード時にファイル名から読み取る。
+        // R2 のキーはここから組む（functions/lib/releases.js・SPEC §8.5）。
+        releaseFile: 'Pawgress-Free-Windows-{version}-Setup.exe',
       },
       paid: {
         billing: 'one_time',
         checkoutMode: 'payment',
-        priceEnvKey: 'STRIPE_PRICE_PAWGRESS_PAID',
-        r2Key: 'latest/Chronos-Setup.exe',
-        downloadName: 'PawgressSetup.exe',
+        // Stripe に Price を作るときの値。Worker は読まず、scripts/ops.mjs stripe だけが読む。
+        // LP の表示価格（日英）と一致させる。変えて stripe を流すと新しい Price が作られ、
+        // secret STRIPE_PRICES も差し替わる。Stripe の Price は金額を後から変えられないため。
+        unitAmount: 2980,
+        currency: 'jpy',
+        releaseFile: 'Pawgress-Windows-{version}-Setup.exe',
         consentSet: 'one_time',
         consentVersion: '2026-09-17',
       },
@@ -34,7 +37,6 @@ export const PRODUCTS = {
       // pro: {
       //   billing: 'subscription',
       //   checkoutMode: 'subscription',
-      //   priceEnvKey: 'STRIPE_PRICE_PAWGRESS_PRO',
       //   consentSet: 'subscription',
       //   consentVersion: '2026-09-17',
       //   hasPortal: true,

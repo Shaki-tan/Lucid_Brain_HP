@@ -3,12 +3,12 @@
 # （SPEC §7.5 / リリース前チェックリストの 6・7）
 #
 #   bash tests/smoke.sh                                   # 既定のベースURLに対して
-#   bash tests/smoke.sh https://pawgress-site.workers.dev  # ベースURLを指定して
+#   bash tests/smoke.sh https://lucud-brain-site.workers.dev  # ベースURLを指定して
 #   bash tests/smoke.sh http://127.0.0.1:8787              # wrangler dev に対して
 
 set -uo pipefail
 
-BASE="${1:-https://pawgress-site.workers.dev}"
+BASE="${1:-https://lucud-brain-site.workers.dev}"
 BASE="${BASE%/}"
 status=0
 

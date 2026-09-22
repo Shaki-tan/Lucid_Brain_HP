@@ -9,20 +9,18 @@
 import { resolvePlan } from '../lib/products.js'
 import { checkEntitlement } from '../lib/entitlement.js'
 import { streamObject } from '../lib/r2.js'
+import { toLatestFileName, toLatestKey } from '../lib/releases.js'
 import { text } from '../lib/http.js'
 import { logError, logInfo, sessionTail } from '../lib/log.js'
-
-// 既定値はプロダクト追加前に発行済みの thanks URL（?session_id= のみ）を生かすためにある。
-const DEFAULT_PRODUCT = 'pawgress'
-const DEFAULT_PLAN = 'paid'
 
 export async function onRequestGet(context) {
   const { request, env } = context
   const url = new URL(request.url)
 
   const sessionId = url.searchParams.get('session_id')
-  const productId = url.searchParams.get('product') || DEFAULT_PRODUCT
-  const planId = url.searchParams.get('plan') || DEFAULT_PLAN
+  // 既定値を持たない。プロダクトが増えたとき、省略された URL に別の製品を配らないため
+  const productId = url.searchParams.get('product')
+  const planId = url.searchParams.get('plan')
 
   if (!sessionId) {
     return text('Missing session_id', 400)
@@ -50,10 +48,11 @@ export async function onRequestGet(context) {
     return text('Not entitled', 403)
   }
 
-  const response = await streamObject(env.RELEASES, plan.r2Key, plan.downloadName)
+  const key = toLatestKey(productId, plan)
+  const response = await streamObject(env.RELEASES, key, toLatestFileName(plan))
   if (!response) {
-    // R2 のキーとレジストリがずれている。再構築手順の対象（SPEC §7.5）。
-    logError('download_object_missing', { product: productId, plan: planId, r2_key: plan.r2Key })
+    // exe が置かれていない。scripts/ops.mjs upload で置く（SPEC §8.5）。
+    logError('download_object_missing', { product: productId, plan: planId, r2_key: key })
     return text('File not found', 404)
   }
 

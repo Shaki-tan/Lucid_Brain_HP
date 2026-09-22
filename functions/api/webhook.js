@@ -10,6 +10,17 @@ import { logInfo } from '../lib/log.js'
 
 const SIGNATURE_TOLERANCE_SECONDS = 300
 
+// Stripe に購読を登録するイベントの一覧。scripts/ops.mjs が Webhook エンドポイントを作るときにこれを読む。
+// 受信側の分岐と購読の登録が同じ一覧を見るため、片方だけ足す漏れが起きない。
+export const WEBHOOK_EVENTS = [
+  'checkout.session.completed',
+  'checkout.session.expired',
+  'payment_intent.payment_failed',
+  // 異議申し立てへの対応（証拠提出等）はスコープ外。気づくためだけに受ける。
+  // 証拠として提出できる同意の版と時刻は、該当決済のメタデータにある（SPEC §8.4）。
+  'charge.dispute.created',
+]
+
 function parseSignatureHeader(header) {
   const parts = {}
   header.split(',').forEach((pair) => {
@@ -76,19 +87,8 @@ export async function onRequestPost(context) {
 
   // 残すのはイベント種別とIDだけにする。金額・購入者・同意の記録は Stripe 側にあり、
   // Workers Logs に二重に持つと管理対象が増えるだけである（SPEC §8.4 原則3）。
-  switch (event.type) {
-    case 'checkout.session.completed':
-    case 'checkout.session.expired':
-    case 'payment_intent.payment_failed':
-      logInfo('stripe_webhook', { type: event.type, id: event.data?.object?.id ?? null })
-      break
-    case 'charge.dispute.created':
-      // 異議申し立てへの対応（証拠提出等）はスコープ外（Payment Disputes 権限は「なし」のまま）。
-      // 証拠として提出できる同意の版と時刻は、該当決済のメタデータにある（SPEC §8.4）。
-      logInfo('stripe_webhook', { type: event.type, id: event.data?.object?.id ?? null })
-      break
-    default:
-      break
+  if (WEBHOOK_EVENTS.includes(event.type)) {
+    logInfo('stripe_webhook', { type: event.type, id: event.data?.object?.id ?? null })
   }
 
   return text('ok', 200)

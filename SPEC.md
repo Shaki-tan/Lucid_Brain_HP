@@ -199,10 +199,10 @@ GET  /api/region                    接続元の国コードと販売可否。�
 
 ドメインは未確定である。確定するまで `*.workers.dev` を前提に実装し、確定後に以下を併せて更新する。
 
-- `wrangler.jsonc` の `name`
-- `canonical` / `og:url` の絶対URL
-- `sitemap.xml`
-- Stripe の `success_url` / `cancel_url`（環境変数でベースURLを持たせ、コード変更が不要な形にする）
+- `wrangler.jsonc` の `routes`（`custom_domain` でドメインを割り当てる。Worker 名 `lucud-brain-site` は変えない）
+- `canonical` / `og:url` の絶対URL（いまは仮に `https://lucud-brain-site.workers.dev`。実際の `*.workers.dev` はアカウントのサブドメインを含むため、この値のままでは正しくない）
+- `sitemap.xml` / `robots.txt`
+- `wrangler.jsonc` の `vars.SITE_BASE_URL`。Stripe の `success_url` / `cancel_url` と Webhook の宛先はここから組む。変えたら `scripts/ops.mjs` の `deploy` と `stripe` を流す（§7.6）
 
 ---
 
@@ -220,7 +220,8 @@ root
 |  |--lib/                           # エンドポイント間で共有するロジック
 |  |  |--consent.js                   # 同意文言の読み取りと metadata 化（§8.4）
 |  |  |--products.js                 # プロダクト×プランのレジストリ（唯一の定義元）
-|  |  |--stripe.js                   # Stripe API 呼び出しラッパ（APIバージョンの固定もここ）
+|  |  |--stripe.js                   # Stripe API 呼び出しラッパ（APIバージョンの固定と価格IDの解決もここ）
+|  |  |--releases.js                 # 配布ファイルの R2 キーと版の読み取り（§8.5）
 |  |  |--entitlement.js              # DL可否の判定（買い切り／サブスクの差はここだけ）
 |  |  |--regions.js                  # 販売しない地域の一覧と判定（§7.2）
 |  |  |--r2.js                       # R2オブジェクトのストリーム配信
@@ -288,12 +289,10 @@ root
 |  |--_headers                       # セキュリティヘッダ・キャッシュ制御
 |  |--_redirects                     # 旧URLからの転送
 |
-|--setup/                            # セットアップ用CLIコマンド（未着手。ディレクトリも未作成）
-|  |--stripe/
-|  |--cloudflare/
-|
 |--scripts/                          # 開発用スクリプト。配信されない・依存を持たない（§1.2 / §7.5）
 |  |--preview.mjs                    # 本番と同条件でキャッシュ無しに配信する確認用サーバー
+|  |--ops.mjs                        # 構築・デプロイ・設定の CLI（§7.6）
+|  |--ops/                           # ops.mjs の部品（設定の読み取り・wrangler 起動・Stripe API・対話入力）
 |  |--font-subset/                   # Webフォントのサブセット生成の入力（§7.5）
 |  |  |--charset-base-ja.txt         # 和文の漢字以外。フォント本体はここに置かない
 |  |  |--charset-joyo.txt            # 常用漢字（未配置）
@@ -334,9 +333,9 @@ root
 | APIエンドポイントそのもの | `functions/api/` に1ファイル1エンドポイント |
 | 複数エンドポイントから呼ばれるロジック | `functions/lib/` |
 | 配信物の検査 | `tests/`。手でもCIでも同じものを回す（§7.5） |
-| 開発中に使う道具（確認用サーバー等） | `scripts/`。配信されず依存を持たないことが条件（§1.2） |
+| 開発中に使う道具（確認用サーバー・構築とデプロイの CLI 等） | `scripts/`。配信されず依存を持たないことが条件（§1.2） |
 | 生成物を作るための入力（フォントの文字リスト等） | `scripts/<用途>/`。**生成物は `public/` に、入力は `scripts/` に置く。** 入力は配信しない |
-| プロダクト固有の値（価格ID・R2キー・遷移先） | `functions/lib/products.js` のみ。ハンドラに直書きしない |
+| プロダクト固有の値（金額・配布ファイル名・遷移先） | `functions/lib/products.js` のみ。ハンドラに直書きしない |
 
 PDF だけは「1プロダクトでしか使わないものはプロダクト配下」の例外とする。
 `assets/` は「ページが表示のために読み込む資産」だが、PDF は「単体で配布・共有される成果物」であり性質が違うこと、そして人に渡す URL は短いほうがよいことによる。
@@ -365,7 +364,6 @@ public/products/<name>/assets/{css,js,images,fonts}/    そのプロダクト固
 | CSS を4ファイルに分割 | 1枚のままだとトップとLPのスタイルが混ざり、片方の修正が他方を壊す。トークンを分離すると配色変更が1ファイルで済む |
 | `functions/lib/` の新設 | Stripe 呼び出し・R2配信・エラー整形が各ハンドラに重複しているため |
 | `products.js` の新設 | プロダクト追加時に触るファイルを1つに閉じるため（§8.2） |
-| `setup/Stripe/` を `setup/stripe/` へ | `AGENTS.md` 1.1 の「エコシステム標準ディレクトリは標準に従う」に合わせる |
 | `_headers` / `_redirects` の追加 | セキュリティヘッダとURL移行を、コードではなくリポジトリ内の設定ファイルで扱うため（§1.2 の優先順位） |
 | `assets/js/partials.js` の新設 | ヘッダー・フッターの重複を物理的に排除するため（§5） |
 | `docs/` を第2階層で分ける | 配布用PDFを `public/docs/<区分>/` に一元管理するため（§4.3） |
@@ -970,12 +968,72 @@ Cloudflare 側では当たらない書き方であり、ローカルだけ当た
 
 **再構築手順に必要な情報。** リポジトリには無く、事故ったときに必要になるもの。
 
-- R2 バケット名と、中に置く exe のキー（§8.2 のレジストリと一致させる）
-- Stripe の商品・価格ID、Webhook の宛先とイベント種別、署名シークレット
+- R2 に置く exe の実物（控えは R2 の `<product>/<version>/` にあるが、バケットごと失ったときは手元の実物が要る・§8.5）
+- Webhook の署名シークレット（値。無くしたら `scripts/ops.mjs stripe --rotate-webhook` で取り直せる）
 - Wrangler の secret 一覧（名前だけ。値は持たない）
 - ドメインと DNS の設定先
 - Cloudflare / Stripe アカウントの管理者と、登録している支払い方法
 - Stripe を解約・乗り換えする場合は、事前に決済履歴を CSV でエクスポートする（§8.4）
+
+### 7.6 構築・デプロイ・設定の CLI
+
+Cloudflare と Stripe の構築、デプロイ、secret の投入は `scripts/ops.mjs` で行う。
+デプロイは CLI から行い、GitHub への push とは連動させない。
+
+```
+node scripts/ops.mjs status                        何が済んでいて何が残っているか
+node scripts/ops.mjs setup                         初回構築（ログイン → R2 → exe → デプロイ → Stripe）
+node scripts/ops.mjs deploy                        検査 → デプロイ → スモーク
+node scripts/ops.mjs upload <product> <plan> <file>  exe を R2 に置く（版の控え → latest・§8.5）
+node scripts/ops.mjs restore <product> <plan> <version>  latest を控えの版に戻す
+node scripts/ops.mjs stripe                        商品・価格・Webhook を揃え、secret を入れる
+node scripts/ops.mjs secret <NAME>                 secret を1つ入れ直す
+node scripts/ops.mjs smoke / logs                  スモーク / 本番ログ
+```
+
+**状態の定義元はリポジトリである。** どのコマンドも何度流しても同じ状態に収束し、
+ダッシュボードの状態に合わせるのではなく、リポジトリの記述に向こうを合わせる（§1.2）。
+
+| 作るもの | 定義元 |
+|---|---|
+| Worker 名・R2 バケット・公開URL（`SITE_BASE_URL`） | `wrangler.jsonc` |
+| R2 のオブジェクトキー（`releaseFile` から組む）、Stripe の商品・価格（金額・通貨） | `functions/lib/products.js` |
+| Webhook の購読イベント | `functions/api/webhook.js` の `WEBHOOK_EVENTS` |
+| Stripe の API バージョン（Worker と Webhook の両方） | `functions/lib/stripe.js` の `STRIPE_API_VERSION` |
+| Worker が要る secret の名前 | `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` / `STRIPE_PRICES` の3つで固定 |
+
+**プロダクトが増えても名前は増やさない。** Worker・バケット・バインディング・secret の名前はどれも会社単位で1つであり、
+プロダクトごとの違いはレジストリのプロダクトIDで分ける（R2 のフォルダ、Stripe の商品ID、`STRIPE_PRICES` のキー）。
+
+- **Stripe の商品IDはレジストリのプロダクトID**（`pawgress`）、**価格は `lookup_key`**（`<product>_<plan>`）で引く。
+  Price は金額を後から変えられないため、`products.js` の `unitAmount` と食い違えば新しい Price を作って
+  `lookup_key` を移し、古いものは無効化する。
+- **価格IDは secret `STRIPE_PRICES` に JSON で1つにまとめる**（`{"pawgress_paid":"price_..."}`）。
+  キーは `lookup_key` と同じ `<product>_<plan>`。`stripe` を流すたびに全プランぶんを組み直して入れる。
+- **Webhook の署名シークレットは作成時にしか返らない。** Worker に `STRIPE_WEBHOOK_SECRET` が無い、
+  または API バージョンが違う場合は、エンドポイントを作り直して取り直す。新しいものを作ってから古いものを消す。
+- **Stripe のキーはどこにも保存しない。** 環境変数 `STRIPE_API_KEY` か実行時の伏字入力で渡す。
+  テスト / 本番はキーの接頭辞で決まり、本番のときは確認を挟む。
+  Worker に入れる `STRIPE_SECRET_KEY` は、構築に使ったキーと別の制限付きキーにしてよい。
+- **secret の値は標準入力で wrangler に渡す。** 引数に載せるとプロセス一覧とシェル履歴に残る。
+- **wrangler の版は `scripts/ops/shell.mjs` の `WRANGLER` で固定する。** `npx` は版を指定しないと毎回最新を取りに行き、
+  放置しているあいだに挙動が変わる。リポジトリの依存には入れない（`package.json` を作らない）。
+- **デプロイは git に残っている状態だけを出す。** 未コミットの変更があれば止める。
+  版のメッセージにコミットのハッシュを入れ、どの版が出ているかを後から辿れるようにする。
+- **デプロイ前に `tests/` を回す。** `check-placeholders.sh` だけは公開前まで落ちるのが正しいため、止めずに知らせる。
+  デプロイ後は `tests/smoke.sh` を流す。落ちても自動では戻さない（戻すのは `wrangler rollback`）。
+- **公開URLは初回デプロイの出力から拾い、`wrangler.jsonc` の `SITE_BASE_URL` に書き込む。**
+  `*.workers.dev` の URL はアカウントのサブドメインを含み、デプロイするまで分からないためである。
+  書き込み後は Webhook の宛先とスモークの対象がここから決まる。ドメインが確定したら書き換えて `stripe` を流し直す。
+
+API で設定できず、ダッシュボードで行うものは次のとおり。`stripe` の最後にも表示する。
+
+| 場所 | やること |
+|---|---|
+| Cloudflare → R2 | 新しいアカウントでは利用開始の手続きが要る（無料枠でも支払い方法の登録が要る） |
+| Cloudflare → Workers & Pages | `workers.dev` のサブドメイン登録（初回デプロイで対話的に求められなかった場合） |
+| Stripe → 設定 → 公開情報 | 事業者名・明細書表記・サポート連絡先 |
+| Stripe → 設定 → カスタマーへのメール | 「支払い成功」を有効にする（`checkout.js` が発行する請求書を届けるため） |
 
 ---
 
@@ -983,13 +1041,13 @@ Cloudflare 側では当たらない書き方であり、ローカルだけ当た
 
 ### 8.1 全体の設計
 
-- 構成は GitHub から Cloudflare Workers（静的アセット + Functions）、Stripe、Cloudflare R2。
+- 構成は Cloudflare Workers（静的アセット + Functions）、Stripe、Cloudflare R2。デプロイと構築は `scripts/ops.mjs` から行う（§7.6）。
 - 無料版・有料版とも、exe実体は R2 で管理する。公開ディレクトリに置くと、リンクの有無に関わらず直接URLで取得できてしまうため。
 - 有料版は Stripe Checkout（カード決済のみ）を使う。決済確認は Checkout Session ID をそのまま認可情報として扱い、リクエストの都度 Stripe API で `payment_status === 'paid'` を照会する。独自のトークン発行と署名管理は行わない。この方針は §1.2 の「時間で劣化するものを置かない」と整合している。
 - ダウンロードURLに独自の有効期限は設けない。
 - Stripe Webhook はダウンロード可否判定の必須経路にしない。用途は「Stripe 側で起きたことに気づくための通知」であり、記録の保存先ではない（§8.4）。
 - ルーティングは `worker.js` で明示的に行う（Pages Functions の自動ルーティングに問題が生じたため）。ハンドラ実体は `functions/api/*.js` を再利用する。
-- R2 バケット名 `chronos-releases` とオブジェクトキーは据え置く。内部名であり外部に露出しない。現行の実キーは `latest/Chronos-Setup.exe`（有償）と `latest/Chronos-Free-Setup.exe`（無償）。
+- R2 バケットは全プロダクトで1つ（`lucud-brain-releases`）とし、中をプロダクトIDのフォルダで分ける（§8.5）。
 - Stripe API のバージョンを `Stripe-Version` ヘッダで固定する。`functions/lib/stripe.js` の1箇所で付与する。
 - `/api/checkout` は Origin を検証する（§7.5）。
 
@@ -1013,14 +1071,9 @@ if (!url.pathname.startsWith('/api/')) {
 拡張子なしURLの解決と 404 ページの選択は `wrangler.jsonc` の `assets` 設定（`html_handling` /
 `not_found_handling`）に従う。`worker.js` はそこに手を入れない。
 
-**旧 thanks URL のフォールバック。** `/api/download` は `product` / `plan` が無いとき
-`pawgress` / `paid` を既定にする（`functions/api/download.js`）。
-プロダクトレジストリ導入前に発行された `?session_id=` だけの URL を生かすためである。
-
-購入者が thanks の URL を保管している可能性がある限り外せない。
-外す条件は「レジストリ導入前の購入者が再ダウンロードを要求しなくなったと判断できる時点」であり、
-判断材料は Stripe の決済履歴（レジストリ導入前の決済が残っているか）である。
-2つめのプロダクトを足すときに、既定値が誤配信を生まないかを必ず確認する。
+**ダウンロードの `product` / `plan` は省略させない。** `/api/download` と `/api/download-free` は既定値を持たず、
+無ければ 400 を返す。プロダクトが増えたとき、省略された URL に別の製品を配らないためである。
+thanks ページと LP のリンクは常に両方を付ける。
 
 **販売地域の制限。** 閾値がゼロの4地域（EU・UK・韓国・インド）からの購入を弾く（§7.2）。
 
@@ -1063,15 +1116,14 @@ export const PRODUCTS = {
     plans: {
       free: {
         billing: 'free',
-        r2Key: 'latest/Chronos-Free-Setup.exe',   // R2 のキーは据え置き（§8.1）
-        downloadName: 'PawgressFreeSetup.exe',
+        releaseFile: 'Pawgress-Free-Windows-{version}-Setup.exe',   // 配布ファイル名の型（§8.5）
       },
       paid: {
         billing: 'one_time',                      // 買い切り
         checkoutMode: 'payment',                  // Stripe Checkout の mode
-        priceEnvKey: 'STRIPE_PRICE_PAWGRESS_PAID',
-        r2Key: 'latest/Chronos-Setup.exe',
-        downloadName: 'PawgressSetup.exe',
+        unitAmount: 2980,                         // Stripe に Price を作るときの値。LP の表示と一致させる（§7.6）
+        currency: 'jpy',
+        releaseFile: 'Pawgress-Windows-{version}-Setup.exe',
         consentSet: 'one_time',                   // 同意文言のセット（§8.3）
         consentVersion: '2026-09-17',
       },
@@ -1079,7 +1131,6 @@ export const PRODUCTS = {
       // pro: {
       //   billing: 'subscription',
       //   checkoutMode: 'subscription',
-      //   priceEnvKey: 'STRIPE_PRICE_PAWGRESS_PRO',
       //   consentSet: 'subscription',            // 自動更新・解約条件を含む別セット
       //   hasPortal: true,                       // 解約導線に Stripe Customer Portal を使う
       // },
@@ -1090,7 +1141,9 @@ export const PRODUCTS = {
 
 エンドポイントは `?product=pawgress&plan=paid` を受け、レジストリに無い組み合わせは 400 を返す。
 
-プロダクト追加時に触るのは次の5つとする。プラン追加時は `plans` の1エントリと環境変数1つで済む。
+プロダクト追加時に触るのは次の5つとする。プラン追加時は `plans` の1エントリで済む。
+Stripe の価格・R2 のキー・secret はレジストリから組まれるため、どちらの場合も書き足した後に
+`scripts/ops.mjs` の `upload` / `deploy` / `stripe` を流すだけでよい（§7.6）。
 
 1. `functions/lib/products.js` に1エントリ
 2. `public/assets/js/partials.js` の `PRODUCTS` に表示名。ヘッダーのロゴタイプに出る（§5.2）。
@@ -1355,6 +1408,34 @@ Stripe の売上レポートとアナリティクス側の話であり、ログ�
 **保持と出口。** Stripe の記録はアカウントが有効な限り残り、帳簿の保存年限も満たす。
 ただし Stripe を解約すると消えるため、解約や乗り換えの際は決済履歴を CSV でエクスポートする（§7.5）。
 
+### 8.5 配布ファイルと版
+
+配布する exe のファイル名は、プランごとにレジストリの `releaseFile` が型として持つ。
+
+| プラン | ファイル名 |
+|---|---|
+| Pawgress 無料版 | `Pawgress-Free-Windows-<バージョン>-Setup.exe` |
+| Pawgress 有償版 | `Pawgress-Windows-<バージョン>-Setup.exe` |
+
+バージョンは `1.0.1` の形とし、`1.2.0-beta.1` のような接尾辞を許す。
+
+R2 には1つのファイルを2箇所に置く。キーは `functions/lib/releases.js` がプロダクトIDと `releaseFile` から組み、どこにも書き写さない。
+
+```
+<product>/latest/<型から -<バージョン> を除いた名前>   Worker が配るもの。版を上げるたびに上書きする
+<product>/<バージョン>/<ファイル名>                   版ごとの控え。上書きしない
+
+pawgress/latest/Pawgress-Windows-Setup.exe
+pawgress/1.0.1/Pawgress-Windows-1.0.1-Setup.exe
+```
+
+- **latest のキーには版を入れない。** 版を上げるたびに Worker のデプロイが要る形を避けるためである。
+  購入者が受け取るファイル名は版つきにする。アップロード時にオブジェクトの `Content-Disposition` に入れておき、Worker はそれをそのまま返す。
+- **置く順番は控え → latest とする。** latest を上書きする時点で、その版が必ず控えに残っている状態にするため。
+- **控えは上書きしない。** 同じ版番号で中身を差し替えると、配った版と控えの中身が食い違う。直すときは版番号を上げる。
+- **版はファイル名から読む。** 型に合わないファイルは置かない。無料版と有償版の取り違えもここで止まる。
+- **latest を戻すときは控えから置き直す**（`scripts/ops.mjs restore`）。thanks の URL は常に latest を指すため、戻せば既存の購入者にも戻った版が配られる。
+
 ---
 
 ## 9. Chronos から Pawgress へのリネーム
@@ -1362,18 +1443,12 @@ Stripe の売上レポートとアナリティクス側の話であり、ログ�
 **完了している。** 旧構成（`public/src/i18n.js` / `public/src/script.js` / `public/thanks.html` 等）は
 移設で消えており、表記は `Pawgress` に統一されている。
 
-現時点で `Chronos` が残っているのは次の3箇所で、**いずれも意図的である**。
-
-| 残っている場所 | 理由 |
-|---|---|
-| `functions/lib/products.js` の `r2Key`（2箇所） | R2 のオブジェクトキー。内部名であり外部に露出しない（§8.1） |
-| `wrangler.jsonc` の `bucket_name: "chronos-releases"` | 同上。バケット名の変更は実体の作り直しになる |
-| `public/_redirects` のコメント（2箇所） | 旧URLが何だったかの説明。転送規則そのものの根拠なので消さない |
+現時点で `Chronos` が残っているのは `public/_redirects` のコメント（2箇所）だけで、**意図的である**。
+旧URLが何だったかの説明であり、転送規則そのものの根拠なので消さない。
 
 - 表記は `Pawgress` とする。P のみ大文字で、以降は小文字。
 - ファビコンとロゴの猫モチーフ（SVG）は、名称変更後も意味が通るため流用している。
-- R2 のバケット名とオブジェクトキーはリネーム対象外とする（§8.1）。
-  実キーは `latest/Chronos-Setup.exe`（有償）と `latest/Chronos-Free-Setup.exe`（無償）。
+- Cloudflare と Stripe はゼロから構築し直すため、R2 のバケット名とキーにも旧名を残さない（§8.5）。
 
 ---
 
@@ -1403,7 +1478,6 @@ Stripe の売上レポートとアナリティクス側の話であり、ログ�
 
 | # | 確認すること | 現時点で分かっていること |
 |---|---|---|
-| 1 | R2 バケット内の実際のオブジェクトキー | コード上は `latest/Chronos-Setup.exe` と `latest/Chronos-Free-Setup.exe` |
 | 2 | **`_headers` が Workers Static Assets で効いているか**（CSP・キャッシュ制御とも） | `_headers` は元々 Pages の機能で、`env.ASSETS.fetch()` 経由の配信に適用されるかは未確認（§8.1）。効いていなければ CSP もキャッシュ制御も付いていない。**確認は `bash tests/smoke.sh <本番URL>`** で、ヘッダが返らなければ落ちる |
 | 2b | CSP を入れた状態で全ページが動くか | 2 が効いていることが前提。DevTools のコンソールに CSP 違反が出ないかを日英の全ページで見る |
 | 3 | 存在しないURLが実際に 404 ステータスを返すか | `tests/smoke.sh` が `/this-page-does-not-exist` で確認する |

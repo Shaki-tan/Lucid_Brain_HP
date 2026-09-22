@@ -1,7 +1,8 @@
 {
-  // ドメイン確定まで *.workers.dev を前提にする（SPEC §3）。
-  // 確定時は name と、canonical / og:url / sitemap.xml / SITE_BASE_URL を併せて更新する。
-  "name": "pawgress-site",
+  // 会社サイトとしての名前。プロダクトが増えても変えない。*.workers.dev の URL に出る。
+  // ドメイン確定まで *.workers.dev を前提にする。確定時は routes（custom_domain）を足し、
+  // canonical / og:url / sitemap.xml / SITE_BASE_URL を併せて更新する（SPEC §3）。
+  "name": "lucud-brain-site",
   // Workers 側の挙動変化に巻き込まれないよう固定する（SPEC §7.5）。
   "compatibility_date": "2026-09-11",
   "main": "worker.js",
@@ -14,11 +15,16 @@
     // /en/ 配下は public/en/404.html が当たる（SPEC §7.4）。
     "not_found_handling": "404-page"
   },
+  "vars": {
+    // 公開URL。Stripe の success_url / cancel_url のベースで、scripts/ops.mjs の Webhook 宛先とスモークの対象にもなる。
+    // 空のあいだ Worker はリクエストの origin を使う。初回デプロイ後に scripts/ops.mjs が書き込む（SPEC §3）。
+    "SITE_BASE_URL": ""
+  },
   "r2_buckets": [
     {
       "binding": "RELEASES",
-      // バケット名とオブジェクトキーはリネーム対象外。内部名であり外部に露出しない（SPEC §8.1 / §9）。
-      "bucket_name": "chronos-releases"
+      // 全プロダクトの配布ファイルを1つのバケットに置き、中をプロダクトIDのフォルダで分ける（SPEC §8.5）。
+      "bucket_name": "lucud-brain-releases"
     }
   ],
   // 障害時に手掛かりを残す。1行で済み、ダッシュボード操作が要らない（SPEC §7.5 / §8.4）。
