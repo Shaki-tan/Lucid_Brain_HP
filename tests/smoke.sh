@@ -3,7 +3,7 @@
 # （SPEC §7.5 / リリース前チェックリストの 6・7）
 #
 #   bash tests/smoke.sh                                   # 既定のベースURLに対して
-#   bash tests/smoke.sh https://lucud-brain-site.workers.dev  # ベースURLを指定して
+#   bash tests/smoke.sh https://lucidbrain.jp  # ベースURLを指定して
 #   bash tests/smoke.sh http://127.0.0.1:8787              # wrangler dev に対して
 #
 # テスト環境は Cloudflare Access の内側にある（SPEC §7.7）。サービストークンを環境変数で渡すと、
@@ -13,7 +13,7 @@
 
 set -uo pipefail
 
-BASE="${1:-https://lucud-brain-site.workers.dev}"
+BASE="${1:-https://lucidbrain.jp}"
 BASE="${BASE%/}"
 status=0
 

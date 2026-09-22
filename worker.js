@@ -26,9 +26,18 @@ const ROUTES = [
 
 const API_PREFIX = '/api/'
 
+// www 付きで来たら、www なしの同じパスへ恒久的に転送する。URL を1つに揃えるため（SPEC §3）。
+// ホスト名を書かないので、ドメインが変わってもここは直さずに済む。
+const WWW_PREFIX = 'www.'
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url)
+
+    if (url.hostname.startsWith(WWW_PREFIX)) {
+      url.hostname = url.hostname.slice(WWW_PREFIX.length)
+      return Response.redirect(url.toString(), 301)
+    }
 
     if (!url.pathname.startsWith(API_PREFIX)) {
       // 静的アセット。拡張子なしURLと 404 ページの扱いは wrangler.jsonc の assets 設定に従う。

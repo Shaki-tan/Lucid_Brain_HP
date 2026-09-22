@@ -1,6 +1,6 @@
 # SPEC
 
-Lucud Brain コーポレートサイトの仕様。
+Lucid Brain コーポレートサイトの仕様。
 
 本書は仮確定である。判断の経緯と却下案は `Tasks/` 配下の作業文書に置いてあり、本書には結論だけを書く。
 実装前に確認が要る事項は §10 に列挙した。
@@ -16,7 +16,7 @@ Lucud Brain コーポレートサイトの仕様。
 
 ## 1. サイトの位置づけ
 
-本リポジトリは Lucud Brain のコーポレートサイトである。
+本リポジトリは Lucid Brain のコーポレートサイトである。
 
 これまで単一プロダクト（Chronos）のLPだったが、次の2点により位置づけを変更した。
 
@@ -197,12 +197,26 @@ GET  /api/region                    接続元の国コードと販売可否。�
 - 拡張子なしURLで配信する。`public/legal/privacy.html` は `/legal/privacy` で引ける（Workers Static Assets の既定の HTML ハンドリング。`.html` 付きURLは拡張子なしへ301される）。
 - 現行の `/`（Chronos LP）は `/products/pawgress/` へ移る。既存のブックマークと被リンクが切れるため、`_redirects` に転送を置く。PDF の旧URL（`/docs/*`）も同様に確認する。
 
-ドメインは未確定である。確定するまで `*.workers.dev` を前提に実装し、確定後に以下を併せて更新する。
+ドメインは `lucidbrain.jp` とする。最初からこのドメインで配信し、`*.workers.dev` は使わない（`workers_dev: false`）。
+公開URLを途中で変えると、以下のすべてと Stripe の Webhook・Access の設定を作り直すことになるためである。
 
-- `wrangler.jsonc` の `routes`（`custom_domain` でドメインを割り当てる。Worker 名 `lucud-brain-site` は変えない）
-- `canonical` / `og:url` の絶対URL（いまは仮に `https://lucud-brain-site.workers.dev`。実際の `*.workers.dev` はアカウントのサブドメインを含むため、この値のままでは正しくない）
+| 環境 | URL |
+|---|---|
+| 本番 | `https://lucidbrain.jp` |
+| 本番（www） | `https://www.lucidbrain.jp` は `lucidbrain.jp` の同じパスへ 301 で転送する |
+| テスト | `https://staging.lucidbrain.jp`（§7.7） |
+
+本体は www なしとする。www 付きで打たれても同じサイトに着くよう、転送は必ず置く。
+転送は `worker.js` が行う（ダッシュボードのリダイレクトルールより、リポジトリ内で解く・§1.2）。
+ホスト名を書かずに「`www.` を外す」とだけ書いてあるため、ドメインを変えても転送の側は直さずに済む。
+転送は Access より手前で行われるので、公開前でも www 付きのホストに Access は要らない（中身は転送先の Access が守る）。
+
+同じURLを持つ場所は次のとおり。変えるときは全部を揃える。
+
+- `wrangler.jsonc` の `routes`（`custom_domain`）と `vars.SITE_BASE_URL`。Stripe の `success_url` / `cancel_url` と Webhook の宛先は `SITE_BASE_URL` から組む
+- `canonical` / `hreflang` / `og:url` の絶対URL（全 HTML）
 - `sitemap.xml` / `robots.txt`
-- `wrangler.jsonc` の `vars.SITE_BASE_URL`。Stripe の `success_url` / `cancel_url` と Webhook の宛先はここから組む。変えたら `scripts/ops.mjs` の `deploy` と `stripe` を流す（§7.6）
+- Cloudflare Access のアプリケーションのホスト名（§7.7）
 
 ---
 
@@ -639,7 +653,7 @@ Pawgress 側は各ページの `<meta name="theme-color">` が生の値を持つ
 - 購入ボタンを同意ダイアログ経由に変更（§8.3）
 - Chronos から Pawgress へのリネーム（§9。時期は別途指示）
 
-LP から会社側への導線は、フッターのコピーライトの社名（`© <年> Lucud Brain`）1本だけとする。
+LP から会社側への導線は、フッターのコピーライトの社名（`© <年> Lucid Brain`）1本だけとする。
 パンくずリストや運営表記のように、本文やヒーローに導線を足さない。
 読み手が見に来たのは会社ではなくプロダクトであり、目立つ位置に会社への導線を置いても離脱にしかならない。
 コーポレート側ではこの社名をリンクにしない。ヘッダーのロゴタイプが同じ名前で同じ先を指すため、
@@ -790,7 +804,7 @@ JPY 表記のみと同じ性質の防御である。
 | `_headers`（CSP 等） | 配信時に付けるHTTPヘッダの設定ファイル。CSP は読み込んでよい外部リソースをブラウザに宣言し、それ以外を実行させない | 済（**効いているかは未確認**） | §10.2 の2。`tests/smoke.sh` で判定できる |
 | `site.webmanifest` / `apple-touch-icon` | スマホで「ホーム画面に追加」したときのアイコン名・色・画像を決める設定と画像 | 済 | ロゴ未確定のため後で差し替えが発生する |
 | Webフォントのセルフホスト | 書体ファイルを自前で配信する。外部 CDN から読み込まない（§7.5 セキュリティ） | **未（着手する）** | 書体とウェイトの決定が前提。器（`@font-face` のブロックと手順）は用意済み |
-| アナリティクス | 閲覧数と流入元を記録する。Cloudflare Web Analytics は Cookie を使わず、スクリプト1本を貼るだけ | **未（公開前に入れる）** | 外部スクリプトが1本増え、§2.3 の「外部読み込みゼロ」の唯一の例外になる。CSP の許可先も足す。`*.workers.dev` では自動注入が使えず手貼りになる |
+| アナリティクス | 閲覧数と流入元を記録する。Cloudflare Web Analytics は Cookie を使わず、スクリプト1本を貼るだけ | **未（公開前に入れる）** | 外部スクリプトが1本増え、§2.3 の「外部読み込みゼロ」の唯一の例外になる。CSP の許可先も足す。自動注入を使うか手貼りにするかは導入時に決める |
 
 #### 近い将来必要になる
 
@@ -858,13 +872,13 @@ CSS 4本 + JS 2〜3本のこの規模では体感に出ない。
 サーバからは取り消せない。設定を直した後も、既に配った窓のぶんは待つか、強制再読み込みが要る。
 
 手元での確認は `scripts/preview.mjs` を使う。`no-store` を返すため、キャッシュが混ざらない。
-`*.workers.dev` はデプロイするまで古いままである。この2つを混同すると、直したものが出ていないように見える。
+本番・テストのURLは、push してビルドが終わるまで古いままである。この2つを混同すると、直したものが出ていないように見える。
 
 #### 検索最適化
 
 | 項目 | 要件 |
 |---|---|
-| `canonical` | 全ページに絶対URLで自己参照。ドメイン確定まで暫定値 |
+| `canonical` | 全ページに絶対URL（`https://lucidbrain.jp/...`）で自己参照 |
 | `hreflang` | 日英を相互に張り、`x-default` は日本語を指す |
 | 言語の自動リダイレクト | しない。切替はリンクで行う（§2.1・§7.2） |
 | `sitemap.xml` | 日英の全URLを列挙する。`lastmod` は手で更新する |
@@ -1027,18 +1041,17 @@ node scripts/ops.mjs deploy                        手元からのデプロイ�
 - **手元からの `deploy` は、環境に対応するブランチ（本番は `main`、テストは `develop`）にいて、未コミットの変更が無いときだけ出す。**
   別の環境のコードや、git に残っていないものを出さないためである。デプロイ後に `tests/smoke.sh` を流す。
   落ちても自動では戻さない（戻すのは `wrangler rollback`）。
-- **公開URLは初回デプロイの出力から拾い、`wrangler.jsonc` の `SITE_BASE_URL` に書き込む。**
-  `*.workers.dev` の URL はアカウントのサブドメインを含み、デプロイするまで分からないためである。
-  書き込み後は Webhook の宛先とスモークの対象がここから決まる。ドメインが確定したら書き換えて `stripe` を流し直す。
+- **Webhook の宛先とスモークの対象は、`wrangler.jsonc` の `SITE_BASE_URL` から決まる。** URL はリポジトリに最初から書いてあり（§3）、
+  デプロイの結果から拾うことはしない。
 
 API で設定できず、ダッシュボードで行うものは次のとおり。`setup` と `stripe` の最後にも表示する。
 
 | 場所 | やること |
 |---|---|
+| Cloudflare → ドメインの追加 | `lucidbrain.jp` をゾーンとして追加し、レジストラでネームサーバーを Cloudflare に向ける（§3） |
 | Cloudflare → R2 | 新しいアカウントでは利用開始の手続きが要る（無料枠でも支払い方法の登録が要る） |
-| Cloudflare → Workers & Pages | `workers.dev` のサブドメイン登録（初回デプロイで対話的に求められなかった場合） |
+| Cloudflare → Zero Trust | Cloudflare Access（§7.7）。Worker より先に作る |
 | Cloudflare → 各 Worker → 設定 → ビルド | GitHub との接続（§7.7） |
-| Cloudflare → テスト環境の Worker / Zero Trust | Cloudflare Access（§7.7） |
 | Stripe → 設定 → 公開情報 | 事業者名・明細書表記・サポート連絡先 |
 | Stripe → 設定 → カスタマーへのメール | 「支払い成功」を有効にする（`checkout.js` が発行する請求書を届けるため） |
 
@@ -1050,19 +1063,20 @@ API で設定できず、ダッシュボードで行うものは次のとおり�
 | | 本番 | テスト |
 |---|---|---|
 | ブランチ | `main` | `develop` |
-| Worker | `lucud-brain-site` | `lucud-brain-site-staging`（`wrangler.jsonc` の `env.staging`） |
-| R2 バケット | `lucud-brain-releases` | `lucud-brain-releases-staging` |
+| URL | `https://lucidbrain.jp`（`www.` 付きはここへ転送） | `https://staging.lucidbrain.jp` |
+| Worker | `lucid-brain-site` | `lucid-brain-site-staging`（`wrangler.jsonc` の `env.staging`） |
+| R2 バケット | `lucid-brain-releases` | `lucid-brain-releases-staging` |
 | Stripe | 公開前はテストモード、公開時に本番モードへ切り替える | 常にテストモード。`ops.mjs` が本番キーを拒否する |
-| アクセス | 公開 | Cloudflare Access の内側。`/api/webhook` だけ素通しにする |
+| アクセス | **公開するまでは Cloudflare Access の内側**。公開時に外す | 常に Cloudflare Access の内側 |
 | `ops.mjs` | 環境指定なし | `--env staging` |
 
-- `env.staging` では `vars` と `r2_buckets` を書き直す。wrangler の仕様でこの2つは継承されないためである。それ以外はトップレベルを継承する。
+- `env.staging` では `routes` / `vars` / `r2_buckets` を書き直す。wrangler の仕様でこれらは継承されないためである。
 - テスト環境の exe は別のバケットに置く。テスト用の版で本番の latest を上書きしないためである。
-- `preview_urls` は両環境とも `false` にする。確認はテスト環境で行うので使い道がなく、出せば未公開の版が Access の外に出る。
+- `workers_dev` と `preview_urls` は両環境とも `false` にする。入口を自分のドメインの2つに絞り、Access を掛け漏らす URL を作らない。
 
 **デプロイは GitHub への push で行う。** 各 Worker を Workers Builds で同じリポジトリにつなぎ、次のとおり設定する（ダッシュボード）。
 
-| 設定 | 本番（`lucud-brain-site`） | テスト（`lucud-brain-site-staging`） |
+| 設定 | 本番（`lucid-brain-site`） | テスト（`lucid-brain-site-staging`） |
 |---|---|---|
 | 本番ブランチ | `main` | `develop` |
 | ビルドコマンド | 空（ビルドを持たない） | 空 |
@@ -1077,17 +1091,24 @@ API で設定できず、ダッシュボードで行うものは次のとおり�
 **Worker は最初にCLIで作る。** `ops.mjs setup` が R2 を用意してから初回デプロイで Worker を作り、その後に GitHub をつなぐ。
 ダッシュボードの「リポジトリをインポート」から作ると、接続した瞬間の最初のビルドが R2 バケットの無い状態で走って失敗する。
 
-**テスト環境のアクセス制限は Cloudflare Access で掛ける。** 設定はダッシュボードにしか残らないため、ここに書き切る。
+**アクセス制限は Cloudflare Access で掛ける。** 検証は実機で行うが、中身が決まるまでは誰にも見せない。
+そのため本番も、公開するまではテスト環境と同じ設定で Access の内側に置く。
+設定はダッシュボードにしか残らないため、ここに書き切る。
 
 | 設定 | 内容 |
 |---|---|
-| 対象 | `lucud-brain-site-staging` の `workers.dev`（Worker の設定 → ドメインとルート → Cloudflare Access を有効化） |
+| 対象 | Zero Trust → Access のセルフホスト型アプリケーション。ホスト名 `staging.lucidbrain.jp` と、公開前は `lucidbrain.jp` |
 | 入れる人 | 許可したメールアドレスだけ（ワンタイムコードでログイン） |
-| 素通し | `/api/webhook` のパスに別のアプリケーションを作り、ポリシーを Bypass にする。Stripe はログインできないため。署名検証で守られている（§7.5） |
+| 素通し | 各ホスト名の `/api/webhook` に別のアプリケーションを作り、ポリシーを Bypass にする。Stripe はログインできないため。署名検証で守られている（§7.5） |
 | スモーク用 | サービストークンを発行し、Service Auth のポリシーで許可する。`tests/smoke.sh` は `CF_ACCESS_CLIENT_ID` / `CF_ACCESS_CLIENT_SECRET` があれば付けて通る |
 
-Access が効いているかと、`/api/webhook` が素通しになっているかは、`ops.mjs status --env staging` が外から叩いて確認する。
-Access を有効にするまでのあいだ（初回デプロイの直後）は、テスト環境のURLは誰でも見られる。
+**Access は Worker より先に作る。** Access はホスト名に掛かるので、Worker が無くても作れる。
+先に作っておけば、初回デプロイで URL が生まれた瞬間から Access の内側にあり、一度も外に見えない。
+`ops.mjs setup` は初回デプロイの前に、これを済ませたかを確認する。
+
+本番を公開したかは `scripts/ops/config.mjs` の `IS_LAUNCHED` に持つ。公開するときは、ダッシュボードで本番の Access を外し、
+これを `true` にする。この2つは必ずセットで行う。`ops.mjs status` / `smoke` はこの値を見て、
+Access の内側にあるべき環境では「Access が効いているか」と「`/api/webhook` が素通しになっているか」を外から叩いて確認する。
 
 ---
 
@@ -1101,7 +1122,7 @@ Access を有効にするまでのあいだ（初回デプロイの直後）は�
 - ダウンロードURLに独自の有効期限は設けない。
 - Stripe Webhook はダウンロード可否判定の必須経路にしない。用途は「Stripe 側で起きたことに気づくための通知」であり、記録の保存先ではない（§8.4）。
 - ルーティングは `worker.js` で明示的に行う（Pages Functions の自動ルーティングに問題が生じたため）。ハンドラ実体は `functions/api/*.js` を再利用する。
-- R2 バケットは全プロダクトで1つ（`lucud-brain-releases`）とし、中をプロダクトIDのフォルダで分ける（§8.5）。
+- R2 バケットは全プロダクトで1つ（`lucid-brain-releases`）とし、中をプロダクトIDのフォルダで分ける（§8.5）。
 - Stripe API のバージョンを `Stripe-Version` ヘッダで固定する。`functions/lib/stripe.js` の1箇所で付与する。
 - `/api/checkout` は Origin を検証する（§7.5）。
 
@@ -1512,7 +1533,6 @@ pawgress/1.0.1/Pawgress-Windows-1.0.1-Setup.exe
 
 | 事項 | 備考 |
 |---|---|
-| ドメイン | 確定まで `*.workers.dev` 前提。確定後の更新箇所は §3 に記載済み |
 | 会社の法的実体・正式名称・会社概要の内容 | 特商法表記と直結する。公開前に必須 |
 | X アカウント・メールアドレス・note のURL | プレースホルダで実装を進める。トップページの CONTACT 節にあり、日英2ファイルに同じものが入る（§6.2） |
 | legal 4種の本文（日英） | 例文で実装を進める。公開前に実文が必須 |

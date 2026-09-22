@@ -43,7 +43,7 @@
     ja: {
       home: '/',
       skipToMain: '本文へスキップ',
-      brandLabel: 'Lucud Brain トップへ',
+      brandLabel: 'Lucid Brain トップへ',
       // {name} にプロダクト名が入る
       productBrandLabel: '{name} のページ先頭へ',
       langSwitch: 'English',
@@ -59,7 +59,7 @@
     en: {
       home: '/en/',
       skipToMain: 'Skip to main content',
-      brandLabel: 'Lucud Brain home',
+      brandLabel: 'Lucid Brain home',
       productBrandLabel: '{name} page top',
       langSwitch: '日本語',
       langSwitchLabel: '日本語に切り替える',
@@ -94,7 +94,7 @@
   // プロダクトのページで社名を大きく出しても、読み手が見ているものの名前にならない。
   // 会社への導線は、フッターのコピーライトの社名が持つ（下の footerMarkup）。
   function headerMarkup(variant) {
-    var brandName = isProduct ? PRODUCTS[productSlug] : 'Lucud Brain'
+    var brandName = isProduct ? PRODUCTS[productSlug] : 'Lucid Brain'
     var brandHref = isProduct ? t.productsBase + productSlug + '/' : t.home
     var brandLabel = isProduct
       ? t.productBrandLabel.replace('{name}', brandName)
@@ -133,7 +133,7 @@
       // コーポレート側ではリンクにしない。ヘッダーのロゴタイプが同じ名前で同じ先を指しており、
       // 同一画面に「役割 + 名前」が同じリンクを2つ置かないためである（AGENTS.md 3.2）。
       '<p class="site-footer-copy">© ' + new Date().getFullYear() + ' ' +
-      (isProduct ? '<a href="' + t.home + '">Lucud Brain</a>' : 'Lucud Brain') +
+      (isProduct ? '<a href="' + t.home + '">Lucid Brain</a>' : 'Lucid Brain') +
       '</p>' +
       '<ul class="site-footer-links">' +
       (isProduct ? legalLink('refund', t.refund) : '') +

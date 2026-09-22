@@ -58,7 +58,7 @@ export async function onRequestPost(context) {
     return error('server_not_configured', 500)
   }
 
-  // ドメイン確定まで *.workers.dev を前提にする。確定後は SITE_BASE_URL を入れるだけでよい（SPEC §3）。
+  // 環境ごとの公開URLは wrangler.jsonc の SITE_BASE_URL が持つ。未設定ならリクエストの origin を使う（SPEC §3）。
   const baseUrl = (env.SITE_BASE_URL || new URL(request.url).origin).replace(/\/$/, '')
 
   // 時刻はサーバ側で採る（SPEC §8.4 原則4）。

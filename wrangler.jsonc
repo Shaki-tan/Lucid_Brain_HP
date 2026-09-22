@@ -1,8 +1,6 @@
 {
-  // 会社サイトとしての名前。プロダクトが増えても変えない。*.workers.dev の URL に出る。
-  // ドメイン確定まで *.workers.dev を前提にする。確定時は routes（custom_domain）を足し、
-  // canonical / og:url / sitemap.xml / SITE_BASE_URL を併せて更新する（SPEC §3）。
-  "name": "lucud-brain-site",
+  // 会社サイトとしての名前。プロダクトが増えても変えない。URL には出ない（ドメインは routes で割り当てる）。
+  "name": "lucid-brain-site",
   // Workers 側の挙動変化に巻き込まれないよう固定する（SPEC §7.5）。
   "compatibility_date": "2026-09-11",
   "main": "worker.js",
@@ -15,41 +13,50 @@
     // /en/ 配下は public/en/404.html が当たる（SPEC §7.4）。
     "not_found_handling": "404-page"
   },
+  // 自分のドメインで配信する。DNS レコードと証明書はデプロイ時に Cloudflare が作る（SPEC §3 / §7.7）。
+  // 前提: lucidbrain.jp がこのアカウントのゾーンとして有効になっていること。
+  // www は worker.js が www なしへ 301 で転送する。本体は www なし（SPEC §3）。
+  "routes": [
+    { "pattern": "lucidbrain.jp", "custom_domain": true },
+    { "pattern": "www.lucidbrain.jp", "custom_domain": true }
+  ],
+  // *.workers.dev では配信しない。URL を1つに絞り、Access を掛け漏らす入口を作らないため。
+  "workers_dev": false,
+  // 版ごとのプレビューURLも出さない。確認はテスト環境（env.staging）で行う。
+  "preview_urls": false,
   "vars": {
     // 公開URL。Stripe の success_url / cancel_url のベースで、scripts/ops.mjs の Webhook 宛先とスモークの対象にもなる。
-    // 空のあいだ Worker はリクエストの origin を使う。初回デプロイ後に scripts/ops.mjs が書き込む（SPEC §3）。
-    "SITE_BASE_URL": ""
+    // routes と必ず一致させる。
+    "SITE_BASE_URL": "https://lucidbrain.jp"
   },
   "r2_buckets": [
     {
       "binding": "RELEASES",
       // 全プロダクトの配布ファイルを1つのバケットに置き、中をプロダクトIDのフォルダで分ける（SPEC §8.5）。
-      "bucket_name": "lucud-brain-releases"
+      "bucket_name": "lucid-brain-releases"
     }
   ],
   // 障害時に手掛かりを残す。1行で済み、ダッシュボード操作が要らない（SPEC §7.5 / §8.4）。
   "observability": { "enabled": true },
-  // 版ごとのプレビューURLを出さない。main 以外はテスト環境（env.staging）で確認するため、使い道がなく、
-  // 出せば未公開の版が Access の外に出る（SPEC §7.7）。
-  "preview_urls": false,
 
-  // テスト環境。develop ブランチから出す。Worker は lucud-brain-site-staging になる（SPEC §7.7）。
-  // vars と r2_buckets は wrangler の仕様で継承されないため、ここに書き直す。それ以外は上を継承する。
+  // テスト環境。develop ブランチから出す。Worker は lucid-brain-site-staging になる（SPEC §7.7）。
+  // routes / vars / r2_buckets は wrangler の仕様で継承されないため、ここに書き直す。
   // アクセス制限は Cloudflare Access（ダッシュボード）で掛ける。ここには書けない。
   "env": {
     "staging": {
+      "routes": [{ "pattern": "staging.lucidbrain.jp", "custom_domain": true }],
+      "workers_dev": false,
+      "preview_urls": false,
       "vars": {
-        // 初回デプロイ後に scripts/ops.mjs --env staging が書き込む
-        "SITE_BASE_URL": ""
+        "SITE_BASE_URL": "https://staging.lucidbrain.jp"
       },
       "r2_buckets": [
         {
           "binding": "RELEASES",
           // 本番の latest を上書きしないよう、テスト用の exe は別のバケットに置く
-          "bucket_name": "lucud-brain-releases-staging"
+          "bucket_name": "lucid-brain-releases-staging"
         }
-      ],
-      "preview_urls": false
+      ]
     }
   }
 }
