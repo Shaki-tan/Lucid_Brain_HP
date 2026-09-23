@@ -3,10 +3,9 @@
 // functions/api/*.js の自動ルーティングに問題が生じたため、明示的なルーティングに切り替えている。
 // 各ハンドラの実装自体は functions/api/*.js をそのまま再利用する（ロジックの重複を避けるため）。
 //
-// main を置いた構成では、静的アセットへのリクエストもまずこの Worker に入る。
-// この Worker が自分で処理するのは /api/* だけで、それ以外は ASSETS バインディングへ委譲する。
-// 「委譲する」と「Worker を経由しない」は違う（SPEC §8.1）。
-// _headers / _redirects がこの経路でも適用されるかは実機で確認する（SPEC §10.2 の2）。
+// URL に一致する静的ファイルがあれば、Cloudflare はこの Worker を通さずにそのファイルを配る（SPEC §8.1）。
+// この Worker に入ってくるのは、一致するファイルが無いリクエスト（/api/* と、存在しない URL）だけである。
+// そのため、全リクエストに効かせたい処理（www の転送など）をここに書いても効かない。
 //
 // 分岐の if が増え続けないよう、ルートはテーブルで持つ（SPEC §8.2）。
 
@@ -26,21 +25,12 @@ const ROUTES = [
 
 const API_PREFIX = '/api/'
 
-// www 付きで来たら、www なしの同じパスへ恒久的に転送する。URL を1つに揃えるため（SPEC §3）。
-// ホスト名を書かないので、ドメインが変わってもここは直さずに済む。
-const WWW_PREFIX = 'www.'
-
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url)
 
-    if (url.hostname.startsWith(WWW_PREFIX)) {
-      url.hostname = url.hostname.slice(WWW_PREFIX.length)
-      return Response.redirect(url.toString(), 301)
-    }
-
     if (!url.pathname.startsWith(API_PREFIX)) {
-      // 静的アセット。拡張子なしURLと 404 ページの扱いは wrangler.jsonc の assets 設定に従う。
+      // 一致するファイルが無かった URL。404 ページの選び方は wrangler.jsonc の assets 設定に従う。
       return env.ASSETS.fetch(request)
     }
 

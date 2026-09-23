@@ -207,9 +207,23 @@ GET  /api/region                    接続元の国コードと販売可否。�
 | テスト | `https://staging.lucidbrain.jp`（§7.7） |
 
 本体は www なしとする。www 付きで打たれても同じサイトに着くよう、転送は必ず置く。
-転送は `worker.js` が行う（ダッシュボードのリダイレクトルールより、リポジトリ内で解く・§1.2）。
-ホスト名を書かずに「`www.` を外す」とだけ書いてあるため、ドメインを変えても転送の側は直さずに済む。
-転送は Access より手前で行われるので、公開前でも www 付きのホストに Access は要らない（中身は転送先の Access が守る）。
+
+**転送は Cloudflare のリダイレクトルール（ダッシュボード）で行う。** §1.2 の優先順位ではリポジトリ内で解くほうが上だが、
+ここは例外とする。静的ファイルは Worker を通らないため `worker.js` では全ページに効かず、
+全リクエストを Worker に通すと Workers の無料枠を閲覧で消費するためである（§8.1）。
+設定はダッシュボードにしか残らないため、ここに書き切る。効いているかは `ops.mjs status` が外から確かめる。
+
+| 項目 | 値 |
+|---|---|
+| 場所 | `lucidbrain.jp` のゾーン → ルール → リダイレクトルール（テンプレート「WWW からルートへのリダイレクト」を使ってよい） |
+| 条件 | ホスト名が `www.lucidbrain.jp` に等しい |
+| 転送先 | 動的: `concat("https://lucidbrain.jp", http.request.uri.path)` |
+| ステータス | 301 |
+| クエリ文字列 | 保持する |
+
+`www.lucidbrain.jp` の DNS レコードと証明書は、`wrangler.jsonc` の `routes` に `custom_domain` として置くことで作らせる。
+ルールは Worker より手前で働くので、www で来たリクエストは Worker にも静的ファイルにも届かない。
+転送は Access より手前でもあり、公開前でも www 付きのホストに Access は要らない（中身は転送先の Access が守る）。
 
 同じURLを持つ場所は次のとおり。変えるときは全部を揃える。
 
@@ -1050,6 +1064,7 @@ API で設定できず、ダッシュボードで行うものは次のとおり�
 |---|---|
 | Cloudflare → ドメインの追加 | `lucidbrain.jp` をゾーンとして追加し、レジストラでネームサーバーを Cloudflare に向ける（§3） |
 | Cloudflare → R2 | 新しいアカウントでは利用開始の手続きが要る（無料枠でも支払い方法の登録が要る） |
+| Cloudflare → `lucidbrain.jp` → ルール | www から本体への 301 転送（§3） |
 | Cloudflare → Zero Trust | Cloudflare Access（§7.7）。Worker より先に作る |
 | Cloudflare → 各 Worker → 設定 → ビルド | GitHub との接続（§7.7） |
 | Stripe → 設定 → 公開情報 | 事業者名・明細書表記・サポート連絡先 |
@@ -1126,20 +1141,25 @@ Access の内側にあるべき環境では「Access が効いているか」と
 - Stripe API のバージョンを `Stripe-Version` ヘッダで固定する。`functions/lib/stripe.js` の1箇所で付与する。
 - `/api/checkout` は Origin を検証する（§7.5）。
 
-**リクエストの通り道。** `main` を置いた構成では、静的アセットへのリクエストも**まず Worker に入る**。
+**リクエストの通り道。** URL に一致する静的ファイルがあれば、Cloudflare は **Worker を通さずに**そのファイルを配る
+（Workers Static Assets の既定。`run_worker_first` は使わない）。
+`worker.js` に入ってくるのは、一致するファイルが無いリクエスト、つまり `/api/*` と存在しない URL だけである。
 
 ```js
 // worker.js
 if (!url.pathname.startsWith('/api/')) {
-  return env.ASSETS.fetch(request)   // ASSETS バインディングへ委譲する
+  return env.ASSETS.fetch(request)   // 一致するファイルが無かった URL。404 ページを返す
 }
 ```
 
-`worker.js` が自分で処理するのは `/api/*` だけで、それ以外は `ASSETS` バインディングへ委譲する。
-「委譲する」と「Worker を経由しない」は違う。全リクエストが Worker を通っている。
+ここから2つのことが決まる。
 
-この違いは実害に繋がる。`_headers` / `_redirects` は元々 Cloudflare Pages の機能であり、
-**`env.ASSETS.fetch()` 経由の配信にも適用されるのかは実機で確認するまで分からない**（§10.2 の2）。
+- **全リクエストに効かせたい処理を `worker.js` に書いても効かない。** ページや CSS は Worker を通らないためである。
+  www の転送をダッシュボードのリダイレクトルールで行うのはこのためである（§3）。
+- **ページの閲覧は Workers の無料枠（1日10万リクエスト）を消費しない。** 静的ファイルの配信は無料・無制限であり、
+  枠を使うのは `/api/*` と 404 だけである。`run_worker_first` で全リクエストを Worker に通すと、この性質を失う。
+
+`_headers` / `_redirects` は静的ファイルの配信に適用される。効いているかは実機で確認する（§10.2 の2）。
 適用されていなければ CSP もキャッシュ制御も付いておらず、§7.5 のセキュリティ要件が実質未達になる。
 `tests/smoke.sh` がこれを検出する（ヘッダが返ってこなければ落ちる）。
 
@@ -1552,7 +1572,7 @@ pawgress/1.0.1/Pawgress-Windows-1.0.1-Setup.exe
 
 | # | 確認すること | 現時点で分かっていること |
 |---|---|---|
-| 2 | **`_headers` が Workers Static Assets で効いているか**（CSP・キャッシュ制御とも） | `_headers` は元々 Pages の機能で、`env.ASSETS.fetch()` 経由の配信に適用されるかは未確認（§8.1）。効いていなければ CSP もキャッシュ制御も付いていない。**確認は `bash tests/smoke.sh <本番URL>`** で、ヘッダが返らなければ落ちる |
+| 2 | **`_headers` が Workers Static Assets で効いているか**（CSP・キャッシュ制御とも） | 静的ファイルの配信に適用される仕様だが、実機では未確認（§8.1）。効いていなければ CSP もキャッシュ制御も付いていない。**確認は `bash tests/smoke.sh <本番URL>`** で、ヘッダが返らなければ落ちる |
 | 2b | CSP を入れた状態で全ページが動くか | 2 が効いていることが前提。DevTools のコンソールに CSP 違反が出ないかを日英の全ページで見る |
 | 3 | 存在しないURLが実際に 404 ステータスを返すか | `tests/smoke.sh` が `/this-page-does-not-exist` で確認する |
 | 4 | `observability` 未記述でデプロイしたとき Workers Logs が無効化されるか | 新規 Worker は既定で有効。書かない場合の挙動はドキュメント上あいまいで、1行書けば確実 |

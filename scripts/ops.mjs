@@ -303,7 +303,8 @@ async function checkAccess(baseUrl) {
 }
 
 // www 付きのホストが、www なしの同じパスへ 301 で転送されるかを見る（SPEC §3）。
-// 転送は Access より手前の Worker で行うので、公開前でも外から確かめられる
+// 転送はダッシュボードのリダイレクトルールが Access より手前で行うので、公開前でも外から確かめられる。
+// 静的ファイルのパスで確かめる。Worker を通らないパスで効いていることが肝心なため
 async function checkWwwRedirect() {
   const baseHost = new URL(site.baseUrl).host
   for (const host of site.hosts.filter((item) => item === `www.${baseHost}`)) {
@@ -312,7 +313,7 @@ async function checkWwwRedirect() {
       const res = await fetch(`https://${host}${path}`, { redirect: 'manual' })
       const location = res.headers.get('location')
       if (res.status === 301 && location === `${site.baseUrl}${path}`) ok(`${host} → ${site.baseUrl} へ 301`)
-      else ng(`${host}${path} → ${res.status} ${location ?? ''}（${site.baseUrl}${path} への 301 を期待）`)
+      else ng(`${host}${path} → ${res.status} ${location ?? ''}（${site.baseUrl}${path} への 301 を期待。リダイレクトルールを見る）`)
     } catch (cause) {
       ng(`${host} に届かない（${cause.cause?.code ?? cause.message}）`)
     }

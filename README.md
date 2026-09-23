@@ -15,7 +15,7 @@
 | ビルド | **無い。** `public/` の中身がそのまま配信される |
 | 依存パッケージ | **無い。** `package.json` は作らない |
 | デプロイ | push で行う。`main` → 本番、`develop` → テスト環境（Access の内側）。検査に落ちたら出ない（§4） |
-| URL | 本番 `https://lucidbrain.jp`（`www.` 付きは `worker.js` がここへ 301）、テスト `https://staging.lucidbrain.jp`。`*.workers.dev` は使わない |
+| URL | 本番 `https://lucidbrain.jp`（`www.` 付きはダッシュボードのリダイレクトルールでここへ 301・SPEC §3）、テスト `https://staging.lucidbrain.jp`。`*.workers.dev` は使わない |
 | 言語 | 日本語が `/`、英語が `/en/`。i18n の辞書とエンジンは持たない |
 
 ---
