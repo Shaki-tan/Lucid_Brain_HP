@@ -308,7 +308,7 @@ async function checkAccess(baseUrl) {
 async function checkWwwRedirect() {
   const baseHost = new URL(site.baseUrl).host
   for (const host of site.hosts.filter((item) => item === `www.${baseHost}`)) {
-    const path = '/legal/terms?check=1'
+    const path = '/legal/privacy?check=1'
     try {
       const res = await fetch(`https://${host}${path}`, { redirect: 'manual' })
       const location = res.headers.get('location')

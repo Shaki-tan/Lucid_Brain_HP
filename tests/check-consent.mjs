@@ -79,10 +79,16 @@ for (const [productId, product] of Object.entries(PRODUCTS)) {
           }
         }
         // リンク先が実在すること。拡張子なしURLは .html に対応づける（check-links.sh と同じ規則）
+        // フラグメント付き（/legal/tokushoho#pawgress）は、ページと、その中の id の両方を見る。
+        // 特商法表記は商品ごとの小節を直接指すため（SPEC §2.2）
         if (typeof item?.href === 'string' && item.href.startsWith('/')) {
-          const base = join(PUBLIC_DIR, item.href)
-          if (!existsSync(base) && !existsSync(`${base}.html`)) {
+          const [path, fragment] = item.href.split('#')
+          const base = join(PUBLIC_DIR, path)
+          const file = [base, `${base}.html`].find((candidate) => existsSync(candidate))
+          if (!file) {
             fail(`${productId}/${planId}/${lang}[${index}]: リンク先が無い（${item.href}）`)
+          } else if (fragment && !readFileSync(file, 'utf8').includes(`id="${fragment}"`)) {
+            fail(`${productId}/${planId}/${lang}[${index}]: リンク先に id="${fragment}" が無い（${item.href}）`)
           }
         }
       })

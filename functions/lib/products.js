@@ -1,12 +1,13 @@
 // プロダクト × プランのレジストリ。プロダクト固有の「値」はここだけに書く（SPEC §8.2）。
 // ハンドラ側に金額・配布ファイル・遷移先を直書きしない。
 //
-// プロダクト追加時に触るのは次の5つ（SPEC §8.2）。
+// プロダクト追加時に触るのは次の6つ（SPEC §8.2）。
 //   1. このファイルに1エントリ
 //   2. public/assets/js/partials.js の PRODUCTS に表示名（ヘッダーのロゴタイプ・SPEC §5.2）
-//   3. public/products/<name>/ と public/en/products/<name>/
+//   3. public/products/<name>/ と public/en/products/<name>/（legal/ の利用規約・返金ポリシーを含む）
 //   4. public/products/<name>/assets/consent-items.json（有償プランがある場合・SPEC §8.3）
 //   5. public/docs/<name>/            （SPEC §4.3 の例外。作り忘れやすい）
+//   6. public/legal/tokushoho.html（と英語版）に商品の小節（SPEC §2.2）
 // そのあと public/sitemap.xml に日英の全URLを足す。
 
 export const PRODUCTS = {

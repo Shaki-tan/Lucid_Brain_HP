@@ -17,7 +17,7 @@
 //      Cache-Control だけは _headers の値を使わず no-store で上書きする（役目1を守るため）。
 //      --no-rules を付けると、この適用をやめて素のまま配信する。
 //
-// 拡張子なしURL（/legal/terms）とディレクトリ（/products/pawgress/）、404 の返し方は
+// 拡張子なしURL（/legal/privacy）とディレクトリ（/products/pawgress/）、404 の返し方は
 // wrangler.jsonc の html_handling / not_found_handling と同じ規則で解決する。
 //
 // 依存を入れない。Node 標準ライブラリだけで動くため、npm install もダウンロードも起きない。
