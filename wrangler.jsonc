@@ -15,7 +15,8 @@
   },
   // 自分のドメインで配信する。DNS レコードと証明書はデプロイ時に Cloudflare が作る（SPEC §3 / §7.7）。
   // 前提: lucidbrain.jp がこのアカウントのゾーンとして有効になっていること。
-  // www は worker.js が www なしへ 301 で転送する。本体は www なし（SPEC §3）。
+  // 本体は www なし。www は DNS と証明書を作らせるためだけに置き、転送はダッシュボードの
+  // リダイレクトルールが行う（静的ファイルは Worker を通らないため、worker.js では全ページに効かない・SPEC §3 / §8.1）。
   "routes": [
     { "pattern": "lucidbrain.jp", "custom_domain": true },
     { "pattern": "www.lucidbrain.jp", "custom_domain": true }

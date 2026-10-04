@@ -44,17 +44,17 @@ for path in \
   / \
   /products/pawgress/ \
   /products/pawgress/thanks \
+  /products/pawgress/legal/terms \
+  /products/pawgress/legal/refund \
   /legal/privacy \
-  /legal/refund \
   /legal/tokushoho \
-  /legal/terms \
   /en/ \
   /en/products/pawgress/ \
   /en/products/pawgress/thanks \
+  /en/products/pawgress/legal/terms \
+  /en/products/pawgress/legal/refund \
   /en/legal/privacy \
-  /en/legal/refund \
   /en/legal/tokushoho \
-  /en/legal/terms \
   /robots.txt \
   /sitemap.xml \
   /site.webmanifest \

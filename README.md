@@ -15,7 +15,7 @@
 | ビルド | **無い。** `public/` の中身がそのまま配信される |
 | 依存パッケージ | **無い。** `package.json` は作らない |
 | デプロイ | push で行う。`main` → 本番、`develop` → テスト環境（Access の内側）。検査に落ちたら出ない（§4） |
-| URL | 本番 `https://lucidbrain.jp`（`www.` 付きは `worker.js` がここへ 301）、テスト `https://staging.lucidbrain.jp`。`*.workers.dev` は使わない |
+| URL | 本番 `https://lucidbrain.jp`（`www.` 付きはダッシュボードのリダイレクトルールでここへ 301・SPEC §3）、テスト `https://staging.lucidbrain.jp`。`*.workers.dev` は使わない |
 | 言語 | 日本語が `/`、英語が `/en/`。i18n の辞書とエンジンは持たない |
 
 ---
@@ -50,15 +50,18 @@ tests/              検査スクリプト。public/ の外に置く
 
 ### プロダクトを追加する
 
-触るのは4箇所だけで済むようにしてある（SPEC §8.2 / §5.2）。
+触るのは5箇所だけで済むようにしてある（SPEC §8.2 / §5.2）。
 
 1. `functions/lib/products.js` に1エントリ足す
 2. `public/assets/js/partials.js` の `PRODUCTS` に表示名を足す。ヘッダーのロゴタイプに出る。
-   足さないとコーポレート側の構成（社名のロゴタイプ、返金ポリシーなしのフッター）で表示される。
+   足さないとコーポレート側の構成（社名のロゴタイプ、返金ポリシーと利用規約のないフッター）で表示される。
    有償プランを持つなら `public/products/<name>/assets/consent-items.json` に同意項目の文言も置く（SPEC §8.3）
 3. `public/products/<name>/` と `public/en/products/<name>/` を作る。
+   利用規約と返金ポリシーはプロダクトごとに持つので、その中の `legal/` に置く（SPEC §2.2）。
    そのプロダクトの配色は、そのプロダクトのCSSの先頭に持つ（→ 下の「配色を変える」）
 4. `public/docs/<name>/` を作る ← **忘れやすい。** §4.3 の唯一の例外
+5. `public/legal/tokushoho.html`（と英語版）に、その商品の小節を足す。
+   プライバシーポリシーと特商法表記は会社で1つだけ持つ（SPEC §2.2）
 
 そのあと `public/sitemap.xml` に日英の全URLを足す（手で更新する）。
 
@@ -93,7 +96,7 @@ node scripts/preview.mjs        # http://127.0.0.1:8788/
 ```
 
 `Cache-Control: no-store` を返すので、**リロードすれば必ず最新が出る**。
-拡張子なしURL（`/legal/terms`）とディレクトリ（`/products/pawgress/`）、404 の返し方は wrangler と同じ規則で解決する。
+拡張子なしURL（`/legal/privacy`）とディレクトリ（`/products/pawgress/`）、404 の返し方は wrangler と同じ規則で解決する。
 依存はなく、Node だけで動くのでダウンロードも発生しない。
 
 `/api/*` は持たない（501 を返す）。決済・ダウンロード・地域判定を触るときは `npx wrangler dev` を使う。
@@ -116,8 +119,8 @@ node scripts/preview.mjs        # http://127.0.0.1:8788/
 
 | 範囲 | 配色 | 触るファイル |
 |---|---|---|
-| コーポレート側（トップ・legal・404） | 白基調 | `public/assets/css/tokens.css` |
-| Pawgress（LP・決済完了の日英4枚） | 黒基調 | `public/products/pawgress/assets/css/pawgress.css` の先頭 |
+| コーポレート側（トップ・会社の legal・404） | 白基調 | `public/assets/css/tokens.css` |
+| Pawgress（LP・決済完了・利用規約・返金ポリシーの日英8枚） | 黒基調 | `public/products/pawgress/assets/css/pawgress.css` の先頭 |
 
 変数名は両者で同じ。プロダクト側が同名の `:root` を後から上書きする形になっている。
 新しいプロダクトを足すときも、そのプロダクトのCSSの先頭に自分の配色を置く。

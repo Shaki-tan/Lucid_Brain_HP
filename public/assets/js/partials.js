@@ -112,16 +112,24 @@
     )
   }
 
+  // 会社で1つ持つ文書（プライバシーポリシー／特商法表記）へのリンク。
   function legalLink(slug, label) {
     return '<li><a href="' + t.legalBase + slug + '">' + label + '</a></li>'
+  }
+
+  // プロダクトごとに持つ文書（利用規約／返金ポリシー）へのリンク。今いるプロダクトのものを指す。
+  function productLegalLink(slug, label) {
+    return '<li><a href="' + t.productsBase + productSlug + '/legal/' + slug + '">' + label + '</a></li>'
   }
 
   // フッターが持つのは、左にコピーライト、右に legal への導線だけとする。
   // 社名・所在地・連絡先はトップページの CONTACT 節が持つ（SPEC §6.2）。
   //
   // 範囲で変わるのは legal の並びだけである。
-  //   コーポレート側 — プライバシーポリシー／特商法表記／利用規約
-  //   プロダクト側   — 先頭に返金ポリシーを加える。購入の直前に読む必要があるため（SPEC §8.3）
+  // 「誰が」で決まる文書は会社で1つ、「何を、いくらで、どう売るか」で決まる文書はプロダクトごとに持つ（SPEC §4.1）。
+  //   コーポレート側 — プライバシーポリシー／特商法表記
+  //   プロダクト側   — 先頭にそのプロダクトの返金ポリシーと利用規約を加える。
+  //                    購入の直前に読む必要があるため（SPEC §8.3）
   function footerMarkup() {
     return (
       '<footer class="site-footer" aria-label="' + t.footerLabel + '">' +
@@ -136,10 +144,9 @@
       (isProduct ? '<a href="' + t.home + '">Lucid Brain</a>' : 'Lucid Brain') +
       '</p>' +
       '<ul class="site-footer-links">' +
-      (isProduct ? legalLink('refund', t.refund) : '') +
+      (isProduct ? productLegalLink('refund', t.refund) + productLegalLink('terms', t.terms) : '') +
       legalLink('privacy', t.privacy) +
       legalLink('tokushoho', t.tokushoho) +
-      legalLink('terms', t.terms) +
       '</ul>' +
       '</div>' +
       '</footer>'

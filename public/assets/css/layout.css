@@ -247,6 +247,17 @@
   margin: 40px 0 12px;
 }
 
+/* 節の中の小節。特商法表記の商品ごとの表記で使う（SPEC §2.2） */
+.legal-body h3 {
+  font-size: 16px;
+  margin: 28px 0 12px;
+}
+
+/* 定義リストの直後に段落や小節が続くときの間隔 */
+.legal-body .deflist {
+  margin-bottom: 12px;
+}
+
 .legal-body p,
 .legal-body li {
   font-size: 15px;

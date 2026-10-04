@@ -15,12 +15,12 @@
         {
           "label": "【仮】利用規約の内容を確認しました。",
           "linkText": "利用規約",
-          "href": "/legal/terms"
+          "href": "/products/pawgress/legal/terms"
         },
         {
           "label": "【仮】返金ポリシーの内容を確認しました。",
           "linkText": "返金ポリシー",
-          "href": "/legal/refund"
+          "href": "/products/pawgress/legal/refund"
         },
         {
           "label": "【仮】プライバシーポリシーの内容を確認しました。",
@@ -30,19 +30,19 @@
         {
           "label": "【仮】特定商取引法に基づく表記を確認しました。",
           "linkText": "特定商取引法に基づく表記",
-          "href": "/legal/tokushoho"
+          "href": "/legal/tokushoho#pawgress"
         }
       ],
       "en": [
         {
           "label": "[TBD] I have read the Terms of Service.",
           "linkText": "Terms of Service",
-          "href": "/en/legal/terms"
+          "href": "/en/products/pawgress/legal/terms"
         },
         {
           "label": "[TBD] I have read the Refund Policy.",
           "linkText": "Refund Policy",
-          "href": "/en/legal/refund"
+          "href": "/en/products/pawgress/legal/refund"
         },
         {
           "label": "[TBD] I have read the Privacy Policy.",
@@ -52,7 +52,7 @@
         {
           "label": "[TBD] I have read the Legal Notice under the Act on Specified Commercial Transactions.",
           "linkText": "Legal Notice",
-          "href": "/en/legal/tokushoho"
+          "href": "/en/legal/tokushoho#pawgress"
         }
       ]
     }

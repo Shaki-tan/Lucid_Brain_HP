@@ -20,7 +20,9 @@
 # 旧 public/src/ は移設済みで存在しない。被リンクとブックマークを拾うために転送だけ残す。
 /src/*                       /                                    301
 
-# 旧 legal は同じURLのままなので転送は要らない（/legal/privacy.html は拡張子なしへ自動で 301 される）。
+# legal の転送は置かない。会社の2点（privacy / tokushoho）は同じURLのままである
+# （/legal/privacy.html は拡張子なしへ自動で 301 される）。
+# プロダクトごとの2点（terms / refund）は公開前に /products/<slug>/legal/ へ移したため、旧URLを知る人がいない。
 
 # 配布PDFの旧URL。実際に配った短縮URLがあればここに追加する（SPEC §4.3）。
 # 現時点で外部に配った PDF の旧URLは無いため、行は置かない。
