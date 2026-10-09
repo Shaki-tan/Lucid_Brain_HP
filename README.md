@@ -196,8 +196,10 @@ Stripe は REST API を直接呼ぶ。どのコマンドも何度流しても同
 ```sh
 node scripts/ops.mjs status          # 何が済んでいて何が残っているか。迷ったらまずこれ
 node scripts/ops.mjs setup           # 初回構築。ログイン → R2 → exe → Worker 作成 → Stripe
-node scripts/ops.mjs upload pawgress paid ./Pawgress-Windows-1.0.1-Setup.exe   # 版を上げる
-node scripts/ops.mjs restore pawgress paid 1.0.0                                # 前の版に戻す
+node scripts/ops.mjs upload pawgress ./release/1.0.1                            # 版を上げる。フォルダ内の全プランぶんを置く
+node scripts/ops.mjs upload pawgress paid ./Pawgress-Windows-1.0.1-Setup.exe   # 1つだけ置く
+node scripts/ops.mjs restore pawgress 1.0.0                                     # 前の版に戻す。全プランを戻す
+node scripts/ops.mjs restore pawgress paid 1.0.0                                # 1つのプランだけ戻す
 node scripts/ops.mjs stripe          # 商品・価格・Webhook を揃え、secret を入れる
 node scripts/ops.mjs secret STRIPE_SECRET_KEY                   # secret を1つ入れ直す
 node scripts/ops.mjs smoke           # スモーク（テスト環境はサービストークンが要る）
@@ -212,7 +214,9 @@ node scripts/ops.mjs status --env staging   # テスト環境。Access と Webho
 価格・Webhook は本番側に作られ、secret も差し替わる。
 
 **exe は版の控え → latest の順に置く**（SPEC §8.5）。版はファイル名（`Pawgress-Windows-<版>-Setup.exe`）から読み、
-型に合わないファイルは置かない。控え（`pawgress/<版>/`）は上書きしないので、同じ版を置き直すなら `--overwrite` が要る。
+型に合わないファイルは置かない。フォルダを渡すと、中のファイル名を各プランの型と照合して振り分ける
+（合うファイルが無いプランは飛ばし、1つのプランに複数合えば止める）。
+控え（`pawgress/<版>/`）は上書きしないので、同じ版を置き直すなら `--overwrite` が要る。
 exe の差し替えだけならデプロイは要らない。Worker はダウンロードのたびに latest を読む。
 
 **名前はプロダクトが増えても増えない。** Worker（`lucid-brain-site`）・R2 バケット（`lucid-brain-releases`）・
@@ -271,7 +275,7 @@ bash tests/check-links.sh          # 内部リンク・PDF の存在
 bash tests/check-meta.sh           # title / description / canonical / OGP / hreflang の欠落
 node tests/check-i18n.mjs          # 日英ページの構造一致と hreflang の相互参照
 node tests/check-consent.mjs       # 同意項目の文言と、Stripe へ記録できる状態か
-bash tests/smoke.sh <ベースURL>     # デプロイ後。200 / 404 / CSPヘッダ
+bash tests/smoke.sh <ベースURL>     # デプロイ後。200 / 404 / CSPヘッダ。200 の対象は public/ の中身から組む
 ```
 
 `check-placeholders.sh` は**いまは失敗するのが正しい**。

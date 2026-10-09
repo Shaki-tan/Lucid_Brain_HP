@@ -838,9 +838,9 @@ JPY 表記のみと同じ性質の防御である。
 | `robots.txt` | クローラに「どこを見てよいか」「sitemap はどこか」を伝える | 済 | 誤記で全ページを除外する事故が起きうる。リリース前に実機確認する |
 | `sitemap.xml` | サイト内の全URLを列挙したXML。検索エンジンが巡回先を漏れなく知るための地図 | 済 | 手書きで更新する。共通部品を JS で注入する以上（§5）、URL 発見の主経路になる |
 | `_headers`（CSP 等） | 配信時に付けるHTTPヘッダの設定ファイル。CSP は読み込んでよい外部リソースをブラウザに宣言し、それ以外を実行させない | 済（**効いているかは未確認**） | §10.2 の2。`tests/smoke.sh` で判定できる |
-| `site.webmanifest` / `apple-touch-icon` | スマホで「ホーム画面に追加」したときのアイコン名・色・画像を決める設定と画像 | 済 | ロゴ未確定のため後で差し替えが発生する |
+| `site.webmanifest` / `apple-touch-icon` | スマホで「ホーム画面に追加」したときのアイコン名・色・画像を決める設定と画像 | 済 | ロゴ未確定のため後で差し替えが発生する。`<link rel="manifest">` には `crossorigin="use-credentials"` を付ける。ブラウザはマニフェストを Cookie なしで取りに行くため、付けないと Access の内側（§7.7）でログイン画面へ転送され、その転送先が CSP に止められる |
 | Webフォントのセルフホスト | 書体ファイルを自前で配信する。外部 CDN から読み込まない（§7.5 セキュリティ） | **未（着手する）** | 書体とウェイトの決定が前提。器（`@font-face` のブロックと手順）は用意済み |
-| アナリティクス | 閲覧数と流入元を記録する。Cloudflare Web Analytics は Cookie を使わず、スクリプト1本を貼るだけ | **未（公開前に入れる）** | 外部スクリプトが1本増え、§2.3 の「外部読み込みゼロ」の唯一の例外になる。CSP の許可先も足す。自動注入を使うか手貼りにするかは導入時に決める |
+| アナリティクス | 閲覧数と流入元を記録する。Cloudflare Web Analytics は Cookie を使わず、スクリプト1本を貼るだけ | 済（**計測されているかは未確認**） | 外部スクリプトが1本増え、§2.3 の「外部読み込みゼロ」の唯一の例外になる。自動注入を使う。Cloudflare が計測スクリプトを HTML に差し込むので、HTML には書かない。CSP の許可先は `_headers` に足してある。プライバシーポリシーへの記載は公開前に行う |
 
 #### 近い将来必要になる
 
@@ -860,7 +860,7 @@ JPY 表記のみと同じ性質の防御である。
 
 | 項目 | 要件 | 備考 |
 |---|---|---|
-| CSP | `_headers` で `default-src 'self'`。インラインスクリプトを書かない構成にし、`unsafe-inline` を使わない | 許可先はアナリティクス1つで済む見込み。フォントをセルフホストするため |
+| CSP | `_headers` で `default-src 'self'`。インラインスクリプトを書かない構成にし、`unsafe-inline` を使わない | 許可先はアナリティクス1つ（読み込み元と送信先の2ホスト）。フォントをセルフホストするため |
 | 基本ヘッダ | `X-Content-Type-Options: nosniff` / `Referrer-Policy: strict-origin-when-cross-origin` / `frame-ancestors 'none'` / `Permissions-Policy` は最小化 | `_headers` に数行 |
 | Webhook 署名検証 | Stripe 署名とタイムスタンプ許容（300秒）を検証する | 実装済み（`functions/api/webhook.js`） |
 | シークレット | `STRIPE_*` は Wrangler の secret として持ち、リポジトリに入れない | `.dev.vars` は `.gitignore` 済み |
@@ -1033,8 +1033,10 @@ Cloudflare と Stripe の構築、配布ファイルの配置、secret の投入
 ```
 node scripts/ops.mjs status                        何が済んでいて何が残っているか
 node scripts/ops.mjs setup                         初回構築（ログイン → R2 → exe → Worker 作成 → Stripe）
-node scripts/ops.mjs upload <product> <plan> <file>  exe を R2 に置く（版の控え → latest・§8.5）
-node scripts/ops.mjs restore <product> <plan> <version>  latest を控えの版に戻す
+node scripts/ops.mjs upload <product> <dir>        フォルダ内の exe を全プランぶん R2 に置く（版の控え → latest・§8.5）
+node scripts/ops.mjs upload <product> <plan> <file>  exe を1つだけ置く
+node scripts/ops.mjs restore <product> <version>   全プランの latest を控えの版に戻す
+node scripts/ops.mjs restore <product> <plan> <version>  1つのプランだけ戻す
 node scripts/ops.mjs stripe                        商品・価格・Webhook を揃え、secret を入れる
 node scripts/ops.mjs secret <NAME>                 secret を1つ入れ直す
 node scripts/ops.mjs smoke / logs                  スモーク / ログ
@@ -1164,13 +1166,26 @@ Access の内側にあるべき環境では「Access が効いているか」と
 - `/api/checkout` は Origin を検証する（§7.5）。
 
 **リクエストの通り道。** URL に一致する静的ファイルがあれば、Cloudflare は **Worker を通さずに**そのファイルを配る
-（Workers Static Assets の既定。`run_worker_first` は使わない）。
-`worker.js` に入ってくるのは、一致するファイルが無いリクエスト、つまり `/api/*` と存在しない URL だけである。
+（Workers Static Assets の既定）。一致するファイルが無いリクエストの扱いは、要求の種類で分かれる。
+
+| 要求 | 一致するファイルが無いとき |
+|---|---|
+| ページ遷移（リンクのクリック・`location.href`・アドレスバー。`Sec-Fetch-Mode: navigate` が付く） | Cloudflare が **Worker を呼ばずに** 404 ページを返す |
+| それ以外（`fetch`・curl・Stripe からの Webhook） | `worker.js` に入る |
+
+ダウンロード（`/api/download`・`/api/download-free`）は、リンクのクリックと `location.href`、つまりページ遷移として要求される。
+既定のままだと Worker に届かず、404 ページが返って exe を配れない。そこで **`run_worker_first` に `/api/*` だけを指定し、
+`/api/` 配下は要求の種類に依らず必ず Worker に通す**。全リクエストを通す指定（`true`）にはしない。
+
+この挙動は `fetch` と curl では再現しない。`tests/smoke.sh` は、ページ遷移の形（`Sec-Fetch-Mode: navigate`）でも
+`/api/*` が Worker に届くことを確かめる。
+
+`worker.js` に入ってくるのは、`/api/*` と、存在しない URL のうちページ遷移でないものだけである。
 
 ```js
 // worker.js
 if (!url.pathname.startsWith('/api/')) {
-  return env.ASSETS.fetch(request)   // 一致するファイルが無かった URL。404 ページを返す
+  return env.ASSETS.fetch(request)   // 一致するファイルが無かった URL（ページ遷移以外）。404 ページを返す
 }
 ```
 
@@ -1179,7 +1194,8 @@ if (!url.pathname.startsWith('/api/')) {
 - **全リクエストに効かせたい処理を `worker.js` に書いても効かない。** ページや CSS は Worker を通らないためである。
   www の転送をダッシュボードのリダイレクトルールで行うのはこのためである（§3）。
 - **ページの閲覧は Workers の無料枠（1日10万リクエスト）を消費しない。** 静的ファイルの配信は無料・無制限であり、
-  枠を使うのは `/api/*` と 404 だけである。`run_worker_first` で全リクエストを Worker に通すと、この性質を失う。
+  枠を使うのは `/api/*` と、ページ遷移でない 404 だけである。`run_worker_first` を `true` にして全リクエストを
+  Worker に通すと、この性質を失う。`/api/*` に限っているのはこのためである。
 
 `_headers` / `_redirects` は静的ファイルの配信に適用される。効いているかは実機で確認する（§10.2 の2）。
 適用されていなければ CSP もキャッシュ制御も付いておらず、§7.5 のセキュリティ要件が実質未達になる。
@@ -1554,7 +1570,10 @@ pawgress/1.0.1/Pawgress-Windows-1.0.1-Setup.exe
 - **置く順番は控え → latest とする。** latest を上書きする時点で、その版が必ず控えに残っている状態にするため。
 - **控えは上書きしない。** 同じ版番号で中身を差し替えると、配った版と控えの中身が食い違う。直すときは版番号を上げる。
 - **版はファイル名から読む。** 型に合わないファイルは置かない。無料版と有償版の取り違えもここで止まる。
+  フォルダを渡した場合は、中のファイル名を各プランの型と照合して振り分ける。プランを人が指定しないので、取り違えようがない。
 - **latest を戻すときは控えから置き直す**（`scripts/ops.mjs restore`）。thanks の URL は常に latest を指すため、戻せば既存の購入者にも戻った版が配られる。
+  プランを指定しなければ、プロダクトの全プランを同じ版に戻す。プランごとに流すと、片方を戻し忘れて古い版を配り続けるためである。
+  版はプランごとに独立している（片方だけ版を上げてよい）ので、その版の控えが無いプランは飛ばし、今配っている版のままにする。
 
 ---
 
