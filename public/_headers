@@ -4,14 +4,16 @@
 # 書き方を誤ると本番でだけ壊れるため、リリース前に実機で確認する（SPEC §7.4）。
 
 /*
-  # 外部からの読み込みはゼロ。フォントはセルフホストし、JS フレームワークも読み込まない（SPEC §2.3）。
+  # 外部からの読み込みは、アナリティクスの1つだけ。フォントはセルフホストし、JS フレームワークも読み込まない（SPEC §2.3）。
   # インラインスクリプト・インラインスタイルを書かない構成にしてあるので unsafe-inline は要らない。
   #
-  # アナリティクス（Cloudflare Web Analytics）を入れるときは、この行の script-src と connect-src に
-  #   https://static.cloudflareinsights.com  （script-src）
-  #   https://cloudflareinsights.com         （connect-src）
-  # を足す。§2.3 の「外部読み込みゼロ」の唯一の例外になる。
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+  # アナリティクス（Cloudflare Web Analytics）の計測スクリプトは、Cloudflare が HTML に自動で差し込む。
+  # HTML には書いていない。許可先はその読み込み元と送信先の2つで、§2.3 の「外部読み込みゼロ」の唯一の例外である。
+  #   https://static.cloudflareinsights.com  （script-src。計測スクリプトの読み込み元）
+  #   https://cloudflareinsights.com         （connect-src。計測結果の送信先）
+  # 許可していないと計測されず、全ページのコンソールに CSP 違反が出る。
+  # アナリティクスをやめるときは、Cloudflare の画面で自動の差し込みを切ってから、この2つを外す。
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   # 使わない機能は明示的に切る。最小限にとどめる（SPEC §7.5）。
