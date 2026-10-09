@@ -11,7 +11,11 @@
     "html_handling": "auto-trailing-slash",
     // 存在しないURLで、最も近い親ディレクトリの 404.html を 404 ステータスで返す。
     // /en/ 配下は public/en/404.html が当たる（SPEC §7.4）。
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    // /api/ 配下は必ず Worker に通す。ブラウザのページ遷移（リンクのクリック・location.href）は、
+    // 一致するファイルが無いと Worker を呼ばずに上の 404 ページで返される。ダウンロードはページ遷移として
+    // 要求されるので、これが無いと exe を配れない。fetch と curl は届くため、スモークでは気づけなかった（SPEC §8.1）。
+    "run_worker_first": ["/api/*"]
   },
   // 自分のドメインで配信する。DNS レコードと証明書はデプロイ時に Cloudflare が作る（SPEC §3 / §7.7）。
   // 前提: lucidbrain.jp がこのアカウントのゾーンとして有効になっていること。

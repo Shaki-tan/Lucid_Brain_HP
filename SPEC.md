@@ -1033,7 +1033,8 @@ Cloudflare と Stripe の構築、配布ファイルの配置、secret の投入
 ```
 node scripts/ops.mjs status                        何が済んでいて何が残っているか
 node scripts/ops.mjs setup                         初回構築（ログイン → R2 → exe → Worker 作成 → Stripe）
-node scripts/ops.mjs upload <product> <plan> <file>  exe を R2 に置く（版の控え → latest・§8.5）
+node scripts/ops.mjs upload <product> <dir>        フォルダ内の exe を全プランぶん R2 に置く（版の控え → latest・§8.5）
+node scripts/ops.mjs upload <product> <plan> <file>  exe を1つだけ置く
 node scripts/ops.mjs restore <product> <plan> <version>  latest を控えの版に戻す
 node scripts/ops.mjs stripe                        商品・価格・Webhook を揃え、secret を入れる
 node scripts/ops.mjs secret <NAME>                 secret を1つ入れ直す
@@ -1164,13 +1165,26 @@ Access の内側にあるべき環境では「Access が効いているか」と
 - `/api/checkout` は Origin を検証する（§7.5）。
 
 **リクエストの通り道。** URL に一致する静的ファイルがあれば、Cloudflare は **Worker を通さずに**そのファイルを配る
-（Workers Static Assets の既定。`run_worker_first` は使わない）。
-`worker.js` に入ってくるのは、一致するファイルが無いリクエスト、つまり `/api/*` と存在しない URL だけである。
+（Workers Static Assets の既定）。一致するファイルが無いリクエストの扱いは、要求の種類で分かれる。
+
+| 要求 | 一致するファイルが無いとき |
+|---|---|
+| ページ遷移（リンクのクリック・`location.href`・アドレスバー。`Sec-Fetch-Mode: navigate` が付く） | Cloudflare が **Worker を呼ばずに** 404 ページを返す |
+| それ以外（`fetch`・curl・Stripe からの Webhook） | `worker.js` に入る |
+
+ダウンロード（`/api/download`・`/api/download-free`）は、リンクのクリックと `location.href`、つまりページ遷移として要求される。
+既定のままだと Worker に届かず、404 ページが返って exe を配れない。そこで **`run_worker_first` に `/api/*` だけを指定し、
+`/api/` 配下は要求の種類に依らず必ず Worker に通す**。全リクエストを通す指定（`true`）にはしない。
+
+この挙動は `fetch` と curl では再現しない。`tests/smoke.sh` は、ページ遷移の形（`Sec-Fetch-Mode: navigate`）でも
+`/api/*` が Worker に届くことを確かめる。
+
+`worker.js` に入ってくるのは、`/api/*` と、存在しない URL のうちページ遷移でないものだけである。
 
 ```js
 // worker.js
 if (!url.pathname.startsWith('/api/')) {
-  return env.ASSETS.fetch(request)   // 一致するファイルが無かった URL。404 ページを返す
+  return env.ASSETS.fetch(request)   // 一致するファイルが無かった URL（ページ遷移以外）。404 ページを返す
 }
 ```
 
@@ -1179,7 +1193,8 @@ if (!url.pathname.startsWith('/api/')) {
 - **全リクエストに効かせたい処理を `worker.js` に書いても効かない。** ページや CSS は Worker を通らないためである。
   www の転送をダッシュボードのリダイレクトルールで行うのはこのためである（§3）。
 - **ページの閲覧は Workers の無料枠（1日10万リクエスト）を消費しない。** 静的ファイルの配信は無料・無制限であり、
-  枠を使うのは `/api/*` と 404 だけである。`run_worker_first` で全リクエストを Worker に通すと、この性質を失う。
+  枠を使うのは `/api/*` と、ページ遷移でない 404 だけである。`run_worker_first` を `true` にして全リクエストを
+  Worker に通すと、この性質を失う。`/api/*` に限っているのはこのためである。
 
 `_headers` / `_redirects` は静的ファイルの配信に適用される。効いているかは実機で確認する（§10.2 の2）。
 適用されていなければ CSP もキャッシュ制御も付いておらず、§7.5 のセキュリティ要件が実質未達になる。
@@ -1554,6 +1569,7 @@ pawgress/1.0.1/Pawgress-Windows-1.0.1-Setup.exe
 - **置く順番は控え → latest とする。** latest を上書きする時点で、その版が必ず控えに残っている状態にするため。
 - **控えは上書きしない。** 同じ版番号で中身を差し替えると、配った版と控えの中身が食い違う。直すときは版番号を上げる。
 - **版はファイル名から読む。** 型に合わないファイルは置かない。無料版と有償版の取り違えもここで止まる。
+  フォルダを渡した場合は、中のファイル名を各プランの型と照合して振り分ける。プランを人が指定しないので、取り違えようがない。
 - **latest を戻すときは控えから置き直す**（`scripts/ops.mjs restore`）。thanks の URL は常に latest を指すため、戻せば既存の購入者にも戻った版が配られる。
 
 ---

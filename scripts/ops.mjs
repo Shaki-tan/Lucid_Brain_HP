@@ -2,7 +2,8 @@
 //
 //   node scripts/ops.mjs status                        何が済んでいて何が残っているか
 //   node scripts/ops.mjs setup                         初回構築を順に行う。済んでいる段は飛ばす
-//   node scripts/ops.mjs upload <product> <plan> <file>  exe を R2 に置く（版の控え → latest）
+//   node scripts/ops.mjs upload <product> <dir>        フォルダ内の exe を全プランぶん R2 に置く（版の控え → latest）
+//   node scripts/ops.mjs upload <product> <plan> <file>  exe を1つだけ置く
 //   node scripts/ops.mjs restore <product> <plan> <version>  latest を控えの版に戻す
 //   node scripts/ops.mjs stripe                        Stripe の商品・価格・Webhook を揃え、secret を入れる
 //   node scripts/ops.mjs secret <NAME>                 secret を1つ入れ直す
@@ -21,7 +22,7 @@
 // 状態の定義元はリポジトリ（wrangler.jsonc / products.js / webhook.js）であり、
 // ダッシュボードで作ったものに合わせるのではなく、リポジトリの記述に向こうを合わせる（SPEC §1.2）。
 
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync, statSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
@@ -151,9 +152,9 @@ async function putObject(key, path, fileName) {
   ok(`r2://${target}`)
 }
 
-// 版の控え → latest の順に置く。latest を上書きする前に、その版が必ず控えに残っている状態にするため。
+// 置く前の確認。フォルダ指定のときに、全プランぶんを確かめてから置き始めるために分けてある。
 // 控えは上書きしない。同じ版番号で中身を差し替えると、配った版と控えが食い違うため。
-async function uploadRelease(productId, planId, file, { isOverwriteAllowed = false } = {}) {
+async function prepareRelease(productId, planId, file, { isOverwriteAllowed = false } = {}) {
   const plan = resolveReleasePlan(productId, planId)
   const path = resolve(file)
   if (!existsSync(path)) throw new OpsError(`ファイルが無い: ${path}`)
@@ -166,10 +167,45 @@ async function uploadRelease(productId, planId, file, { isOverwriteAllowed = fal
   if ((await probeR2Object(site.bucketName, versionKey)) && !isOverwriteAllowed) {
     throw new OpsError(`${version} は既に控えにある（${versionKey}）。版番号を上げる（--overwrite で強行できる）`)
   }
+  return { productId, planId, plan, path, version, versionKey }
+}
+
+// 版の控え → latest の順に置く。latest を上書きする前に、その版が必ず控えに残っている状態にするため。
+async function putRelease({ productId, planId, plan, path, version, versionKey }) {
   const fileName = toReleaseFileName(plan, version)
   await putObject(versionKey, path, fileName)
   await putObject(toLatestKey(productId, plan), path, fileName)
   ok(`${envLabel()}の ${productId}:${planId} を ${version} にした`)
+}
+
+async function uploadRelease(productId, planId, file, options) {
+  await putRelease(await prepareRelease(productId, planId, file, options))
+}
+
+// フォルダを渡して、プロダクトの全プランぶんを置く。ファイル名を型と照合して振り分けるので、プランを指定しない。
+// planIds を渡すと、そのプランだけを対象にする（setup が、まだ無いプランだけを置くとき）
+async function uploadReleaseDir(productId, dir, { planIds = null, ...options } = {}) {
+  const path = resolve(dir)
+  if (!existsSync(path) || !statSync(path).isDirectory()) {
+    throw new OpsError(`フォルダが無い: ${path}（ファイルを1つだけ置くなら upload <product> <plan> <file>）`)
+  }
+  const plans = listReleasePlans().filter(
+    (item) => item.productId === productId && (!planIds || planIds.includes(item.planId)),
+  )
+  if (plans.length === 0) throw new OpsError(`${productId} は products.js に無いか、releaseFile を持つプランが無い`)
+
+  const names = readdirSync(path)
+  const targets = []
+  for (const { planId, plan } of plans) {
+    const matches = names.filter((name) => parseReleaseVersion(plan, name))
+    if (matches.length > 1) {
+      throw new OpsError(`${productId}:${planId} に合うファイルが複数ある（${matches.join(' / ')}）。版ごとにフォルダを分ける`)
+    }
+    if (matches.length === 0) todo(`${productId}:${planId} に合うファイルが無い（${plan.releaseFile}）。飛ばす`)
+    else targets.push(await prepareRelease(productId, planId, join(path, matches[0]), options))
+  }
+  if (targets.length === 0) throw new OpsError(`${path} に、${productId} の型に合うファイルが1つも無い`)
+  for (const target of targets) await putRelease(target)
 }
 
 // latest を控えの版に戻す。wrangler に R2 内のコピーが無いため、一度手元に落として置き直す
@@ -445,12 +481,12 @@ async function status() {
     ok('ログイン済み')
     if (await hasBucket(site.bucketName)) {
       ok(`R2 バケット ${site.bucketName}`)
-      for (const { productId, planId, plan } of listReleasePlans()) {
+      for (const { productId, plan } of listReleasePlans()) {
         const key = toLatestKey(productId, plan)
         if (await probeR2Object(site.bucketName, key)) ok(`R2 ${key}`)
         else {
           ng(`R2 ${key} が無い`)
-          addRemaining(`upload ${productId} ${planId} <${plan.releaseFile}>`)
+          addRemaining(`upload ${productId} <フォルダ>`)
         }
       }
     } else {
@@ -542,15 +578,20 @@ async function setup() {
   await ensureBucket(site.bucketName)
 
   heading('3. 配布する exe')
+  // まだ無いプランをプロダクトごとにまとめ、フォルダを1回だけ聞く
+  const missingPlans = new Map()
   for (const { productId, planId, plan } of listReleasePlans()) {
     const key = toLatestKey(productId, plan)
-    if (await probeR2Object(site.bucketName, key)) {
-      ok(`${key} は在る`)
-      continue
-    }
-    const file = await ask(`${productId}:${planId} の exe のパス（${plan.releaseFile}。空 Enter で後回し）`)
-    if (file) await uploadRelease(productId, planId, file)
-    else todo(`後で: ${opsCommand(`upload ${productId} ${planId} <${plan.releaseFile}>`)}`)
+    if (await probeR2Object(site.bucketName, key)) ok(`${key} は在る`)
+    else missingPlans.set(productId, [...(missingPlans.get(productId) ?? []), { planId, plan }])
+  }
+  for (const [productId, plans] of missingPlans) {
+    const fileNames = plans.map(({ plan }) => plan.releaseFile).join(' / ')
+    // エクスプローラーの「パスのコピー」は引用符で囲んだ形になる
+    const answer = await ask(`${productId} の exe があるフォルダ（${fileNames}。空 Enter で後回し）`)
+    const dir = answer.replace(/^"(.*)"$/, '$1')
+    if (dir) await uploadReleaseDir(productId, dir, { planIds: plans.map(({ planId }) => planId) })
+    else todo(`後で: ${opsCommand(`upload ${productId} <フォルダ>`)}`)
   }
 
   heading('4. Worker を作る（初回デプロイ）')
@@ -590,8 +631,11 @@ const HELP = `使い方: node scripts/ops.mjs <command> [--env staging]
 
   status                          何が済んでいて何が残っているか（STRIPE_API_KEY を渡すと Stripe も見る）
   setup                           初回構築。ログイン → R2 → exe → Worker 作成 → Stripe を順に。済んだ段は飛ばす
+  upload <product> <フォルダ> [--overwrite]
+                                  フォルダ内の exe を、全プランぶん置く。ファイル名を products.js の型と照合して振り分ける
+                                  （例: upload pawgress ./release/1.0.1）
   upload <product> <plan> <file> [--overwrite]
-                                  exe を版の控え → latest の順に置く。版はファイル名から読む
+                                  exe を1つだけ置く。どちらも版の控え → latest の順に置き、版はファイル名から読む
                                   （例: upload pawgress paid ./Pawgress-Windows-1.0.1-Setup.exe）
   restore <product> <plan> <version>
                                   latest を控えの版に戻す（例: restore pawgress paid 1.0.0）
@@ -640,9 +684,12 @@ async function main() {
     case 'setup':
       return setup()
     case 'upload': {
-      const [productId, planId, file] = positionals
-      if (!file) throw new OpsError('使い方: node scripts/ops.mjs upload <product> <plan> <file>')
-      return uploadRelease(productId, planId, file, { isOverwriteAllowed: flags.has('--overwrite') })
+      const options = { isOverwriteAllowed: flags.has('--overwrite') }
+      // 位置引数が2つならフォルダ、3つならプランとファイル
+      const [productId, planIdOrDir, file] = positionals
+      if (file) return uploadRelease(productId, planIdOrDir, file, options)
+      if (planIdOrDir) return uploadReleaseDir(productId, planIdOrDir, options)
+      throw new OpsError('使い方: node scripts/ops.mjs upload <product> <フォルダ> / upload <product> <plan> <file>')
     }
     case 'restore': {
       const [productId, planId, version] = positionals

@@ -55,14 +55,23 @@ export function wrangler(args, options) {
   return run('npx', ['--yes', WRANGLER, ...args], options)
 }
 
-// R2 のオブジェクトが在るかを見る。wrangler に HEAD 相当が無いため、
-// 取得を始めて最初のデータが届いた時点で打ち切る。exe を丸ごと落とさないため。
+// これだけ届けば配布ファイルの中身だと見なす量。wrangler の案内や警告より十分大きく、exe より十分小さい
+const PROBE_MIN_BYTES = 64 * 1024
+
+// R2 に配布ファイルが在るかを見る。wrangler に HEAD 相当が無いため、
+// 取得を始めて PROBE_MIN_BYTES が届いた時点で打ち切る。exe を丸ごと落とさないため。
+// 「1バイトでも届けば在る」とはしない。wrangler が標準出力に案内や警告を出すと、
+// 無いキーを在ると取り違え、setup が質問を飛ばし、upload が「既に控えにある」と止まるため。
+// そのぶん、PROBE_MIN_BYTES に満たない小さなオブジェクトは「無い」と判定する。
 export function probeR2Object(bucket, key) {
   return new Promise((resolve) => {
     const args = ['--yes', WRANGLER, 'r2', 'object', 'get', `${bucket}/${key}`, '--remote', '--pipe']
     const child = spawnCommand('npx', args, ['ignore', 'pipe', 'pipe'])
     let isSettled = false
-    child.stdout.once('data', () => {
+    let received = 0
+    child.stdout.on('data', (chunk) => {
+      received += chunk.length
+      if (isSettled || received < PROBE_MIN_BYTES) return
       isSettled = true
       child.stdout.destroy()
       child.kill()

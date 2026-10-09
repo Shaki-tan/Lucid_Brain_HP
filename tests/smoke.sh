@@ -2,6 +2,8 @@
 # デプロイ後のスモーク。主要URLが 200 / 404 を返すか、CSP ヘッダが付いているかを curl で見る。
 # （SPEC §7.5 / リリース前チェックリストの 6・7）
 #
+# 200 を期待するページ・PDF・CSS は public/ の中身から組む。プロダクト名をここに書かない。
+#
 #   bash tests/smoke.sh                                   # 既定のベースURLに対して
 #   bash tests/smoke.sh https://lucidbrain.jp  # ベースURLを指定して
 #   bash tests/smoke.sh http://127.0.0.1:8787              # wrangler dev に対して
@@ -12,6 +14,7 @@
 #   CF_ACCESS_CLIENT_ID=... CF_ACCESS_CLIENT_SECRET=... bash tests/smoke.sh <テスト環境のURL>
 
 set -uo pipefail
+cd "$(dirname "$0")/.."
 
 BASE="${1:-https://lucidbrain.jp}"
 BASE="${BASE%/}"
@@ -23,12 +26,12 @@ if [ -n "${CF_ACCESS_CLIENT_ID:-}" ] && [ -n "${CF_ACCESS_CLIENT_SECRET:-}" ]; t
   CURL_ARGS+=(-H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}")
 fi
 
-# 想定ステータスと実際を突き合わせる
+# 想定ステータスと実際を突き合わせる。3つ目以降は curl にそのまま渡す
 expect_status() {
   local path="$1"
   local want="$2"
   local got
-  got=$(curl "${CURL_ARGS[@]}" -o /dev/null -w '%{http_code}' "${BASE}${path}")
+  got=$(curl "${CURL_ARGS[@]}" "${@:3}" -o /dev/null -w '%{http_code}' "${BASE}${path}")
   if [ "$got" = "$want" ]; then
     echo "OK  $want  $path"
   else
@@ -37,29 +40,35 @@ expect_status() {
   fi
 }
 
+# public/ 配下のファイルを、配信されるURLのパスに直す。
+# 拡張子なしURLとディレクトリの対応は wrangler.jsonc の html_handling に従う（SPEC §3）
+to_url_path() {
+  local path="/${1#public/}"
+  case "$path" in
+    */index.html) path="${path%index.html}" ;;
+    *.html) path="${path%.html}" ;;
+  esac
+  printf '%s' "$path"
+}
+
 echo "== ${BASE} に対するスモーク =="
 echo
-echo "-- 主要ページ（200） --"
+echo "-- ページと配布PDF（200） --"
+# 一覧を手で持たない。public/ に置いた全ページと全PDFが配信されていることを見る。
+# プロダクトを足しても、ここは書き換えずに済む
+while IFS= read -r file; do
+  expect_status "$(to_url_path "$file")" 200
+done < <({
+  find public -name '*.html' -type f ! -name '404.html'
+  find public/docs -name '*.pdf' -type f
+} | LC_ALL=C sort)
+
+echo
+echo "-- プロダクトに依らないファイル（200） --"
 for path in \
-  / \
-  /products/pawgress/ \
-  /products/pawgress/thanks \
-  /products/pawgress/legal/terms \
-  /products/pawgress/legal/refund \
-  /legal/privacy \
-  /legal/tokushoho \
-  /en/ \
-  /en/products/pawgress/ \
-  /en/products/pawgress/thanks \
-  /en/products/pawgress/legal/terms \
-  /en/products/pawgress/legal/refund \
-  /en/legal/privacy \
-  /en/legal/tokushoho \
   /robots.txt \
   /sitemap.xml \
-  /site.webmanifest \
-  /docs/common/gemini-api-key.ja.pdf \
-  /docs/pawgress/user-guide.ja.pdf
+  /site.webmanifest
 do
   expect_status "$path" 200
 done
@@ -73,6 +82,13 @@ echo
 echo "-- API のメソッド制限 --"
 expect_status /api/checkout 405
 expect_status /api/does-not-exist 404
+
+echo
+echo "-- ページ遷移でも /api/* が Worker に届く --"
+# ダウンロードはリンクのクリックと location.href、つまりページ遷移として要求される。
+# 一致するファイルが無いページ遷移を、Cloudflare は Worker を呼ばずに 404 ページで返す。
+# wrangler.jsonc の run_worker_first が効いていれば Worker に届き、product が無いので 400 になる（SPEC §8.1）。
+expect_status /api/download-free 400 -H 'Sec-Fetch-Mode: navigate'
 
 echo
 echo "-- セキュリティヘッダ --"
@@ -121,7 +137,10 @@ expect_revalidate() {
 expect_revalidate /
 expect_revalidate /assets/css/tokens.css
 expect_revalidate /assets/js/partials.js
-expect_revalidate /products/pawgress/assets/css/pawgress.css
+# プロダクト固有の CSS も同じ扱いであることを見る
+while IFS= read -r file; do
+  expect_revalidate "$(to_url_path "$file")"
+done < <(find public/products -path '*/assets/css/*.css' -type f | LC_ALL=C sort)
 
 echo
 if [ "$status" -eq 0 ]; then

@@ -4,7 +4,9 @@
 // 各ハンドラの実装自体は functions/api/*.js をそのまま再利用する（ロジックの重複を避けるため）。
 //
 // URL に一致する静的ファイルがあれば、Cloudflare はこの Worker を通さずにそのファイルを配る（SPEC §8.1）。
-// この Worker に入ってくるのは、一致するファイルが無いリクエスト（/api/* と、存在しない URL）だけである。
+// この Worker に入ってくるのは、/api/*（wrangler.jsonc の run_worker_first で必ず通す）と、
+// 一致するファイルが無い URL のうちページ遷移でないものだけである。
+// 存在しない URL へのページ遷移は、Cloudflare がここを呼ばずに 404 ページを返す。
 // そのため、全リクエストに効かせたい処理（www の転送など）をここに書いても効かない。
 //
 // 分岐の if が増え続けないよう、ルートはテーブルで持つ（SPEC §8.2）。
@@ -30,7 +32,7 @@ export default {
     const url = new URL(request.url)
 
     if (!url.pathname.startsWith(API_PREFIX)) {
-      // 一致するファイルが無かった URL。404 ページの選び方は wrangler.jsonc の assets 設定に従う。
+      // 一致するファイルが無かった URL（ページ遷移以外）。404 ページの選び方は wrangler.jsonc の assets 設定に従う。
       return env.ASSETS.fetch(request)
     }
 
