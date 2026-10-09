@@ -1035,7 +1035,8 @@ node scripts/ops.mjs status                        何が済んでいて何が�
 node scripts/ops.mjs setup                         初回構築（ログイン → R2 → exe → Worker 作成 → Stripe）
 node scripts/ops.mjs upload <product> <dir>        フォルダ内の exe を全プランぶん R2 に置く（版の控え → latest・§8.5）
 node scripts/ops.mjs upload <product> <plan> <file>  exe を1つだけ置く
-node scripts/ops.mjs restore <product> <plan> <version>  latest を控えの版に戻す
+node scripts/ops.mjs restore <product> <version>   全プランの latest を控えの版に戻す
+node scripts/ops.mjs restore <product> <plan> <version>  1つのプランだけ戻す
 node scripts/ops.mjs stripe                        商品・価格・Webhook を揃え、secret を入れる
 node scripts/ops.mjs secret <NAME>                 secret を1つ入れ直す
 node scripts/ops.mjs smoke / logs                  スモーク / ログ
@@ -1571,6 +1572,8 @@ pawgress/1.0.1/Pawgress-Windows-1.0.1-Setup.exe
 - **版はファイル名から読む。** 型に合わないファイルは置かない。無料版と有償版の取り違えもここで止まる。
   フォルダを渡した場合は、中のファイル名を各プランの型と照合して振り分ける。プランを人が指定しないので、取り違えようがない。
 - **latest を戻すときは控えから置き直す**（`scripts/ops.mjs restore`）。thanks の URL は常に latest を指すため、戻せば既存の購入者にも戻った版が配られる。
+  プランを指定しなければ、プロダクトの全プランを同じ版に戻す。プランごとに流すと、片方を戻し忘れて古い版を配り続けるためである。
+  版はプランごとに独立している（片方だけ版を上げてよい）ので、その版の控えが無いプランは飛ばし、今配っている版のままにする。
 
 ---
 

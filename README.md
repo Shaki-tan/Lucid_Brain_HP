@@ -198,7 +198,8 @@ node scripts/ops.mjs status          # 何が済んでいて何が残ってい�
 node scripts/ops.mjs setup           # 初回構築。ログイン → R2 → exe → Worker 作成 → Stripe
 node scripts/ops.mjs upload pawgress ./release/1.0.1                            # 版を上げる。フォルダ内の全プランぶんを置く
 node scripts/ops.mjs upload pawgress paid ./Pawgress-Windows-1.0.1-Setup.exe   # 1つだけ置く
-node scripts/ops.mjs restore pawgress paid 1.0.0                                # 前の版に戻す
+node scripts/ops.mjs restore pawgress 1.0.0                                     # 前の版に戻す。全プランを戻す
+node scripts/ops.mjs restore pawgress paid 1.0.0                                # 1つのプランだけ戻す
 node scripts/ops.mjs stripe          # 商品・価格・Webhook を揃え、secret を入れる
 node scripts/ops.mjs secret STRIPE_SECRET_KEY                   # secret を1つ入れ直す
 node scripts/ops.mjs smoke           # スモーク（テスト環境はサービストークンが要る）

@@ -4,7 +4,8 @@
 //   node scripts/ops.mjs setup                         初回構築を順に行う。済んでいる段は飛ばす
 //   node scripts/ops.mjs upload <product> <dir>        フォルダ内の exe を全プランぶん R2 に置く（版の控え → latest）
 //   node scripts/ops.mjs upload <product> <plan> <file>  exe を1つだけ置く
-//   node scripts/ops.mjs restore <product> <plan> <version>  latest を控えの版に戻す
+//   node scripts/ops.mjs restore <product> <version>   全プランの latest を控えの版に戻す
+//   node scripts/ops.mjs restore <product> <plan> <version>  1つのプランだけ戻す
 //   node scripts/ops.mjs stripe                        Stripe の商品・価格・Webhook を揃え、secret を入れる
 //   node scripts/ops.mjs secret <NAME>                 secret を1つ入れ直す
 //   node scripts/ops.mjs smoke                         デプロイ済みのサイトにスモークを流す
@@ -223,6 +224,26 @@ async function restoreRelease(productId, planId, version) {
   } finally {
     await rm(dir, { recursive: true, force: true })
   }
+}
+
+// プロダクトの全プランを同じ版に戻す。プランごとに流すと、片方を戻し忘れて古い版を配り続けるため。
+// その版の控えが無いプラン（片方だけ版を上げたとき）は飛ばす。戻し始める前に、全プランの控えを確かめる
+async function restoreReleaseAll(productId, version) {
+  const plans = listReleasePlans().filter((item) => item.productId === productId)
+  if (plans.length === 0) throw new OpsError(`${productId} は products.js に無いか、releaseFile を持つプランが無い`)
+
+  const planIds = []
+  for (const { planId, plan } of plans) {
+    const versionKey = toVersionKey(productId, plan, version)
+    if (await probeR2Object(site.bucketName, versionKey)) planIds.push(planId)
+    else todo(`${productId}:${planId} に ${version} の控えが無い（${versionKey}）。飛ばす。このプランは今配っている版のまま`)
+  }
+  if (planIds.length === 0) {
+    throw new OpsError(
+      `${productId} のどのプランにも ${version} の控えが無い（プランを指定するなら restore <product> <plan> <version>）`,
+    )
+  }
+  for (const planId of planIds) await restoreRelease(productId, planId, version)
 }
 
 // ---------- 検査・デプロイ ----------
@@ -637,8 +658,10 @@ const HELP = `使い方: node scripts/ops.mjs <command> [--env staging]
   upload <product> <plan> <file> [--overwrite]
                                   exe を1つだけ置く。どちらも版の控え → latest の順に置き、版はファイル名から読む
                                   （例: upload pawgress paid ./Pawgress-Windows-1.0.1-Setup.exe）
+  restore <product> <version>     全プランの latest を、控えの版に戻す。その版の控えが無いプランは飛ばす
+                                  （例: restore pawgress 1.0.0）
   restore <product> <plan> <version>
-                                  latest を控えの版に戻す（例: restore pawgress paid 1.0.0）
+                                  1つのプランだけ戻す（例: restore pawgress paid 1.0.0）
   stripe [--rotate-webhook]       Stripe の商品・価格・Webhook を products.js / webhook.js に合わせ、secret を入れる
   secret <NAME>                   secret を1つ入れ直す（伏字入力）
   smoke                           SITE_BASE_URL にスモークを流す（テスト環境は CF_ACCESS_CLIENT_ID / _SECRET が要る）
@@ -692,9 +715,11 @@ async function main() {
       throw new OpsError('使い方: node scripts/ops.mjs upload <product> <フォルダ> / upload <product> <plan> <file>')
     }
     case 'restore': {
-      const [productId, planId, version] = positionals
-      if (!version) throw new OpsError('使い方: node scripts/ops.mjs restore <product> <plan> <version>')
-      return restoreRelease(productId, planId, version)
+      // 位置引数が2つなら全プラン、3つならプランを指定
+      const [productId, planIdOrVersion, version] = positionals
+      if (version) return restoreRelease(productId, planIdOrVersion, version)
+      if (planIdOrVersion) return restoreReleaseAll(productId, planIdOrVersion)
+      throw new OpsError('使い方: node scripts/ops.mjs restore <product> <version> / restore <product> <plan> <version>')
     }
     case 'stripe':
       return setupStripe({ isWebhookRotated: flags.has('--rotate-webhook') })
