@@ -1172,7 +1172,7 @@ Access の内側にあるべき環境では「Access が効いているか」と
   部分返金は判定に使わない。期間の起点に決済画面を開いた時刻（Session の作成時刻）を使わないのは、決済画面で手間取った分だけ期間が縮むためである。
   状態は持たない（KV・D1・Webhook での記録を使わない）。期間は Stripe が持つ決済の時刻から毎回求め、トークンも署名も発行しないので、§1.2 の「期限のあるトークン・署名に依存しない」とは衝突しない。
   一度の購入で新しい版を受け取り続けられる状態と、URL の共有の実害を、期間で抑えるためである。期間を過ぎたら再購入とする。
-- 検証のため、テスト環境だけは `wrangler.jsonc` の `env.staging.vars` の `DOWNLOAD_WINDOW_SECONDS`（秒）で期間を短くする。
+- 期間切れを検証するときだけ、テスト環境の `wrangler.jsonc` の `env.staging.vars` に `DOWNLOAD_WINDOW_SECONDS`（秒）を置いて期間を短くできる。普段は置かず、テスト環境も本番と同じ期間にしておく。
   本番（トップレベルの `vars`）に置くと購入者が期間内にダウンロードできなくなるため、`tests/check-wrangler.mjs` がデプロイの関門で止める。
 - 判定は `functions/lib/entitlement.js` の1関数に閉じ、`tests/check-entitlement.mjs` が Stripe の応答を固定して場合ごとに確かめる。
   拒否の理由（`reason`）は `session_not_found` / `payment_not_completed` / `charge_not_found` / `refunded` / `window_not_configured` / `expired` で、`download_denied` のログに出る。
