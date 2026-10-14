@@ -10,6 +10,13 @@
 //   6. public/legal/tokushoho.html（と英語版）に商品の小節（SPEC §2.2）
 // そのあと public/sitemap.xml に日英の全URLを足す。
 
+// Pawgress のダウンロード期間と重複決済の期間（時間）。規約が2つを揃えて定めているため、いまは同じ値を入れる。
+// 分けるときは規約の改定と同時に行い、paid プランの片方のキーの値を変えるだけでよい（SPEC §8.2）。
+// 読む側は必ず自分の用途のキーを読む。
+//   downloadWindowHours  — 決済の完了から、決済完了ページの URL でダウンロードできる時間（functions/lib/entitlement.js）
+//   duplicateWindowHours — 先の決済からこの時間内に重ねて決済したものを重複とみなす（同意の表示・重複決済の検出）
+const PAWGRESS_WINDOW_HOURS = 72
+
 export const PRODUCTS = {
   pawgress: {
     displayName: 'Pawgress',
@@ -31,6 +38,8 @@ export const PRODUCTS = {
         unitAmount: 2980,
         currency: 'jpy',
         releaseFile: 'Pawgress-Windows-{version}-Setup.exe',
+        downloadWindowHours: PAWGRESS_WINDOW_HOURS,
+        duplicateWindowHours: PAWGRESS_WINDOW_HOURS,
         consentSet: 'one_time',
         consentVersion: '2026-09-17',
       },

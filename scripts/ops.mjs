@@ -255,6 +255,8 @@ const BLOCKING_CHECKS = [
   'tests/check-i18n.mjs',
   'tests/check-consent.mjs',
   'tests/check-glyphs.mjs',
+  'tests/check-wrangler.mjs',
+  'tests/check-entitlement.mjs',
 ]
 
 function requireBash() {
@@ -474,6 +476,10 @@ async function setupStripe({ isWebhookRotated = false } = {}) {
   heading('Stripe ダッシュボードで行うこと（API では設定できない）')
   todo('設定 → 公開情報: 事業者名・明細書表記・サポート連絡先')
   todo('設定 → カスタマーへのメール → 支払い成功: 有効にする（checkout.js が発行する請求書をメールで届けるため）')
+  todo(
+    'Worker の STRIPE_SECRET_KEY を制限付きキーにするなら、権限は Checkout Sessions の書き込み、' +
+      'PaymentIntents と Charges の読み取り（ダウンロードの期間と返金の判定に使う・SPEC §7.6）',
+  )
   if (mode === 'test') todo('テスト購入: カード 4242 4242 4242 4242 / 期限は未来の任意 / CVC 任意（SPEC §7.5 チェックリスト3・4）')
   else todo('本番の購入を1回通し、返金まで試す')
 }

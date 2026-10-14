@@ -353,6 +353,8 @@ root
 |  |--check-meta.sh
 |  |--check-i18n.mjs
 |  |--check-glyphs.mjs               # サイトの文字がフォントのサブセットに収まっているか（§7.5）
+|  |--check-wrangler.mjs             # 検証用のダウンロード期間が本番に無いか（§8.1）
+|  |--check-entitlement.mjs          # ダウンロード可否の判定（期間・返金）を Stripe の応答を固定して確かめる（§8.1）
 |  |--smoke.sh                       # デプロイ後。200/404/CSP/キャッシュ制御
 |
 |--Tasks/                            # 内部管理用。.gitignore 対象
@@ -867,7 +869,7 @@ JPY 表記のみと同じ性質の防御である。
 | `/api/checkout` の濫用対策 | Origin を検証し、自サイト以外からの呼び出しを拒否する | — |
 | R2 の保護 | バケットは非公開。配信は Worker 経由のみ | 満たしている |
 | Webフォント | セルフホストする（`assets/fonts/`）。外部 CDN から読み込まない | 外部読み込みがゼロになり、プライバシーポリシーに書く第三者提供先が1つ減る |
-| 受け入れるリスク | `session_id` を知る第三者はダウンロードできる | 独自トークン・期限・認証を持たない方針（§8.1）とのトレードオフ。設計上の受容であり欠陥ではない。拡散が実害になった時点で再検討する |
+| 受け入れるリスク | `session_id` を知る第三者は、決済の完了から72時間のあいだダウンロードできる | 独自トークン・認証を持たない方針（§8.1）とのトレードオフ。期間を過ぎれば URL は使えなくなる。設計上の受容であり欠陥ではない |
 
 フォントのセルフホストについて補足する。
 「Google Fonts の埋め込みが個人データ送信にあたる」という論点は、フォントファイルの中身ではなく通信そのものを指す。
@@ -947,6 +949,8 @@ CSS 4本 + JS 2〜3本のこの規模では体感に出ない。
 10. legal 4種の記載が現行の法令・事業実態と合っている（年1回）
 11. 閾値ゼロ地域の一覧が最新で、`functions/lib/regions.js` に反映されている（年1回・§7.2）
 
+ダウンロード期間が検証用の短い値のまま本番に出ていないことは、チェックリストではなく `tests/check-wrangler.mjs` がデプロイの関門で確かめる（§8.1）。
+
 #### 検査スクリプトと CI
 
 「ビルドを持たない」ことと「CI を持たない」ことは同じではない。
@@ -985,6 +989,8 @@ tests/
 |--check-i18n.mjs          # 日英ページの構造一致と hreflang の相互参照
 |--check-consent.mjs       # 同意項目の文言と、Stripe へ記録できる状態か（§8.3）
 |--check-glyphs.mjs        # サイトの文字がフォントのサブセットに収まっているか
+|--check-wrangler.mjs      # 検証用のダウンロード期間が本番（トップレベルの vars）に無いか
+|--check-entitlement.mjs   # ダウンロード可否の判定を、fetch を差し替えて場合ごとに確かめる
 |--smoke.sh                # デプロイ後、curl で 200 / 404 / CSP / キャッシュ制御を確認
 ```
 
@@ -1071,6 +1077,9 @@ node scripts/ops.mjs deploy                        手元からのデプロイ�
 - **Stripe のキーはどこにも保存しない。** 環境変数 `STRIPE_API_KEY` か実行時の伏字入力で渡す。
   テスト / 本番はキーの接頭辞で決まり、本番のときは確認を挟む。
   Worker に入れる `STRIPE_SECRET_KEY` は、構築に使ったキーと別の制限付きキーにしてよい。
+  その場合の権限は、Checkout Sessions の書き込み（読み取りを含む）、PaymentIntents と Charges の読み取りである。
+  後の2つはダウンロードの期間と返金の判定に使う（§8.1）。書き込みの権限は足さない。
+  本番モードに切り替えるときも、同じ権限のキーを作る（`stripe` の最後にも表示する）。
 - **secret の値は標準入力で wrangler に渡す。** 引数に載せるとプロセス一覧とシェル履歴に残る。
 - **wrangler の版は `scripts/ops/shell.mjs` の `WRANGLER` で固定する。** `npx` は版を指定しないと毎回最新を取りに行き、
   放置しているあいだに挙動が変わる。リポジトリの依存には入れない（`package.json` を作らない）。
@@ -1158,7 +1167,15 @@ Access の内側にあるべき環境では「Access が効いているか」と
 - 構成は Cloudflare Workers（静的アセット + Functions）、Stripe、Cloudflare R2。デプロイは GitHub への push（main → 本番、develop → テスト・§7.7）、構築と設定は `scripts/ops.mjs`（§7.6）で行う。
 - 無料版・有料版とも、exe実体は R2 で管理する。公開ディレクトリに置くと、リンクの有無に関わらず直接URLで取得できてしまうため。
 - 有料版は Stripe Checkout（カード決済のみ）を使う。決済確認は Checkout Session ID をそのまま認可情報として扱い、リクエストの都度 Stripe API で `payment_status === 'paid'` を照会する。独自のトークン発行と署名管理は行わない。この方針は §1.2 の「時間で劣化するものを置かない」と整合している。
-- ダウンロードURLに独自の有効期限は設けない。
+- ダウンロードは**決済の完了から `plan.downloadWindowHours`（Pawgress は72時間）のあいだだけ**許可し、**全額返金した決済は拒否する**。
+  Checkout Session を取得するときに `payment_intent.latest_charge` を展開し、Charge の作成時刻と `refunded` を見る。照会は1回のままである。
+  部分返金は判定に使わない。期間の起点に決済画面を開いた時刻（Session の作成時刻）を使わないのは、決済画面で手間取った分だけ期間が縮むためである。
+  状態は持たない（KV・D1・Webhook での記録を使わない）。期間は Stripe が持つ決済の時刻から毎回求め、トークンも署名も発行しないので、§1.2 の「期限のあるトークン・署名に依存しない」とは衝突しない。
+  一度の購入で新しい版を受け取り続けられる状態と、URL の共有の実害を、期間で抑えるためである。期間を過ぎたら再購入とする。
+- 検証のため、テスト環境だけは `wrangler.jsonc` の `env.staging.vars` の `DOWNLOAD_WINDOW_SECONDS`（秒）で期間を短くする。
+  本番（トップレベルの `vars`）に置くと購入者が期間内にダウンロードできなくなるため、`tests/check-wrangler.mjs` がデプロイの関門で止める。
+- 判定は `functions/lib/entitlement.js` の1関数に閉じ、`tests/check-entitlement.mjs` が Stripe の応答を固定して場合ごとに確かめる。
+  拒否の理由（`reason`）は `session_not_found` / `payment_not_completed` / `charge_not_found` / `refunded` / `window_not_configured` / `expired` で、`download_denied` のログに出る。
 - Stripe Webhook はダウンロード可否判定の必須経路にしない。用途は「Stripe 側で起きたことに気づくための通知」であり、記録の保存先ではない（§8.4）。
 - ルーティングは `worker.js` で明示的に行う（Pages Functions の自動ルーティングに問題が生じたため）。ハンドラ実体は `functions/api/*.js` を再利用する。
 - R2 バケットは全プロダクトで1つ（`lucid-brain-releases`）とし、中をプロダクトIDのフォルダで分ける（§8.5）。
@@ -1257,6 +1274,8 @@ export const PRODUCTS = {
         unitAmount: 2980,                         // Stripe に Price を作るときの値。LP の表示と一致させる（§7.6）
         currency: 'jpy',
         releaseFile: 'Pawgress-Windows-{version}-Setup.exe',
+        downloadWindowHours: 72,                  // 決済の完了からダウンロードできる時間（§8.1）
+        duplicateWindowHours: 72,                 // この時間内に重ねた決済を重複とみなす。いまは上と同じ定数を入れる
         consentSet: 'one_time',                   // 同意文言のセット（§8.3）
         consentVersion: '2026-09-17',
       },
@@ -1302,7 +1321,7 @@ Stripe の価格・R2 のキー・secret はレジストリから組まれるた
 | 箇所 | 買い切り | サブスク | 吸収方法 |
 |---|---|---|---|
 | Checkout 作成 | `mode=payment` | `mode=subscription` | `plan.checkoutMode` をそのまま渡す |
-| DL 可否の判定 | `session.payment_status === 'paid'` | session から subscription を引き、`status` が `active` / `trialing` か | `plan.billing` で分岐。`functions/lib/entitlement.js` の1関数に閉じる |
+| DL 可否の判定 | `session.payment_status === 'paid'` で、全額返金されておらず、決済の完了から `downloadWindowHours` 以内か（§8.1） | session から subscription を引き、`status` が `active` / `trialing` か | `plan.billing` で分岐。`functions/lib/entitlement.js` の1関数に閉じる |
 | 解約導線 | 不要 | Stripe Customer Portal（`/api/portal`）が必要 | `plan.hasPortal` で LP と thanks にボタンを出す。**サブスクを導入するまで実装しない** |
 | 同意項目 | 4項目 | 追加が要る（自動更新の了承・解約方法の確認） | `plan.consentSet` で切り替え（§8.3） |
 | 解約導線 | 不要 | Stripe Customer Portal（`/api/portal`）が必要 | `plan.hasPortal` で LP と thanks にボタンを出す |
@@ -1312,7 +1331,7 @@ Stripe の価格・R2 のキー・secret はレジストリから組まれるた
 
 器は用意するが、サブスクの認可設計は導入を決めた時点で別途起こす。理由は次のとおり。
 
-- 買い切りなら `session_id` は「一度買った事実」を指すため永続的に使えるが、サブスクでは利用者が thanks の URL を自分で保管し続けることになり、失くすと再取得手段がない。
+- 買い切りの `session_id` は「一度買った事実」を指すが、使えるのは決済の完了から `downloadWindowHours` のあいだだけである（§8.1）。サブスクでは利用者が thanks の URL を契約のあいだ保管し続けることになり、失くすと再取得手段がない。
 - 再取得の導線を作るには「メールでDLリンクを送る」か「Customer Portal 経由で本人確認する」のいずれかが要り、会員機能に半歩踏み込む。
 - 特商法の定期購入規制により、最終確認画面（同意ダイアログ）に金額・支払時期・自動更新の有無・解約方法・解約期限の表示が要る。特商法表記ページの記載も増える。
 - Webhook で `customer.subscription.deleted` と `invoice.payment_failed` の処理が要る。
@@ -1571,7 +1590,7 @@ pawgress/1.0.1/Pawgress-Windows-1.0.1-Setup.exe
 - **控えは上書きしない。** 同じ版番号で中身を差し替えると、配った版と控えの中身が食い違う。直すときは版番号を上げる。
 - **版はファイル名から読む。** 型に合わないファイルは置かない。無料版と有償版の取り違えもここで止まる。
   フォルダを渡した場合は、中のファイル名を各プランの型と照合して振り分ける。プランを人が指定しないので、取り違えようがない。
-- **latest を戻すときは控えから置き直す**（`scripts/ops.mjs restore`）。thanks の URL は常に latest を指すため、戻せば既存の購入者にも戻った版が配られる。
+- **latest を戻すときは控えから置き直す**（`scripts/ops.mjs restore`）。thanks の URL は常に latest を指すため、戻せばダウンロードの期間内（§8.1）の購入者にも戻った版が配られる。期間を過ぎた購入者には影響しない。
   プランを指定しなければ、プロダクトの全プランを同じ版に戻す。プランごとに流すと、片方を戻し忘れて古い版を配り続けるためである。
   版はプランごとに独立している（片方だけ版を上げてよい）ので、その版の控えが無いプランは飛ばし、今配っている版のままにする。
 

@@ -1,10 +1,11 @@
 // GET /api/download?session_id=xxx&product=pawgress&plan=paid
 //
 // Checkout Session ID をそのまま認可情報として扱い、リクエストの都度 Stripe API へ照会する。
-// 独自の有効期限・ワンタイム制御は設けない（SPEC §8.1）。
+// 許可するのは決済の完了から plan.downloadWindowHours の間だけで、全額返金した決済は拒否する。
+// 判定は functions/lib/entitlement.js に閉じる。回数の制御とワンタイム化はしない（SPEC §8.1）。
 //
-// 受け入れるリスク: session_id を知る第三者はダウンロードできる。
-// 独自トークン・期限・認証を持たない方針とのトレードオフであり、設計上の受容である（SPEC §7.5）。
+// 受け入れるリスク: 期間内は、session_id を知る第三者もダウンロードできる。
+// 独自トークン・認証を持たない方針とのトレードオフであり、設計上の受容である（SPEC §7.5）。
 
 import { resolvePlan } from '../lib/products.js'
 import { checkEntitlement } from '../lib/entitlement.js'

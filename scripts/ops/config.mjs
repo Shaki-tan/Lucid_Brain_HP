@@ -41,7 +41,8 @@ function stripJsonc(source) {
   return out.replace(/,(\s*[}\]])/g, '$1')
 }
 
-function readRawConfig() {
+// 検査（tests/check-wrangler.mjs）も読むため外に出す。JSONC の読み方を写さないため
+export function readRawConfig() {
   return JSON.parse(stripJsonc(readFileSync(WRANGLER_CONFIG, 'utf8')))
 }
 
