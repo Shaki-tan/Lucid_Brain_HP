@@ -143,7 +143,7 @@
       <div class="grid">
         <article class="card">
           <h3>What the AI needs</h3>
-          <p>The AI chat connects to an external AI service using an API key you supply yourself. OpenAI, Anthropic, Google and xAI are supported, and any OpenAI-compatible API works, including self-hosted ones (not covered by our support). Your API key is stored on your PC and nowhere else.</p>
+          <p>The AI chat connects to an external AI service using an API key you supply yourself. The providers and models we have tested are listed in the table below. Any OpenAI-compatible API works, including self-hosted ones (not covered by our support). Your API key is stored on your PC and nowhere else.</p>
         </article>
         <article class="card">
           <h3>What the AI costs</h3>
@@ -151,9 +151,28 @@
         </article>
         <article class="card">
           <h3>Moving over from the free edition</h3>
-          <p>There is no need to uninstall. Install the paid edition over the free one and the tasks and appointments you already have carry over as they are.</p>
+          <p>There is no need to uninstall. Install the paid edition over the free one and the tasks and appointments you already have carry over as they are. [TBD] If you uninstall first, your data is deleted.</p>
         </article>
       </div>
+
+      <!-- Each row keeps the month it was checked. Provider and model support changes often, and an undated list goes stale silently.
+           Replace the whole table when re-checking (SPEC §7.1) -->
+      <h3 class="lp-subhead" id="ai-providers">AI providers and models we have tested</h3>
+      <div class="lp-table-wrap">
+        <table class="lp-table">
+          <thead>
+            <tr><th scope="col">Provider</th><th scope="col">Model</th><th scope="col">Checked</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>OpenAI</td><td>[TBD]</td><td>[TBD]</td></tr>
+            <tr><td>Anthropic</td><td>[TBD]</td><td>[TBD]</td></tr>
+            <tr><td>Google</td><td>[TBD]</td><td>[TBD]</td></tr>
+            <tr><td>xAI</td><td>[TBD]</td><td>[TBD]</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="lp-table-note">[TBD] The table lists the combinations that worked when we checked. Changes on the provider's side may stop them working. OpenAI-compatible APIs (including self-hosted ones) are not tested.</p>
+
       <p class="sub doc-links-lead">Getting a key, setting it up, and using Pawgress itself are covered in the guides below.</p>
       <ul class="doc-links">
         <li><a href="/docs/pawgress/user-guide.en.pdf">[TBD] Pawgress user guide (PDF)</a></li>
@@ -181,23 +200,81 @@
         </div>
         <div class="plan" data-pick="One-time">
           <h3>Paid edition</h3>
+          <!-- The pre-discount price is not shown. Until the date of the increase is fixed, it would be a comparison with a future price (Japanese advertising law, SPEC §7.1) -->
           <p class="plan-price">
-            <span class="was">¥4,980</span>¥2,980
-            <small>(one-time)</small>
+            ¥2,980
+            <small>(tax included, one-time)</small>
           </p>
+          <p class="plan-tag">[TBD] Launch price</p>
           <ul>
             <li>No limit on the number of tasks or appointments</li>
             <li>Recurring entries available</li>
             <li>Nothing else is restricted — the features are the same as the free edition. Installing over the free edition carries your data across</li>
           </ul>
-          <p class="note">Formal user scenario testing is not finished yet, so it is ¥2,980 instead of the planned ¥4,980 (beta testing turned up no significant problems). The price will be revised once a release with a support guarantee ships.</p>
+          <p class="note">[TBD] New versions, including bug-fix releases, are sold separately. For serious defects only, we provide the fixed version free of charge.</p>
+          <p class="note">[TBD] To move from the free edition, install over it without uninstalling. Uninstalling deletes your data.</p>
+          <p class="note">[TBD] Before you buy, please check that the free edition runs on your PC.</p>
           <!-- Opens the consent dialog. Payment stays out of reach until every item is checked (SPEC §8.3) -->
           <button type="button" class="btn" data-checkout data-product="pawgress" data-plan="paid" data-consent-set="one_time" data-consent-version="2026-10-15.3">Buy the paid edition</button>
         </div>
       </div>
+
+      <div class="plan-details">
+        <h3 class="lp-subhead" id="requirements">System requirements</h3>
+        <dl class="deflist">
+          <dt>OS</dt>
+          <dd>Windows 11 (64-bit; ARM is not supported)</dd>
+          <dt>Memory</dt>
+          <dd>4 GB or more</dd>
+          <dt>Storage</dt>
+          <dd>1 GB of free space or more (for installing and the first launch; attached files need extra space)</dd>
+          <dt>Network</dt>
+          <dd>An internet connection is needed to use the AI features</dd>
+        </dl>
+        <p>We do not guarantee operation outside these requirements. Please check the free edition before you buy.</p>
+
+        <h3 class="lp-subhead" id="usage">Who may use it</h3>
+        <ul>
+          <li>[TBD] A personal purchase may be used only by the buyer (including for their own work).</li>
+          <li>[TBD] A purchase for a company or other organisation may be used by one team directly managed by the person who made the purchase.</li>
+          <li>[TBD] There is no limit on the number of PCs.</li>
+          <li>[TBD] You may not give the software to others.</li>
+        </ul>
+      </div>
+
       <div class="plan-legal-note">
-        <p>There is no license key. If you replace your PC, the same installer keeps working. If you want to use it in a separate environment, please buy another copy.</p>
         <p>Prices include tax and are shown in Japanese yen (JPY) only. This service is intended for residents of Japan.</p>
+        <p>See the <a href="/en/legal/tokushoho#pawgress">Legal Notice (terms of sale for Pawgress)</a> for the conditions of sale.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ. The full steps live in the user guide; only the key points go here (SPEC §7.1) -->
+  <section class="sec" id="faq">
+    <div class="wrap rise">
+      <p class="eyebrow">FAQ</p>
+      <h2>Questions</h2>
+      <div class="faq">
+        <details>
+          <summary>[TBD] The installer shows "Windows protected your PC"</summary>
+          <p>[TBD] This is Windows SmartScreen. Choose "More info", then "Run anyway" to continue. See the <a href="/docs/pawgress/user-guide.en.pdf">installation steps in the user guide (PDF)</a>.</p>
+        </details>
+        <details>
+          <summary>[TBD] How long can I download after buying?</summary>
+          <p>[TBD] For 72 hours from the time of payment. Please keep the installer. After that, if you lose the installer or want to install on a new PC, you will need to buy again.</p>
+        </details>
+        <details>
+          <summary>[TBD] Are new versions free?</summary>
+          <p>[TBD] New versions, including bug-fix releases, are sold separately. For serious defects, we provide the fixed version free of charge.</p>
+        </details>
+        <details>
+          <summary>[TBD] How do I move from the free edition to the paid one?</summary>
+          <p>[TBD] Install the paid edition over the free one without uninstalling. Your data carries over. If you uninstall first, your data is deleted.</p>
+        </details>
+        <details>
+          <summary>[TBD] Can I ask how to use the software?</summary>
+          <p>[TBD] We only handle requests from buyers of the paid edition about failed downloads, serious defects and refunds. We do not answer questions about how to use the software, or enquiries from users of the free edition. See the <a href="/docs/pawgress/user-guide.en.pdf">usage guide in the user guide (PDF)</a>. For feedback, please use the <a href="https://example.com/survey" data-link="survey" rel="noopener external">survey</a>.</p>
+        </details>
       </div>
     </div>
   </section>

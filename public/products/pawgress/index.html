@@ -142,7 +142,7 @@
       <div class="grid">
         <article class="card">
           <h3>AIに必要なもの</h3>
-          <p>AIチャットは、ご自身で用意したAPIキーで外部のAIサービスに接続します。OpenAI・Anthropic・Google・xAI に対応し、OpenAI互換形式のAPIであれば自社ホスト環境でも動作します（保証対象外）。APIキーはお使いのPCにのみ保存されます。</p>
+          <p>AIチャットは、ご自身で用意したAPIキーで外部のAIサービスに接続します。動作を確認した AI 事業者とモデルは、下の表のとおりです。OpenAI互換形式のAPIであれば自社ホスト環境でも動作します（保証対象外）。APIキーはお使いのPCにのみ保存されます。</p>
         </article>
         <article class="card">
           <h3>AIにかかる費用</h3>
@@ -150,9 +150,28 @@
         </article>
         <article class="card">
           <h3>無料版からの乗り換え</h3>
-          <p>アンインストールは不要です。有償版のインストーラーを上書きインストールすれば、無料版で登録したタスクや予定はそのまま引き継がれます。</p>
+          <p>アンインストールは不要です。有償版のインストーラーを上書きインストールすれば、無料版で登録したタスクや予定はそのまま引き継がれます。【仮】先にアンインストールすると、登録したデータは削除されます。</p>
         </article>
       </div>
+
+      <!-- 確認した年月を行ごとに持つ。事業者・モデルの対応は変わりやすく、時期の無い列挙は黙って古くなる。
+           確認し直したら表ごと差し替える（SPEC §7.1） -->
+      <h3 class="lp-subhead" id="ai-providers">動作を確認した AI 事業者とモデル</h3>
+      <div class="lp-table-wrap">
+        <table class="lp-table">
+          <thead>
+            <tr><th scope="col">事業者</th><th scope="col">モデル</th><th scope="col">確認した年月</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>OpenAI</td><td>【仮】</td><td>【仮】</td></tr>
+            <tr><td>Anthropic</td><td>【仮】</td><td>【仮】</td></tr>
+            <tr><td>Google</td><td>【仮】</td><td>【仮】</td></tr>
+            <tr><td>xAI</td><td>【仮】</td><td>【仮】</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="lp-table-note">【仮】表は、確認した時点で動作を確かめた組み合わせです。AI 事業者の都合による変更で使えなくなることがあります。OpenAI互換形式のAPI（自社ホスト環境を含みます）は、動作の確認の対象外です。</p>
+
       <p class="sub doc-links-lead">キーの取得から設定までの手順と、Pawgress 自体の使い方は、配布資料にまとめています。</p>
       <ul class="doc-links">
         <li><a href="/docs/pawgress/user-guide.ja.pdf">【仮】Pawgress の使い方（PDF）</a></li>
@@ -180,23 +199,81 @@
         </div>
         <div class="plan" data-pick="買い切り">
           <h3>有償版</h3>
+          <!-- 値引き前の価格は、金額を出さない。値上げの時期が決まるまでは、将来の価格との比較になるため（景品表示法・SPEC §7.1） -->
           <p class="plan-price">
-            <span class="was">¥4,980</span>¥2,980
-            <small>（買い切り）</small>
+            ¥2,980
+            <small>（税込・買い切り）</small>
           </p>
+          <p class="plan-tag">【仮】リリース記念価格</p>
           <ul>
             <li>タスク・予定の件数制限なし</li>
             <li>定期予定の設定が可能</li>
             <li>上記以外の制限はなく、無料版と同じ機能が使えます。無料版からは上書きインストールでそのまま移行できます</li>
           </ul>
-          <p class="note">正式なユーザーシナリオテストがまだ完了していないため、予定していた4,980円から2,980円でご案内しています（βテストでは大きな問題は出ていません）。動作保証つきの正式版がリリースされ次第、価格を見直します。</p>
+          <p class="note">【仮】新しい版は、不具合を修正した版を含めて、別途ご購入いただきます。重大な不具合に限り、修正した版を無償でお渡しします。</p>
+          <p class="note">【仮】無料版からは、アンインストールせずに上書きインストールしてください。アンインストールすると、登録したデータは削除されます。</p>
+          <p class="note">【仮】ご購入の前に、お使いの環境で無料版が動くことをお確かめください。</p>
           <!-- 押すと同意ダイアログが開く。全項目にチェックが入るまで決済へ進めない（SPEC §8.3） -->
           <button type="button" class="btn" data-checkout data-product="pawgress" data-plan="paid" data-consent-set="one_time" data-consent-version="2026-10-15.3">有償版を購入</button>
         </div>
       </div>
+
+      <div class="plan-details">
+        <h3 class="lp-subhead" id="requirements">動作環境</h3>
+        <dl class="deflist">
+          <dt>OS</dt>
+          <dd>Windows 11（64ビット版。ARM 版は対象外）</dd>
+          <dt>メモリ</dt>
+          <dd>4GB 以上</dd>
+          <dt>ストレージ</dt>
+          <dd>空き容量 1GB 以上（インストールと初回の起動に必要な容量です。添付ファイル等を保存する場合は、別途その容量が必要です）</dd>
+          <dt>ネットワーク</dt>
+          <dd>AI 機能を使う場合は、インターネット接続が必要です</dd>
+        </dl>
+        <p>上記以外の環境での動作は保証しません。ご購入の前に、無料版で動作をご確認ください。</p>
+
+        <h3 class="lp-subhead" id="usage">利用できる範囲</h3>
+        <ul>
+          <li>【仮】個人で購入した場合は、購入したご本人だけが使えます（ご本人の事業・業務での利用を含みます）。</li>
+          <li>【仮】会社などの団体のために購入した場合は、購入手続をした方が直接管理する1つのチームで使えます。</li>
+          <li>【仮】インストールする PC の台数は制限しません。</li>
+          <li>【仮】本ソフトウェアを他の人に配ることはできません。</li>
+        </ul>
+      </div>
+
       <div class="plan-legal-note">
-        <p>ライセンスキーによる認証は行っていません。PCの買い替え時は同じインストーラーをそのままお使いいただけます。別の環境で新たに使う場合は、あらためてご購入ください。</p>
         <p>価格は税込・円（JPY）表示です。本サービスは日本国内の居住者を対象としています。</p>
+        <p>販売の条件は、<a href="/legal/tokushoho#pawgress">特定商取引法に基づく表記（Pawgress 有償版の販売条件）</a>をご覧ください。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- よくある質問。手順の詳細は操作説明書に寄せ、ここには要点だけを書く（SPEC §7.1） -->
+  <section class="sec" id="faq">
+    <div class="wrap rise">
+      <p class="eyebrow">FAQ</p>
+      <h2>よくある質問</h2>
+      <div class="faq">
+        <details>
+          <summary>【仮】インストーラーを開くと「Windows によって PC が保護されました」と表示されます</summary>
+          <p>【仮】Windows の SmartScreen による表示です。「詳細情報」を押し、表示された「実行」を押すとインストールを続けられます。詳しくは<a href="/docs/pawgress/user-guide.ja.pdf">操作説明書のインストールの手順（PDF）</a>をご覧ください。</p>
+        </details>
+        <details>
+          <summary>【仮】購入後、いつまでダウンロードできますか</summary>
+          <p>【仮】決済の完了から72時間です。ダウンロードしたインストーラーは、お手元に保管してください。期間を過ぎた後に、インストーラーを失くした場合や新しい PC に入れたい場合は、あらためてご購入いただくことになります。</p>
+        </details>
+        <details>
+          <summary>【仮】新しい版が出たら、無料で使えますか</summary>
+          <p>【仮】新しい版は、不具合を修正した版を含めて、別途ご購入いただきます。ただし、重大な不具合については、修正した版を無償でお渡しします。</p>
+        </details>
+        <details>
+          <summary>【仮】無料版から有償版に移るには、どうすればよいですか</summary>
+          <p>【仮】無料版をアンインストールせずに、有償版のインストーラーで上書きインストールしてください。登録したデータはそのまま引き継がれます。先にアンインストールすると、データは削除されます。</p>
+        </details>
+        <details>
+          <summary>【仮】使い方を問い合わせることはできますか</summary>
+          <p>【仮】お問い合わせをお受けするのは、有償版を購入された方からの、ダウンロードできなかった・重大な不具合・返金のお申し出だけです。使い方のご質問と、無料版をお使いの方からのお問い合わせにはお答えしていません。使い方は<a href="/docs/pawgress/user-guide.ja.pdf">操作説明書の使い方の説明（PDF）</a>をご覧ください。ご意見は<a href="https://example.com/survey" data-link="survey" rel="noopener external">アンケート</a>でお寄せください。</p>
+        </details>
       </div>
     </div>
   </section>
