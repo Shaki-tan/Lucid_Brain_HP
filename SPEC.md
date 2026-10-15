@@ -1575,7 +1575,7 @@ Stripe の価格・R2 のキー・secret はレジストリから組まれるた
 | 決済成立・返金・異議 | Stripe | 金額・国・支払手段・時刻 | Stripe（自動） | 実質恒久 |
 | Checkout 作成の失敗 | `/api/checkout` | エラー種別・Stripe のステータス | Workers Logs | 3〜7日 |
 | ダウンロード実行 | `/api/download` | `product` / `plan` / `session_id` の末尾数桁 / 結果 | Workers Logs | 3〜7日 |
-| Webhook 受信 | `/api/webhook` | イベント種別・ID | Workers Logs | 3〜7日 |
+| Webhook 受信 | `/api/webhook` | イベント種別・イベントの ID（`evt_`）・対象のオブジェクトの ID の末尾6桁（`checkout.session.*` では Checkout Session ID であり、ダウンロードの認可情報なので全体を残さない） | Workers Logs | 3〜7日 |
 | 個別の引渡し（ダウンロードできなかった・重大な不具合の修正版） | 手作業 | 渡した日時・版・経路 | その決済の PaymentIntent の metadata（ダッシュボードで手で書く） | 実質恒久 |
 | latest の置き換え（upload / restore） | `scripts/ops.mjs` | 日時・プラン・版・操作・コミット | R2 の `<product>/releases.json`（§8.5） | 消すまで |
 
@@ -1621,6 +1621,10 @@ Workers Logs を確実に有効化するため、`wrangler.jsonc` に1行入れ�
 `log.js` が `session_id` を末尾6桁に切り、IP を書かない設計にしても、基盤の側で全部残ってしまう。そこで `invocation_logs: false` で呼び出しログだけを止め、コードが出すログ（`download_ok` / `download_denied` とその `reason` 等）だけを残す。
 代わりに、リクエストごとの状態（ステータス・処理時間）の自動の記録は無くなる。障害調査は、コードが出すログと Cloudflare の Issues（例外の検出。Workers Logs に依らない）で行う。
 設定が外れていないことは `tests/check-wrangler.mjs` が見る。
+
+呼び出しログを止めても、Cloudflare はコードが出すログの1行ごとにリクエストの URL（`$workers.event.request`）を添える。
+この URL の `session_id` は、Cloudflare が自動で `REDACTED` と伏せることを確かめた（2026-10-16）。一方、以前の呼び出しログでは、Referer の中の同じ値は伏せられていなかった。
+Cloudflare は値ではなくクエリのパラメータの名前で判断して伏せていると考えられるので、**ダウンロードの URL のパラメータの名前 `session_id` は変えない**。変えるときは、ログで伏せられるかを先に確かめる。
 
 ```jsonc
 "observability": { "enabled": true, "logs": { "invocation_logs": false } }

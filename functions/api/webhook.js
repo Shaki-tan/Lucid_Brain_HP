@@ -6,7 +6,7 @@
 // 署名検証・タイムスタンプ検証は Stripe 公式ドキュメントの Webhook 署名方式に準拠する。
 
 import { text } from '../lib/http.js'
-import { logInfo } from '../lib/log.js'
+import { logInfo, sessionTail } from '../lib/log.js'
 
 const SIGNATURE_TOLERANCE_SECONDS = 300
 
@@ -87,8 +87,16 @@ export async function onRequestPost(context) {
 
   // 残すのはイベント種別とIDだけにする。金額・購入者・同意の記録は Stripe 側にあり、
   // Workers Logs に二重に持つと管理対象が増えるだけである（SPEC §8.4 原則3）。
+  //
+  // 対象のオブジェクトの ID は末尾だけにする。checkout.session.* では Checkout Session ID であり、
+  // それはダウンロードの認可情報そのものである（SPEC §8.1）。download.js の session_tail と同じ扱いにする。
+  // 突き合わせには、Stripe のダッシュボードで引けるイベントの ID（evt_）を全体で残す
   if (WEBHOOK_EVENTS.includes(event.type)) {
-    logInfo('stripe_webhook', { type: event.type, id: event.data?.object?.id ?? null })
+    logInfo('stripe_webhook', {
+      type: event.type,
+      event_id: event.id ?? null,
+      object_tail: sessionTail(event.data?.object?.id),
+    })
   }
 
   return text('ok', 200)
