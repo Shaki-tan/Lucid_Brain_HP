@@ -1308,7 +1308,7 @@ export const PRODUCTS = {
         downloadWindowHours: 72,                  // 決済の完了からダウンロードできる時間（§8.1）
         duplicateWindowHours: 72,                 // この時間内に重ねた決済を重複とみなす。いまは上と同じ定数を入れる
         consentSet: 'one_time',                   // 同意文言のセット（§8.3）
-        consentVersion: '2026-09-17',
+        consentVersion: '2026-10-15.2',     // 同意の版。文言かリンク先の法務文書を変えたら上げる（§8.3）
       },
       // サブスクを足す場合の形（現時点では定義しない）
       // pro: {
@@ -1402,7 +1402,25 @@ Stripe の価格・R2 のキー・secret はレジストリから組まれるた
 
 #### 同意項目
 
-買い切り（`consentSet: 'one_time'`）は4項目とする。
+同意ダイアログは、購入の条件の本文（`summary`）とチェック項目（`items`）の2つでできている。
+ダイアログを特商法上の最終確認画面と位置づけるため、表示事項はリンク先に任せず、チェックボックスの上に本文として出す。
+
+**購入の条件の本文（`summary`）。** 有償プランのセットは必ず持つ。今の行は次の7つ（文言は `【仮】`）。
+
+| 見出し | 中身 | 検査で突き合わせる値 |
+|---|---|---|
+| 分量 | 1点・買い切り | — |
+| 価格 | 税込の価格 | `unitAmount` |
+| 支払時期・方法 | 申込み時・クレジットカード（Stripe） | — |
+| 引渡時期 | 決済の完了後ただちに。ダウンロードできる期間 | `downloadWindowHours` |
+| 申込みの期間 | 定めなし（期限付きの販売をするときは期限） | — |
+| 返品・返金 | 決済の完了後は返金しない。重複決済の定義と、返金する場合 | `duplicateWindowHours` |
+| 無料版からの移行 | 上書きインストール。アンインストールでデータが消える | — |
+
+価格と時間数は `products.js` の値を文字で書き写すことになる。行に `checks` を付け、検査がその行に値がそのまま書かれているかを確かめる。
+`products.js` の値を変えて文言を直し忘れると、デプロイ前に落ちる。無料版のセットは `summary` を持たない。
+
+**チェック項目（`items`）。** 買い切り（`consentSet: 'one_time'`）は4項目とする。
 実文は別途準備中のため、以下は構造を示す例文である（§2.4）。
 
 | # | 主旨 | 例文 | リンク先 |
@@ -1435,7 +1453,9 @@ Stripe の価格・R2 のキー・secret はレジストリから組まれるた
 文言のファイルは**1つだけ**とする。ブラウザのダイアログと、決済時の記録（§8.4）が、同じファイルを読む。
 
 - パスは `products/<slug>/assets/consent-items.json` の規約とし、`slug` から組む。どこにも書き写さない。
-- 形は `{ "sets": { "<consentSet>": { "ja": [...], "en": [...] } } }`。項目は `label` / `linkText` / `href` を持つ。
+- 形は `{ "sets": { "<consentSet>": { "ja": { "summary": [...], "items": [...] }, "en": { … } } } }`。
+  `summary` の行は `term` / `detail`（と任意の `checks`）、`items` の項目は `label` / `linkText` / `href` を持つ。
+  本文と項目を同じセット・同じ言語の下に並べるのは、片方の言語だけ直す漏れを見つけやすくするためである。
 - `_readme` キーに、そのファイルを単体で開いた人向けの説明を置く。JSON にコメントが書けないためである。
 - 購入ボタンは `data-consent-set` でセット名を指し、その名前は `products.js` の `plan.consentSet` と一致させる。
 
@@ -1448,12 +1468,26 @@ Stripe の価格・R2 のキー・secret はレジストリから組まれるた
 「決済に進む」が有効になる（`every()` は空配列で true を返す）。読み込み失敗や綴り違いは実装側の問題であり、
 購入を始めさせずにコンソールへ出す。`syncSubmitState` 側でも項目0件を無効として扱う。
 
-検査は `tests/check-consent.mjs` が行う。`products.js` の `consentSet` に対応する項目があるか、
-日英で項目数が揃っているか、リンク先が実在するか、Stripe の metadata の上限に収まるかを見る。
+検査は `tests/check-consent.mjs` が行う。見るのは次のとおり。
+
+- `products.js` の `consentSet` に対応するセットがあり、日英で `summary` と `items` の数が揃っているか
+- `items` のリンク先が実在し、フラグメントの `id` があるか
+- `summary` に価格と期間が `products.js` の値のまま書かれているか（`checks`）
+- Stripe の metadata の上限に収まるか
+- ページの購入ボタンの `data-consent-version` / `data-consent-set` が `products.js` と一致するか（食い違うと `/api/checkout` が 409 で止め、購入できなくなる）
+- `consentVersion` が、`items` のリンク先の法務文書の改定日（`<time data-revised>`。§2.2）より前でないか
 
 **記録。** `POST /api/checkout` に同意の事実を渡し、Stripe 側に記録する。詳細は §8.4 にある。
-同意文言を変更したら `products.js` の `consentVersion` を上げる。
 その版の文言そのものは、決済のたびに Stripe の metadata に入る（§8.4）。
+
+**版を上げる規則。** 次のどちらかを変えたら `products.js` の `consentVersion` を上げ、ページの `data-consent-version` を合わせる。
+
+1. `consent-items.json` の文言（`summary` と `items`）
+2. `items` がリンクする法務文書の本文
+
+版は日付（`YYYY-MM-DD`）で、同じ日に2回上げるときは `.2` のように後ろに付ける。
+2 を守っていれば、Stripe に残る `consentVersion` から、その時点の法務文書の版が日付で引ける（本文は git の、その日付の時点を見る）。
+法務文書の改定日の印より版が古いと検査が落ちるので、改定して版を上げ忘れることはない。
 
 版（`consentVersion`）はダイアログに表示しない。購入者にとって意味のある情報ではなく、同意の妨げになる。
 記録は購入ボタンの `data-consent-version` から `/api/checkout` へ渡る経路で担保されており、画面表示とは独立している。
@@ -1493,7 +1527,7 @@ Stripe の価格・R2 のキー・secret はレジストリから組まれるた
 
 | イベント | 発生箇所 | 残す項目 | 残す先 | 保持 |
 |---|---|---|---|---|
-| 同意 | `/api/checkout` | `consent_version` / `consent_at`（サーバ時刻）/ `product` / `plan` / `consent_lang` / `consent_item_count` / `consent_item_1..N`（**文言そのもの**）/ `consent_at_client`（参考値） | Stripe の metadata | 実質恒久 |
+| 同意 | `/api/checkout` | `consent_version` / `consent_at`（サーバ時刻）/ `product` / `plan` / `consent_lang` / `consent_item_count` / `consent_item_1..N`（**文言そのもの**）/ `consent_summary_count` / `consent_summary_1..N`（**表示した購入の条件そのもの**）/ `consent_at_client`（参考値） | Stripe の metadata | 実質恒久 |
 | 決済成立・返金・異議 | Stripe | 金額・国・支払手段・時刻 | Stripe（自動） | 実質恒久 |
 | Checkout 作成の失敗 | `/api/checkout` | エラー種別・Stripe のステータス | Workers Logs | 3〜7日 |
 | ダウンロード実行 | `/api/download` | `product` / `plan` / `session_id` の末尾数桁 / 結果 | Workers Logs | 3〜7日 |
@@ -1511,6 +1545,8 @@ metadata = {
   consent_item_count: '4',
   consent_item_1:  '<1項目めの文言>',   // 1項目1キー（下記）
   consent_item_2:  '…',
+  consent_summary_count: '7',
+  consent_summary_1: '分量: <本文>',     // 表示した購入の条件。1行1キー
   consent_at_client: '…',              // クライアント申告。参考値（原則4）
 }
 // 買い切り: payment_intent_data[metadata][…] / サブスク: subscription_data[metadata][…] にも同じ値
@@ -1546,6 +1582,8 @@ Workers Logs を確実に有効化するため、`wrangler.jsonc` に1行入れ�
 metadata[consent_lang]        ja | en        表示した言語
 metadata[consent_item_count]  4              項目数
 metadata[consent_item_1..N]   <文言>          1項目1キー
+metadata[consent_summary_count] 7            購入の条件の行数（有償プランのみ）
+metadata[consent_summary_1..N] <見出し>: <本文>  1行1キー。最終確認画面に何を出したかを残す
 ```
 
 1キーに連結しない。実文は仮文言より長くなり、1値500文字の上限に当たるためである。

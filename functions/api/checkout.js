@@ -70,9 +70,9 @@ export async function onRequestPost(context) {
   // 読めない場合は決済を通さない。版番号だけが残って文言が残らない決済を作らないためである。
   // ASSETS への参照は Worker 内で完結するため、ここが失敗するのはデプロイの不整合に限られる。
   const consentLang = normalizeLang(body?.consentLang)
-  let consentItems
+  let consentText
   try {
-    consentItems = await readConsentItems(env, baseUrl, productId, plan.consentSet, consentLang)
+    consentText = await readConsentItems(env, baseUrl, productId, plan.consentSet, consentLang)
   } catch (cause) {
     if (!(cause instanceof ConsentItemsError)) throw cause
     logError('consent_items_unavailable', {
@@ -107,7 +107,7 @@ export async function onRequestPost(context) {
     product: productId,
     plan: planId,
     // 版番号だけでは、後からその版の文言を示せない（SPEC §8.4 原則6）。
-    ...toConsentMetadata(consentItems, consentLang),
+    ...toConsentMetadata(consentText, consentLang),
   }
   // クライアントが申告した時刻は参考値として別キーに入れる。改竄可能なため判断には使わない。
   if (typeof body?.consentAtClient === 'string') {

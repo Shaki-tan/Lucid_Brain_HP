@@ -341,6 +341,38 @@ site-footer {
   margin-bottom: 20px;
 }
 
+/* 購入の条件（最終確認画面の表示事項）。チェック項目の上に、読める本文として置く */
+.consent-summary {
+  display: grid;
+  grid-template-columns: 8em 1fr;
+  gap: 8px 14px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+.consent-summary dt {
+  color: var(--color-muted);
+  font-weight: 700;
+}
+
+.consent-summary dd {
+  color: var(--color-ink);
+}
+
+@media (max-width: 480px) {
+  .consent-summary {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .consent-summary dd {
+    margin-bottom: 8px;
+  }
+}
+
 .consent-items {
   list-style: none;
   display: grid;

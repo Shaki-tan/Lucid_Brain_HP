@@ -46,7 +46,7 @@ export const PRODUCTS = {
         downloadWindowHours: PAWGRESS_WINDOW_HOURS,
         duplicateWindowHours: PAWGRESS_WINDOW_HOURS,
         consentSet: 'one_time',
-        consentVersion: '2026-10-15',
+        consentVersion: '2026-10-15.2',
       },
       // サブスクを足す場合の形（現時点では定義しない・SPEC §8.2）。
       // pro: {

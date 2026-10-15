@@ -93,10 +93,27 @@
     return itemsCache[productId]
   }
 
-  function pickItems(data, consentSet) {
+  // セットの、表示する言語の文言。{ items, summary } を返す。項目が無ければ null。
+  // summary（購入の条件の本文）はセットによっては無い。その場合は空の配列にする。
+  function pickContent(data, consentSet) {
     var set = data && data.sets && data.sets[consentSet]
-    var items = set && (isEn ? set.en : set.ja)
-    return Array.isArray(items) && items.length > 0 ? items : null
+    var content = set && (isEn ? set.en : set.ja)
+    var items = content && content.items
+    if (!Array.isArray(items) || items.length === 0) return null
+    return { items: items, summary: Array.isArray(content.summary) ? content.summary : [] }
+  }
+
+  // 最終確認画面の表示事項（分量・価格・支払時期と方法・引渡時期・申込みの期間・返品特約）。
+  // リンク先に任せず、チェックボックスの上に本文として出す（SPEC §8.3）
+  function summaryMarkup(summary) {
+    if (summary.length === 0) return ''
+    return (
+      '<dl class="consent-summary">' +
+      summary.map(function (row) {
+        return '<dt>' + escapeHtml(row.term) + '</dt><dd>' + escapeHtml(row.detail) + '</dd>'
+      }).join('') +
+      '</dl>'
+    )
   }
 
   function itemMarkup(item, index) {
@@ -112,7 +129,7 @@
     )
   }
 
-  function buildDialog(items) {
+  function buildDialog(content) {
     var el = document.createElement('dialog')
     el.className = 'consent-dialog'
     el.id = 'consentDialog'
@@ -126,7 +143,8 @@
     el.innerHTML =
       '<h2 id="consentTitle">' + escapeHtml(t.title) + '</h2>' +
       '<p class="consent-intro">' + escapeHtml(t.intro) + '</p>' +
-      '<ul class="consent-items">' + items.map(itemMarkup).join('') + '</ul>' +
+      summaryMarkup(content.summary) +
+      '<ul class="consent-items">' + content.items.map(itemMarkup).join('') + '</ul>' +
       '<p class="consent-error" id="consentError" role="alert" hidden></p>' +
       '<div class="consent-actions">' +
       '<button type="button" class="btn btn-ghost" data-consent-cancel>' + escapeHtml(t.cancel) + '</button>' +
@@ -201,12 +219,12 @@
 
   async function openDialog(trigger) {
     var consentSet = trigger.dataset.consentSet
-    var items = pickItems(await loadItems(trigger.dataset.product), consentSet)
+    var content = pickContent(await loadItems(trigger.dataset.product), consentSet)
 
     // 文言が無い状態で開くと、チェックすべき項目が0件のダイアログが出る。
     // JSON が取れなかったか、セット名が products.js と食い違っている。どちらも実装側の問題である。
     // 黙って開かず、購入も始めない。
-    if (!items) {
+    if (!content) {
       console.error('consent: 同意項目が見つからない（product=' + trigger.dataset.product +
         ' consentSet=' + consentSet + '）。' +
         itemsUrl(trigger.dataset.product) + ' が配信されているか、セット名が products.js と一致しているかを確認する。')
@@ -223,7 +241,7 @@
     }
 
     if (!dialog) {
-      dialog = buildDialog(items)
+      dialog = buildDialog(content)
       dialogSet = consentSet
       checkboxes = Array.prototype.slice.call(dialog.querySelectorAll('input[type="checkbox"]'))
       submitBtn = dialog.querySelector('#consentSubmit')
