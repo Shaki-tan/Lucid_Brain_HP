@@ -52,12 +52,13 @@ export function createStripeClient(key) {
   }
 }
 
-// 商品はレジストリのプロダクトIDをそのまま Stripe の商品IDにする。検索せずに引けるため
-export async function ensureProduct(client, productId, name) {
+// 商品はレジストリのプロダクトIDをそのまま Stripe の商品IDにする。検索せずに引けるため。
+// 名前と説明文は Checkout の画面に出るので、レジストリの値に揃える（SPEC §7.6）
+export async function ensureProduct(client, productId, { name, description }) {
   const found = await client.get(`/products/${productId}`, null, { isNotFoundOk: true })
-  if (!found) return { product: await client.post('/products', { id: productId, name }), action: '作成' }
-  if (!found.active || found.name !== name) {
-    return { product: await client.post(`/products/${productId}`, { active: true, name }), action: '更新' }
+  if (!found) return { product: await client.post('/products', { id: productId, name, description }), action: '作成' }
+  if (!found.active || found.name !== name || (found.description ?? '') !== description) {
+    return { product: await client.post(`/products/${productId}`, { active: true, name, description }), action: '更新' }
   }
   return { product: found, action: 'そのまま' }
 }

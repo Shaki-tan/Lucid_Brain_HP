@@ -412,7 +412,10 @@ async function setupStripe({ isWebhookRotated = false } = {}) {
   const doneProducts = new Set()
   for (const { productId, planId, product, plan } of listPaidPlans()) {
     if (!doneProducts.has(productId)) {
-      const { action } = await ensureProduct(client, productId, product.displayName)
+      const { action } = await ensureProduct(client, productId, {
+        name: product.stripeProductName,
+        description: product.stripeProductDescription,
+      })
       ok(`商品 ${productId}: ${action}`)
       doneProducts.add(productId)
     }
@@ -474,7 +477,7 @@ async function setupStripe({ isWebhookRotated = false } = {}) {
   for (const [name, value] of secrets) await putSecret(name, value)
 
   heading('Stripe ダッシュボードで行うこと（API では設定できない）')
-  todo('設定 → 公開情報: 事業者名・明細書表記・サポート連絡先')
+  todo('設定 → 公開情報: 事業者名は「Lucid Brain」、明細書表記は SPEC §7.6 の値、サポート連絡先')
   todo('設定 → カスタマーへのメール → 支払い成功: 有効にする（checkout.js が発行する請求書をメールで届けるため）')
   todo(
     'Worker の STRIPE_SECRET_KEY を制限付きキーにするなら、権限は Checkout Sessions の書き込み、' +

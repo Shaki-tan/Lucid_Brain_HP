@@ -58,6 +58,19 @@ for (const [productId, product] of Object.entries(PRODUCTS)) {
 }
 console.log(`  ${checkedPlans} プラン分を確認した`)
 
+console.log('== Stripe の商品名・説明文 ==')
+
+// ops.mjs stripe がこの値で Stripe の商品を揃える。空だと Checkout に分量・引渡時期・返品特約の要旨が出ない
+for (const [productId, product] of Object.entries(PRODUCTS)) {
+  const hasPaidPlan = Object.values(product.plans).some((plan) => plan.billing !== 'free')
+  if (!hasPaidPlan) continue
+  for (const key of ['stripeProductName', 'stripeProductDescription']) {
+    if (typeof product[key] !== 'string' || product[key].trim() === '') {
+      fail(`${productId}: ${key} が無い`)
+    }
+  }
+}
+
 console.log('')
 console.log(hasFailure ? 'wrangler.jsonc / products.js に問題がある。' : 'wrangler.jsonc / products.js はデプロイできる状態にある。')
 process.exit(hasFailure ? 1 : 0)

@@ -89,6 +89,9 @@ export async function onRequestPost(context) {
   params.set('line_items[0][price]', priceId)
   params.set('line_items[0][quantity]', '1')
   params.append('payment_method_types[]', 'card')
+  // 入力欄・ボタン等の Stripe が用意する部分を、購入を始めたページの言語で出す。
+  // 指定しないとブラウザの言語で決まり、ページの言語と食い違う。商品名・説明文は登録したまま（日本語）出る
+  params.set('locale', consentLang)
   // 購入を始めたページの言語の決済完了ページ・LP へ戻す（SPEC §2.1）
   params.set('success_url', `${baseUrl}${toLangPath(product.successPath, consentLang)}?session_id={CHECKOUT_SESSION_ID}`)
   params.set('cancel_url', `${baseUrl}${toLangPath(product.cancelPath, consentLang)}`)

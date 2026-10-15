@@ -1060,7 +1060,7 @@ node scripts/ops.mjs deploy                        手元からのデプロイ�
 | 作るもの | 定義元 |
 |---|---|
 | Worker 名・R2 バケット・公開URL（`SITE_BASE_URL`） | `wrangler.jsonc` |
-| R2 のオブジェクトキー（`releaseFile` から組む）、Stripe の商品・価格（金額・通貨） | `functions/lib/products.js` |
+| R2 のオブジェクトキー（`releaseFile` から組む）、Stripe の商品（名前・説明文）・価格（金額・通貨） | `functions/lib/products.js` |
 | Webhook の購読イベント | `functions/api/webhook.js` の `WEBHOOK_EVENTS` |
 | Stripe の API バージョン（Worker と Webhook の両方） | `functions/lib/stripe.js` の `STRIPE_API_VERSION` |
 | Worker が要る secret の名前 | `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` / `STRIPE_PRICES` の3つで固定 |
@@ -1071,6 +1071,11 @@ node scripts/ops.mjs deploy                        手元からのデプロイ�
 - **Stripe の商品IDはレジストリのプロダクトID**（`pawgress`）、**価格は `lookup_key`**（`<product>_<plan>`）で引く。
   Price は金額を後から変えられないため、`products.js` の `unitAmount` と食い違えば新しい Price を作って
   `lookup_key` を移し、古いものは無効化する。
+- **商品の名前と説明文は `products.js` の `stripeProductName` / `stripeProductDescription` に持ち、`stripe` が揃える。**
+  Stripe Checkout（申込みが確定する画面）と請求書に出るため、分量（「1点」）・引渡時期・返品特約の要旨を書く。
+  ダッシュボードで変えても、次に `stripe` を流すとリポジトリの値に戻る。Stripe は商品ごとに1言語しか持てないので、日本語だけで書く。
+  英語ページからの購入では、入力欄やボタンは英語（`checkout.js` が `locale` を渡す）、商品の行だけ日本語になる。
+  中身が無いと `tests/check-wrangler.mjs` が落ち、`【仮】` が残っていると `tests/check-placeholders.sh` が知らせる。
 - **価格IDは secret `STRIPE_PRICES` に JSON で1つにまとめる**（`{"pawgress_paid":"price_..."}`）。
   キーは `lookup_key` と同じ `<product>_<plan>`。`stripe` を流すたびに全プランぶんを組み直して入れる。
 - **Webhook の署名シークレットは作成時にしか返らない。** Worker に `STRIPE_WEBHOOK_SECRET` が無い、
@@ -1101,7 +1106,7 @@ API で設定できず、ダッシュボードで行うものは次のとおり�
 | Cloudflare → `lucidbrain.jp` → ルール | www から本体への 301 転送（§3） |
 | Cloudflare → Zero Trust | Cloudflare Access（§7.7）。Worker より先に作る |
 | Cloudflare → 各 Worker → 設定 → ビルド | GitHub との接続（§7.7） |
-| Stripe → 設定 → 公開情報 | 事業者名・明細書表記・サポート連絡先 |
+| Stripe → 設定 → 公開情報 | 事業者名は「Lucid Brain」（屋号の表記を揃える）。明細書表記【仮】（設定したら値をここに書く）・サポート連絡先 |
 | Stripe → 設定 → カスタマーへのメール | 「支払い成功」を有効にする（`checkout.js` が発行する請求書を届けるため） |
 
 ### 7.7 環境とデプロイ
@@ -1283,6 +1288,8 @@ LP 側でも同じ判定で購入ボタンを無効化し、決済直前では�
 export const PRODUCTS = {
   pawgress: {
     displayName: 'Pawgress',
+    stripeProductName: 'Pawgress 有償版（Windows 用・買い切り・1点）',   // Stripe の商品名（§7.6）
+    stripeProductDescription: '…',                // Stripe の商品の説明文。引渡時期と返品特約の要旨（§7.6）
     successPath: '/products/pawgress/thanks',
     cancelPath:  '/products/pawgress/#price',
     plans: {

@@ -52,6 +52,18 @@ report_text "英語ダミー（[TBD]）" "[TBD]"
 report_text "未確定URL（example.com）" "example.com"
 
 echo
+echo "== Stripe に送る文言のプレースホルダ =="
+# 商品名・説明文は products.js から ops.mjs stripe が Stripe に入れ、Checkout と請求書に出る（SPEC §7.6）。
+# public/ の外にあるので別に見る
+if grep -n --fixed-strings -- "【仮】" functions/lib/products.js >/dev/null 2>&1; then
+  echo "NG  functions/lib/products.js に【仮】がある"
+  grep -n --fixed-strings -- "【仮】" functions/lib/products.js | sed 's/^/      /'
+  status=1
+else
+  echo "OK  functions/lib/products.js に【仮】は無い"
+fi
+
+echo
 echo "== 画像・PDFのプレースホルダ =="
 report_binary "ロゴ・アイコン・OGP画像" "PLACEHOLDER" "public/assets/images"
 report_binary "配布PDF" "[TBD]" "public/docs"
