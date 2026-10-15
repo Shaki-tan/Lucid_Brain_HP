@@ -58,7 +58,6 @@
       privacy: 'プライバシーポリシー',
       tokushoho: '特定商取引法に基づく表記',
       terms: '利用規約',
-      refund: '返金ポリシー',
       legalBase: '/legal/',
       productsBase: '/products/',
     },
@@ -73,7 +72,6 @@
       privacy: 'Privacy Policy',
       tokushoho: 'Legal Notice (Act on Specified Commercial Transactions)',
       terms: 'Terms of Service',
-      refund: 'Refund Policy',
       legalBase: '/en/legal/',
       productsBase: '/en/products/',
     },
@@ -123,7 +121,7 @@
     return '<li><a href="' + t.legalBase + slug + '">' + label + '</a></li>'
   }
 
-  // プロダクトごとに持つ文書（利用規約／返金ポリシー）へのリンク。今いるプロダクトのものを指す。
+  // プロダクトごとに持つ文書（利用規約）へのリンク。今いるプロダクトのものを指す。
   function productLegalLink(slug, label) {
     return '<li><a href="' + t.productsBase + productSlug + '/legal/' + slug + '">' + label + '</a></li>'
   }
@@ -134,7 +132,7 @@
   // 範囲で変わるのは legal の並びだけである。
   // 「誰が」で決まる文書は会社で1つ、「何を、いくらで、どう売るか」で決まる文書はプロダクトごとに持つ（SPEC §4.1）。
   //   コーポレート側 — プライバシーポリシー／特商法表記
-  //   プロダクト側   — 先頭にそのプロダクトの返金ポリシーと利用規約を加える。
+  //   プロダクト側   — 先頭にそのプロダクトの利用規約を加える（返金の条項は規約の中にある）。
   //                    購入の直前に読む必要があるため（SPEC §8.3）
   function footerMarkup() {
     return (
@@ -150,7 +148,7 @@
       (isProduct ? '<a href="' + t.home + '">Lucid Brain</a>' : 'Lucid Brain') +
       '</p>' +
       '<ul class="site-footer-links">' +
-      (isProduct ? productLegalLink('refund', t.refund) + productLegalLink('terms', t.terms) : '') +
+      (isProduct ? productLegalLink('terms', t.terms) : '') +
       legalLink('privacy', t.privacy) +
       legalLink('tokushoho', t.tokushoho) +
       '</ul>' +

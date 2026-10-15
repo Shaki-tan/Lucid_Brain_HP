@@ -18,9 +18,9 @@
           "href": "/products/pawgress/legal/terms"
         },
         {
-          "label": "【仮】返金ポリシーの内容を確認しました。",
-          "linkText": "返金ポリシー",
-          "href": "/products/pawgress/legal/refund"
+          "label": "【仮】決済の完了後は、購入者の都合による返金を受けられないことを確認しました。",
+          "linkText": "利用規約の返金の条項",
+          "href": "/products/pawgress/legal/terms#refund"
         },
         {
           "label": "【仮】プライバシーポリシーの内容を確認しました。",
@@ -40,9 +40,9 @@
           "href": "/en/products/pawgress/legal/terms"
         },
         {
-          "label": "[TBD] I have read the Refund Policy.",
-          "linkText": "Refund Policy",
-          "href": "/en/products/pawgress/legal/refund"
+          "label": "[TBD] I understand that payments are not refunded for my own convenience once payment is complete.",
+          "linkText": "Refund section of the Terms of Service",
+          "href": "/en/products/pawgress/legal/terms#refund"
         },
         {
           "label": "[TBD] I have read the Privacy Policy.",

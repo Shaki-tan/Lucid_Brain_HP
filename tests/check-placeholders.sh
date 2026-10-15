@@ -52,6 +52,28 @@ report_text "英語ダミー（[TBD]）" "[TBD]"
 report_text "未確定URL（example.com）" "example.com"
 
 echo
+echo "== 法務文書の本文に残った未確定の記載・コメント =="
+# 法務文書は議論用の原稿（コメントと【 】の未確定の記載を含む）から移す（SPEC §2.2）。
+# 【仮】だけを見る上の検査では、原稿の【 】（例: 【登録番号】）が漏れるので、本文の範囲を別に見る
+legal_hits=0
+while IFS= read -r file; do
+  body=$(sed -n '/<article class="legal-body">/,/<\/article>/p' "$file")
+  [ -z "$body" ] && continue
+  for pattern in '【' '<!--'; do
+    count=$(printf '%s\n' "$body" | grep -c --fixed-strings -- "$pattern")
+    if [ "$count" -gt 0 ]; then
+      echo "NG  $file に「$pattern」が $count 行"
+      legal_hits=1
+    fi
+  done
+done < <(grep -rl --fixed-strings 'class="legal-body"' public/ | sort)
+if [ "$legal_hits" -eq 0 ]; then
+  echo "OK  法務文書の本文に【 】とコメントは無い"
+else
+  status=1
+fi
+
+echo
 echo "== Stripe に送る文言のプレースホルダ =="
 # 商品名・説明文は products.js から ops.mjs stripe が Stripe に入れ、Checkout と請求書に出る（SPEC §7.6）。
 # public/ の外にあるので別に見る

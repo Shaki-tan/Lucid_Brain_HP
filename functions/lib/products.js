@@ -4,10 +4,10 @@
 // プロダクト追加時に触るのは次の6つ（SPEC §8.2）。
 //   1. このファイルに1エントリ
 //   2. public/assets/js/partials.js の PRODUCTS に表示名（ヘッダーのロゴタイプ・SPEC §5.2）
-//   3. public/products/<name>/ と public/en/products/<name>/（legal/ の利用規約・返金ポリシーを含む）
+//   3. public/products/<name>/ と public/en/products/<name>/（legal/ の利用規約を含む）
 //   4. public/products/<name>/assets/consent-items.json（有償プランがある場合・SPEC §8.3）
 //   5. public/docs/<name>/            （SPEC §4.3 の例外。作り忘れやすい）
-//   6. public/legal/tokushoho.html（と英語版）に商品の小節（SPEC §2.2）
+//   6. public/legal/tokushoho.html（と英語版）に商品の販売条件の節（SPEC §2.2）
 // そのあと public/sitemap.xml に日英の全URLを足す。
 
 // Pawgress のダウンロード期間と重複決済の期間（時間）。規約が2つを揃えて定めているため、いまは同じ値を入れる。
@@ -46,14 +46,14 @@ export const PRODUCTS = {
         downloadWindowHours: PAWGRESS_WINDOW_HOURS,
         duplicateWindowHours: PAWGRESS_WINDOW_HOURS,
         consentSet: 'one_time',
-        consentVersion: '2026-09-17',
+        consentVersion: '2026-10-15',
       },
       // サブスクを足す場合の形（現時点では定義しない・SPEC §8.2）。
       // pro: {
       //   billing: 'subscription',
       //   checkoutMode: 'subscription',
       //   consentSet: 'subscription',
-      //   consentVersion: '2026-09-17',
+      //   consentVersion: '2026-10-15',
       //   hasPortal: true,
       // },
     },

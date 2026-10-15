@@ -305,6 +305,40 @@
   color: var(--color-muted-2);
 }
 
+/* 法務文書の表。取得する情報・外部の事業者・改定履歴など。狭い幅では文字を折り返して収める */
+.legal-table {
+  width: 100%;
+  margin: 8px 0 16px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.legal-table th,
+.legal-table td {
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.legal-table th {
+  color: var(--color-ink);
+  background: var(--color-surface);
+  font-weight: 700;
+}
+
+.legal-table td {
+  color: var(--color-muted);
+}
+
+/* 項の中に置いた表・リストは、項の文と離す */
+.legal-body li > .legal-table,
+.legal-body li > ul,
+.legal-body li > ol {
+  margin-top: 8px;
+}
+
 /* 定義リスト。会社概要で使う（SPEC §6 の表・6行目） */
 .deflist {
   display: grid;
