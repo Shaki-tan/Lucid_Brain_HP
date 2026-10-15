@@ -210,6 +210,7 @@ GET  /api/region                    接続元の国コードと販売可否。�
 - マニフェストはトップページの最初のセクション（`id="about"`）に凝縮し、`/#about` で直接参照する（§6.3）。
 - プロダクトLPの階層は `/products/<name>/` とする。
 - 決済完了ページはプロダクト配下に置く。プロダクトごとに文面・次のアクション・ダウンロードリンクが変わるため、共通の `/thanks` では早晩破綻する。遷移先は §8.2 のレジストリが `successPath` として保持し、Stripe の `success_url` に渡す。
+  `successPath` / `cancelPath` は日本語のページを指し、英語のページから購入したときは `/en` を前に付けて渡す（`products.js` の `toLangPath`）。購入を始めたページの言語に戻すためである。
 - `sitemap.xml` には日英の全URLを載せる。PDF も含める。
 - 拡張子なしURLで配信する。`public/legal/privacy.html` は `/legal/privacy` で引ける（Workers Static Assets の既定の HTML ハンドリング。`.html` 付きURLは拡張子なしへ301される）。
 - 現行の `/`（Chronos LP）は `/products/pawgress/` へ移る。既存のブックマークと被リンクが切れるため、`_redirects` に転送を置く。PDF の旧URL（`/docs/*`）も同様に確認する。

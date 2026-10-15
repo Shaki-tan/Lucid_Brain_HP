@@ -55,6 +55,12 @@ export const PRODUCTS = {
   },
 }
 
+// successPath / cancelPath は日本語のページを指す。英語のページは同じ階層を /en/ の下に持つ（SPEC §2.1）。
+// 購入やダウンロードを始めたページの言語に戻すため、パスはこれを通して組む
+export function toLangPath(path, lang) {
+  return lang === 'en' ? `/en${path}` : path
+}
+
 // レジストリに無い組み合わせは null を返す。呼び出し側は 400 にする。
 export function resolvePlan(productId, planId) {
   if (typeof productId !== 'string' || typeof planId !== 'string') return null

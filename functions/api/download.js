@@ -11,7 +11,7 @@
 // 素のテキストでは、購入者に何が起きたかも窓口も伝わらないためである（SPEC §8.1）。
 // fetch や curl からの要求には、これまでどおりテキストで返す。
 
-import { resolvePlan } from '../lib/products.js'
+import { resolvePlan, toLangPath } from '../lib/products.js'
 import { checkEntitlement } from '../lib/entitlement.js'
 import { streamObject } from '../lib/r2.js'
 import { toLatestFileName, toLatestKey } from '../lib/releases.js'
@@ -32,8 +32,7 @@ const ERROR_BY_REASON = {
 // 決済完了ページのエラーパネルへ戻す。session_id は付けない。
 // 付けると決済完了ページが自動でダウンロードを始め、エラー → 戻る → ダウンロード、を繰り返す
 function toThanksError(product, lang, error) {
-  const prefix = lang === 'en' ? '/en' : ''
-  return redirect(`${prefix}${product.successPath}?error=${error}`)
+  return redirect(`${toLangPath(product.successPath, lang)}?error=${error}`)
 }
 
 export async function onRequestGet(context) {

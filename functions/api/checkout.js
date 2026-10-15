@@ -6,7 +6,7 @@
 //
 // 同意の事実は Stripe の metadata に残す。Workers Logs には残さない（SPEC §8.4）。
 
-import { resolvePlan } from '../lib/products.js'
+import { resolvePlan, toLangPath } from '../lib/products.js'
 import { ConsentItemsError, normalizeLang, readConsentItems, toConsentMetadata } from '../lib/consent.js'
 import { isBlockedRegion } from '../lib/regions.js'
 import { createCheckoutSession, getPriceId, StripeError } from '../lib/stripe.js'
@@ -89,8 +89,9 @@ export async function onRequestPost(context) {
   params.set('line_items[0][price]', priceId)
   params.set('line_items[0][quantity]', '1')
   params.append('payment_method_types[]', 'card')
-  params.set('success_url', `${baseUrl}${product.successPath}?session_id={CHECKOUT_SESSION_ID}`)
-  params.set('cancel_url', `${baseUrl}${product.cancelPath}`)
+  // 購入を始めたページの言語の決済完了ページ・LP へ戻す（SPEC §2.1）
+  params.set('success_url', `${baseUrl}${toLangPath(product.successPath, consentLang)}?session_id={CHECKOUT_SESSION_ID}`)
+  params.set('cancel_url', `${baseUrl}${toLangPath(product.cancelPath, consentLang)}`)
 
   // 一覧画面で何の決済かを判別できるようにする（SPEC §8.4）。
   params.set('client_reference_id', `${productId}:${planId}`)
