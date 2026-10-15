@@ -35,6 +35,13 @@ export function toVersionKey(productId, plan, version) {
   return `${productId}/${version}/${toReleaseFileName(plan, version)}`
 }
 
+// リリース履歴。latest を置き換えるたびに scripts/ops.mjs が追記する（SPEC §8.5）。
+// 版の控えのアップロード日時だけでは、restore で latest を戻したことが残らないため、別に持つ。
+// 重大な不具合の申出のときに、決済の時刻から購入者が受け取った版を引くのに使う。Worker は読まない。
+export function toHistoryKey(productId) {
+  return `${productId}/releases.json`
+}
+
 // ファイル名が型に合えば版を返す。合わなければ null（無料版と有償版の取り違えもここで弾ける）
 export function parseReleaseVersion(plan, fileName) {
   const [head, tail] = plan.releaseFile.split(VERSION)

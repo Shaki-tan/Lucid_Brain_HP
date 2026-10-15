@@ -68,10 +68,26 @@ while IFS= read -r loc; do
 done < <(grep -oE '<loc>[^<]+</loc>' public/sitemap.xml | sed -E 's|</?loc>||g')
 echo "  $sitemap_checked 件を確認した"
 
+# アンケートへのリンクは外部のフォームを指し、複数のページに直接書いてある（SPEC §7.4）。
+# フォームが決まって URL を差し替えるとき、1ページだけ直し忘れると古い URL が残るので、全ページで1種類であることを見る
+echo
+echo "== アンケートへのリンク（data-link=\"survey\"）の一致 =="
+survey_hrefs=$(grep -rhoE '<a [^>]*data-link="survey"[^>]*>' public --include='*.html' \
+                 | grep -oE 'href="[^"]*"' | sort -u)
+survey_pages=$(grep -rlE 'data-link="survey"' public --include='*.html' | wc -l | tr -d ' ')
+survey_kinds=$(printf '%s' "$survey_hrefs" | grep -c . || true)
+if [ "$survey_kinds" -gt 1 ]; then
+  echo "NG  アンケートへのリンク先が ${survey_kinds} 種類ある。全ページで同じ URL にする"
+  printf '%s\n' "$survey_hrefs" | sed 's/^/      /'
+  status=1
+else
+  echo "  ${survey_pages} ページ、リンク先 ${survey_kinds} 種類"
+fi
+
 echo
 if [ "$status" -eq 0 ]; then
   echo "内部リンクは全て解決できた。"
 else
-  echo "解決できない内部リンクがある。"
+  echo "リンクに問題がある（上の NG を見る）。"
 fi
 exit "$status"

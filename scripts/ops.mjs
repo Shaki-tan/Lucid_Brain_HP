@@ -6,6 +6,8 @@
 //   node scripts/ops.mjs upload <product> <plan> <file>  exe を1つだけ置く
 //   node scripts/ops.mjs restore <product> <version>   全プランの latest を控えの版に戻す
 //   node scripts/ops.mjs restore <product> <plan> <version>  1つのプランだけ戻す
+//   node scripts/ops.mjs releases <product>            リリース履歴を新しい順に出す
+//   node scripts/ops.mjs duplicates [日数]              重複決済の疑いがある決済を出す（読み取りだけ）
 //   node scripts/ops.mjs stripe                        Stripe の商品・価格・Webhook を揃え、secret を入れる
 //   node scripts/ops.mjs secret <NAME>                 secret を1つ入れ直す
 //   node scripts/ops.mjs smoke                         デプロイ済みのサイトにスモークを流す
@@ -24,11 +26,11 @@
 // ダッシュボードで作ったものに合わせるのではなく、リポジトリの記述に向こうを合わせる（SPEC §1.2）。
 
 import { existsSync, readdirSync, statSync } from 'node:fs'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
 import { resolvePlan } from '../functions/lib/products.js'
-import { parseReleaseVersion, toLatestKey, toReleaseFileName, toVersionKey } from '../functions/lib/releases.js'
+import { parseReleaseVersion, toHistoryKey, toLatestKey, toReleaseFileName, toVersionKey } from '../functions/lib/releases.js'
 import { STRIPE_API_VERSION, toPriceKey } from '../functions/lib/stripe.js'
 import { WEBHOOK_EVENTS } from '../functions/api/webhook.js'
 import {
@@ -49,8 +51,10 @@ import {
   ensureProduct,
   getKeyMode,
   listWebhookEndpoints,
+  listCompletedCheckoutSessions,
   StripeApiError,
 } from './ops/stripe.mjs'
+import { findDuplicates, toPayment } from './ops/duplicates.mjs'
 
 // 購入者の大半は日本にいる（SPEC §7.2）。作成時にしか指定できない
 const R2_LOCATION = 'apac'
@@ -177,6 +181,7 @@ async function putRelease({ productId, planId, plan, path, version, versionKey }
   await putObject(versionKey, path, fileName)
   await putObject(toLatestKey(productId, plan), path, fileName)
   ok(`${envLabel()}の ${productId}:${planId} を ${version} にした`)
+  await appendReleaseHistory(productId, { plan: planId, version, action: 'upload' })
 }
 
 async function uploadRelease(productId, planId, file, options) {
@@ -221,6 +226,7 @@ async function restoreRelease(productId, planId, version) {
     if (code !== 0 || !existsSync(path)) throw new OpsError(`控えが無い: ${versionKey}`)
     await putObject(toLatestKey(productId, plan), path, toReleaseFileName(plan, version))
     ok(`${envLabel()}の ${productId}:${planId} の latest を ${version} に戻した`)
+    await appendReleaseHistory(productId, { plan: planId, version, action: 'restore' })
   } finally {
     await rm(dir, { recursive: true, force: true })
   }
@@ -244,6 +250,111 @@ async function restoreReleaseAll(productId, version) {
     )
   }
   for (const planId of planIds) await restoreRelease(productId, planId, version)
+}
+
+// ---------- リリース履歴（SPEC §8.5） ----------
+
+// wrangler が「キーが無い」ときに出すメッセージ。これ以外の失敗（通信・認証）を「無い」と取り違えると、
+// 既存の履歴を空から作り直して上書きしてしまうため、無いと分かるときだけ新しく作る
+const R2_MISSING_KEY = /The specified key does not exist/i
+
+// 履歴を読む。無ければ空の履歴、読めなければ null を返す
+async function readReleaseHistory(productId) {
+  const key = toHistoryKey(productId)
+  const dir = await mkdtemp(join(tmpdir(), 'ops-history-'))
+  try {
+    const path = join(dir, 'releases.json')
+    const { code, stdout, stderr } = await wrangler(
+      ['r2', 'object', 'get', `${site.bucketName}/${key}`, '--file', path, '--remote'],
+      { mode: 'capture' },
+    )
+    if (code !== 0) return R2_MISSING_KEY.test(stdout + stderr) ? { entries: [] } : null
+    const data = JSON.parse(await readFile(path, 'utf8'))
+    return Array.isArray(data?.entries) ? data : null
+  } catch {
+    return null
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+}
+
+async function writeReleaseHistory(productId, history) {
+  const key = toHistoryKey(productId)
+  const dir = await mkdtemp(join(tmpdir(), 'ops-history-'))
+  try {
+    const path = join(dir, 'releases.json')
+    await writeFile(path, `${JSON.stringify(history, null, 2)}\n`)
+    const args = ['r2', 'object', 'put', `${site.bucketName}/${key}`, '--file', path, '--remote']
+    args.push('--content-type', 'application/json')
+    const { code } = await wrangler(args, { mode: 'capture' })
+    return code === 0
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+}
+
+// latest を置き換えたあとに1行足す。履歴を書けなくても latest は戻さない（配布は済んでいる）。
+// 代わりに、手で足すべき内容を表示する
+async function appendReleaseHistory(productId, { plan, version, action }) {
+  const entry = { at: new Date().toISOString(), plan, version, action, commit: await gitOutput(['rev-parse', '--short', 'HEAD']) }
+  const history = await readReleaseHistory(productId)
+  if (history && (await writeReleaseHistory(productId, { entries: [...history.entries, entry] }))) {
+    ok(`リリース履歴に記録した（r2://${site.bucketName}/${toHistoryKey(productId)}）`)
+    return
+  }
+  todo(
+    `リリース履歴（r2://${site.bucketName}/${toHistoryKey(productId)}）を読み書きできなかった。` +
+      `latest の置き換えは済んでいる。次の1行を手で記録する: ${JSON.stringify(entry)}`,
+  )
+}
+
+// 新しい順に一覧する。重大な不具合の申出のときに、決済の時刻から購入者が受け取った版を引く（SPEC §8.4）
+async function showReleaseHistory(productId) {
+  if (!hasReleasePlans(productId)) throw new OpsError(`${productId} は products.js に無い`)
+  heading(`リリース履歴（${envLabel()}: ${productId}）`)
+  const history = await readReleaseHistory(productId)
+  if (!history) throw new OpsError(`r2://${site.bucketName}/${toHistoryKey(productId)} を読めなかった`)
+  if (history.entries.length === 0) return todo('履歴はまだ無い')
+  for (const entry of [...history.entries].reverse()) {
+    console.log(`${entry.at}  ${entry.plan.padEnd(6)}  ${entry.version.padEnd(14)}  ${entry.action.padEnd(8)}  ${entry.commit ?? ''}`)
+  }
+}
+
+function hasReleasePlans(productId) {
+  return listReleasePlans().some((item) => item.productId === productId)
+}
+
+// ---------- 重複決済の検出（SPEC §8.4） ----------
+
+const DUPLICATES_DEFAULT_DAYS = 14
+
+// 直近の決済から、同じメールアドレスの重ねての決済を一覧する。読み取りだけで、返金はしない
+async function showDuplicates(daysArg) {
+  const days = daysArg === undefined ? DUPLICATES_DEFAULT_DAYS : Number(daysArg)
+  if (!Number.isInteger(days) || days <= 0) throw new OpsError('日数は正の整数で渡す（例: duplicates 30）')
+
+  const { key, mode } = await getStripeKey()
+  heading(`重複決済の検出（${mode === 'live' ? '本番モード' : 'テストモード'}・直近 ${days} 日）`)
+  const sinceSeconds = Math.floor(Date.now() / 1000) - days * 24 * 3600
+  const sessions = await listCompletedCheckoutSessions(createStripeClient(key), sinceSeconds)
+  const payments = sessions.map(toPayment).filter(Boolean)
+  const groups = findDuplicates(payments)
+  console.log(`${sessions.length} 件の完了した決済を読んだ（支払済み ${payments.length} 件）`)
+  todo('メールアドレスを表示する。出力をファイルに保存したり、共有の場所に貼ったりしない')
+
+  if (groups.length === 0) return ok('重複の疑いがある決済は無い')
+  for (const group of groups) {
+    const { email, productId, planId, windowHours } = group[0]
+    ng(`${email}  ${productId}:${planId}  ${windowHours}時間以内に ${group.length} 件`)
+    for (const payment of group) {
+      const refund = payment.isRefunded ? '全額返金済み' : payment.amountRefunded > 0 ? '一部返金済み' : '返金なし'
+      const paidAt = new Date(payment.paidAt * 1000).toISOString()
+      console.log(
+        `      ${paidAt}  ${payment.amount} ${String(payment.currency).toUpperCase()}  ` +
+          `session …${payment.sessionId.slice(-6)}  ${payment.paymentIntentId}  ${refund}`,
+      )
+    }
+  }
 }
 
 // ---------- 検査・デプロイ ----------
@@ -671,6 +782,10 @@ const HELP = `使い方: node scripts/ops.mjs <command> [--env staging]
                                   （例: restore pawgress 1.0.0）
   restore <product> <plan> <version>
                                   1つのプランだけ戻す（例: restore pawgress paid 1.0.0）
+  releases <product>              リリース履歴（latest を置き換えた日時・プラン・版・操作）を新しい順に出す。
+                                  upload と restore が R2 の <product>/releases.json に追記している
+  duplicates [日数]               直近の決済から、同じメールアドレスで重ねて決済したものを出す（既定は14日）。
+                                  読み取りだけで、返金はしない。STRIPE_API_KEY か伏字入力でキーを渡す
   stripe [--rotate-webhook]       Stripe の商品・価格・Webhook を products.js / webhook.js に合わせ、secret を入れる
   secret <NAME>                   secret を1つ入れ直す（伏字入力）
   smoke                           SITE_BASE_URL にスモークを流す（テスト環境は CF_ACCESS_CLIENT_ID / _SECRET が要る）
@@ -730,6 +845,11 @@ async function main() {
       if (planIdOrVersion) return restoreReleaseAll(productId, planIdOrVersion)
       throw new OpsError('使い方: node scripts/ops.mjs restore <product> <version> / restore <product> <plan> <version>')
     }
+    case 'releases':
+      if (!positionals[0]) throw new OpsError('使い方: node scripts/ops.mjs releases <product>')
+      return showReleaseHistory(positionals[0])
+    case 'duplicates':
+      return showDuplicates(positionals[0])
     case 'stripe':
       return setupStripe({ isWebhookRotated: flags.has('--rotate-webhook') })
     case 'secret':

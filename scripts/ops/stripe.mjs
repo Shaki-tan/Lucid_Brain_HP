@@ -93,6 +93,26 @@ export async function ensurePrice(client, { productId, planId, plan }) {
   return { price, action: current ? `作り直し（旧 ${current.id} は無効化）` : '作成' }
 }
 
+// 指定の時刻以降に完了した Checkout Session を、ページ送りしながらすべて読む（重複決済の検出に使う）。
+// 決済の時刻と返金の有無を見るため、PaymentIntent とその Charge を展開する
+export async function listCompletedCheckoutSessions(client, sinceSeconds) {
+  const sessions = []
+  let startingAfter = null
+  for (;;) {
+    const params = {
+      limit: 100,
+      status: 'complete',
+      created: { gte: sinceSeconds },
+      expand: ['data.payment_intent.latest_charge'],
+    }
+    if (startingAfter) params.starting_after = startingAfter
+    const page = await client.get('/checkout/sessions', params)
+    sessions.push(...page.data)
+    if (!page.has_more || page.data.length === 0) return sessions
+    startingAfter = page.data[page.data.length - 1].id
+  }
+}
+
 export async function listWebhookEndpoints(client) {
   const { data } = await client.get('/webhook_endpoints', { limit: 100 })
   return data
