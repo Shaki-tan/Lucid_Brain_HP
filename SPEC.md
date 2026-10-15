@@ -967,7 +967,7 @@ CSS 4本 + JS 2〜3本のこの規模では体感に出ない。
 |---|---|---|
 | Stripe API バージョンの固定 | `Stripe-Version` ヘッダで明示的に固定する（`functions/lib/stripe.js`） | 指定しないとアカウント既定のバージョンに追従し、ある日突然壊れる |
 | `compatibility_date` の固定 | `wrangler.jsonc` で固定する（現在 `2026-09-11`） | Workers 側の挙動変化に巻き込まれない。満たしている |
-| Workers Logs | `wrangler.jsonc` に `"observability": { "enabled": true }` を置く | 障害時に手掛かりが残る。1行で済み、ダッシュボード操作が不要（§8.4） |
+| Workers Logs | `wrangler.jsonc` に `"observability": { "enabled": true, "logs": { "invocation_logs": false } }` を置く | 障害時に手掛かりが残る。1行で済み、ダッシュボード操作が不要（§8.4）。残すのはコードが出すログだけで、呼び出しログは止める（下記） |
 | リリース前チェックリスト | 手動で確認する項目を列挙する（下記） | ビルドを持たない構成での第1段階 |
 | 再構築手順 | リポジトリだけでは復旧できないものを列挙する（下記） | 事故ってから書くのでは遅い |
 | コスト | 放置しても増えるのは R2 のストレージ料金のみであることを確認する | 無料枠は Workers のリクエストと Workers Logs 20万件/日 |
@@ -1615,8 +1615,15 @@ Stripe の metadata は1オブジェクト50キー、キー40文字・値500文�
 ローカルからリアルタイムに見るなら `npx wrangler tail` を使う。
 Workers Logs を確実に有効化するため、`wrangler.jsonc` に1行入れる。無料枠は20万件/日である。
 
+**呼び出しログは止める。** Workers Logs は、コードが出すログとは別に、リクエストごとの記録（呼び出しログ）を自動で残す。
+2026-10-16 にテスト環境で確かめたところ、`/api/download` の呼び出しログには、URL 全体（`session_id`。ダウンロードの認可情報）、Referer（決済完了ページの URL。同じく `session_id` を含む）、
+接続元の IP アドレス（`cf-connecting-ip` / `x-real-ip`）、位置情報（市区町村・郵便番号・緯度経度・回線事業者）、User-Agent、Cookie がそのまま入っていた。
+`log.js` が `session_id` を末尾6桁に切り、IP を書かない設計にしても、基盤の側で全部残ってしまう。そこで `invocation_logs: false` で呼び出しログだけを止め、コードが出すログ（`download_ok` / `download_denied` とその `reason` 等）だけを残す。
+代わりに、リクエストごとの状態（ステータス・処理時間）の自動の記録は無くなる。障害調査は、コードが出すログと Cloudflare の Issues（例外の検出。Workers Logs に依らない）で行う。
+設定が外れていないことは `tests/check-wrangler.mjs` が見る。
+
 ```jsonc
-"observability": { "enabled": true }
+"observability": { "enabled": true, "logs": { "invocation_logs": false } }
 ```
 
 **同意文言そのものの保存。** `consent_version` が残っても、その版の文言が無ければ記録として弱い。

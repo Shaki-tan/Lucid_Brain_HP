@@ -42,7 +42,10 @@
     }
   ],
   // 障害時に手掛かりを残す。1行で済み、ダッシュボード操作が要らない（SPEC §7.5 / §8.4）。
-  "observability": { "enabled": true },
+  // 残すのはコードが出すログ（functions/lib/log.js）だけにし、リクエストごとの自動の記録（呼び出しログ）は止める。
+  // 呼び出しログは URL 全体（session_id = ダウンロードの認可情報）・Referer・接続元の IP・位置情報・Cookie を
+  // そのまま残すことを確かめたため（2026-10-16。SPEC §7.5）。observability は env.staging にも引き継がれる
+  "observability": { "enabled": true, "logs": { "invocation_logs": false } },
 
   // テスト環境。develop ブランチから出す。Worker は lucid-brain-site-staging になる（SPEC §7.7）。
   // routes / vars / r2_buckets は wrangler の仕様で継承されないため、ここに書き直す。

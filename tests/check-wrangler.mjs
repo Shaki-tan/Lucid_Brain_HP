@@ -42,6 +42,18 @@ for (const [envName, section] of Object.entries(config.env ?? {})) {
   }
 }
 
+console.log('== Workers Logs の呼び出しログ ==')
+
+// 呼び出しログは URL 全体（session_id）・Referer・接続元の IP・位置情報をそのまま残す（SPEC §7.5）。
+// コードが出すログだけを残す設定が外れていないこと。環境ごとに上書きしていても同じく見る
+for (const [label, section] of [['トップレベル', config], ...Object.entries(config.env ?? {}).map(([name, s]) => [`env.${name}`, s])]) {
+  const observability = section.observability
+  if (label !== 'トップレベル' && observability === undefined) continue
+  if (observability?.enabled !== false && observability?.logs?.invocation_logs !== false) {
+    fail(`${label} の observability で呼び出しログが止まっていない（"logs": { "invocation_logs": false } を置く）`)
+  }
+}
+
 console.log('== 有償プランの期間 ==')
 
 let checkedPlans = 0
