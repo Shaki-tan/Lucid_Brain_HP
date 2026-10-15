@@ -28,6 +28,22 @@
     panel.hidden = false
   }
 
+  // 同じページの別言語から、ヘッダーの言語切替で来たか。
+  // 言語切替は session_id を引き継ぐので、そのままだと切り替えるたびにダウンロードが始まる。
+  // 同じオリジンの参照元は Referrer-Policy（strict-origin-when-cross-origin）でパスまで届く
+  function isFromLangSwitch() {
+    try {
+      var from = new URL(document.referrer)
+      if (from.origin !== location.origin || from.pathname === location.pathname) return false
+      var stripLang = function (path) {
+        return path.replace(/^\/en(?=\/)/, '')
+      }
+      return stripLang(from.pathname) === stripLang(location.pathname)
+    } catch (e) {
+      return false
+    }
+  }
+
   function init() {
     var params = new URLSearchParams(location.search)
     var error = params.get('error')
@@ -55,6 +71,8 @@
     document.getElementById('thanksDownloadLink').href = downloadUrl
     okPanel.hidden = false
 
+    // 言語を切り替えただけなら、もう一度は落とさない。ボタンからはダウンロードできる
+    if (isFromLangSwitch()) return
     location.href = downloadUrl
   }
 

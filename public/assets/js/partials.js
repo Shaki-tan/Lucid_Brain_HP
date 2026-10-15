@@ -30,13 +30,19 @@
 
   // 言語切替は、対応する別言語の同じページを指す（SPEC §2.1 / §5）。
   // /products/pawgress/ にいるなら /en/products/pawgress/ へ送る。自動リダイレクトはしない。
+  //
+  // クエリとアンカーは引き継ぐ。決済完了ページは ?session_id= が無いと何も表示できないため（SPEC §8.1）。
+  // href 属性に入れるので、引用符と山括弧はエスケープしておく
   function counterpartPath() {
     var path = location.pathname
+    var target
     if (isEn) {
       var stripped = path.replace(/^\/en(?=\/|$)/, '')
-      return stripped === '' ? '/' : stripped
+      target = stripped === '' ? '/' : stripped
+    } else {
+      target = path === '/' ? '/en/' : '/en' + path
     }
-    return path === '/' ? '/en/' : '/en' + path
+    return (target + location.search + location.hash).replace(/["<>]/g, encodeURIComponent)
   }
 
   var TEXT = {
