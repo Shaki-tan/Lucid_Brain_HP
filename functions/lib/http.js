@@ -25,6 +25,17 @@ export function text(body, status = 200, headers = {}) {
   })
 }
 
+// 同じサイトの別のページへ戻す。location はルート相対のパスを渡す
+export function redirect(location, status = 302) {
+  return new Response(null, { status, headers: { Location: location, ...NO_STORE } })
+}
+
+// ページ遷移（リンクのクリック・location.href・アドレスバー）として要求されたか。
+// fetch や curl には付かないので、人に見せる応答とテキストの応答を分けるのに使う（SPEC §8.1）
+export function isNavigation(request) {
+  return request.headers.get('Sec-Fetch-Mode') === 'navigate'
+}
+
 // /api/checkout の濫用対策（SPEC §7.5）。自サイト以外からの呼び出しを拒否する。
 // Origin が無いリクエスト（curl 等）も拒否する。ブラウザからの正規の POST には必ず付く。
 export function isSameOrigin(request) {

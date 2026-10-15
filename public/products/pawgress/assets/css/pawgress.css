@@ -242,6 +242,63 @@
   padding: var(--space-section) 0;
 }
 
+/* 期間・申出の期限のように、読み落とすと購入者が不利益を受ける案内を囲む */
+.thanks-notice {
+  max-width: var(--width-note);
+  margin-bottom: var(--space-block);
+  padding: 18px 20px;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-soft);
+}
+
+.thanks-notice p {
+  color: var(--color-ink);
+  font-size: 15px;
+}
+
+.thanks-notice p + p {
+  margin-top: 8px;
+}
+
+/* インストール・ダウンロードできない場合・購入の条件。決済完了ページで読む案内 */
+.thanks-guide {
+  max-width: var(--width-prose);
+  margin-top: var(--space-section);
+}
+
+.thanks-guide h2 {
+  font-size: 19px;
+  margin: 32px 0 12px;
+}
+
+.thanks-guide h2:first-child {
+  margin-top: 0;
+}
+
+.thanks-guide p,
+.thanks-guide li {
+  font-size: 15px;
+  color: var(--color-muted);
+}
+
+.thanks-guide p {
+  margin-bottom: 12px;
+}
+
+.thanks-guide ul {
+  margin: 0 0 12px 20px;
+  list-style-position: outside;
+}
+
+.thanks-guide li {
+  margin-bottom: 6px;
+}
+
+.thanks-guide strong {
+  color: var(--color-ink);
+}
+
 @media (max-width: 768px) {
   .plans {
     grid-template-columns: 1fr;

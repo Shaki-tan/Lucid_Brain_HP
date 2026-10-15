@@ -53,22 +53,79 @@
       <div id="thanksOk" data-product="pawgress" data-plan="paid" hidden>
         <p class="eyebrow">Thank you</p>
         <h1>Thank you for your purchase</h1>
-        <p class="sub">Your payment went through and the download will start shortly. Keep the URL of this page — you can use it to download again.</p>
+        <p class="sub">[TBD] Your payment went through. The download starts automatically. If it does not, press the button below.</p>
+        <!-- The download period and keeping the installer go right under the heading (SPEC §8.1) -->
+        <div class="thanks-notice">
+          <p><strong>[TBD] You can download for 72 hours from the time of payment.</strong></p>
+          <p>[TBD] Please keep the installer. After this period, if you forgot to download, lost the installer, or want to install on a new PC, you will need to purchase again.</p>
+        </div>
         <div class="cta-group">
           <a class="btn btn-lg" id="thanksDownloadLink" href="/api/download">If the download does not start, click here</a>
           <a class="btn btn-lg btn-ghost" href="/en/products/pawgress/">Back to the Pawgress page</a>
         </div>
+
+        <div class="thanks-guide">
+          <h2 id="install">Installation</h2>
+          <ul>
+            <li>[TBD] If you use the free edition, do not uninstall it. Install the paid edition over it with the installer. Your data carries over.</li>
+            <li>[TBD] Uninstalling deletes your data (both the free and the paid edition).</li>
+            <li>[TBD] If Windows SmartScreen shows a warning when you start the installer, choose “More info” and then “Run anyway”.</li>
+          </ul>
+          <p>[TBD] See the <a href="/docs/pawgress/user-guide.en.pdf">user guide (PDF)</a> for the full steps.</p>
+
+          <h2 id="trouble">If you cannot download</h2>
+          <p><strong>[TBD] Within 48 hours of payment, from the email address you used to pay,</strong> write to the address below. Include the date and time of payment and the error or symptom you saw. We will deliver the software another way.</p>
+          <p><a href="mailto:info@example.com">info@example.com</a></p>
+          <p>[TBD] This address handles failed downloads, serious defects and refunds only. For how to use the software, see the user guide. For feedback, please use the <a href="https://example.com/survey" data-link="survey" rel="noopener external">survey</a>.</p>
+
+          <h2 id="conditions">Terms of purchase</h2>
+          <ul>
+            <li>[TBD] Delivery: you can download right after payment (for 72 hours).</li>
+            <li>[TBD] Returns: payments are not refunded once completed, except in the cases set out in the Terms of Service, such as serious defects.</li>
+            <li>[TBD] Duplicate payments: if you pay again within 72 hours of an earlier payment, we refund the duplicate.</li>
+          </ul>
+        </div>
+
         <ul class="doc-links doc-links-spaced">
           <li><a href="/docs/pawgress/user-guide.en.pdf">[TBD] Pawgress user guide (PDF)</a></li>
           <li><a href="/docs/common/gemini-api-key.en.pdf">[TBD] Getting an API key for an AI service (PDF)</a></li>
         </ul>
       </div>
+
+      <!-- /api/download adds the error type when it sends the buyer back (SPEC §8.1). thanks.js shows only one of them -->
       <div id="thanksError" hidden>
         <p class="eyebrow">Error</p>
-        <h1>We could not verify your session</h1>
-        <p class="sub">We could not confirm your payment details. Sorry for the trouble — please start the purchase again.</p>
+        <div data-error="missing" hidden>
+          <h1>No payment details found</h1>
+          <p class="sub">[TBD] The address of this page does not include your payment details. If you have already paid, do not buy again — write to the address below.</p>
+        </div>
+        <div data-error="expired" hidden>
+          <h1>The download period has ended</h1>
+          <p class="sub">[TBD] You can download for 72 hours from the time of payment. If you forgot to download, lost the installer, or want to install on a new PC, please purchase again.</p>
+        </div>
+        <div data-error="refunded" hidden>
+          <h1>This payment has been refunded</h1>
+          <p class="sub">[TBD] This payment was refunded, so it can no longer be used to download.</p>
+        </div>
+        <div data-error="not_found" hidden>
+          <h1>We could not confirm your payment</h1>
+          <p class="sub">[TBD] Please check that the address of this page is correct. If you have already paid, do not buy again — write to the address below.</p>
+        </div>
+        <div data-error="server" hidden>
+          <h1>Downloads are not available right now</h1>
+          <p class="sub">[TBD] Please open this page again after a while. If the problem continues, write to the address below.</p>
+        </div>
+        <div data-error="file" hidden>
+          <h1>We could not prepare the file</h1>
+          <p class="sub">[TBD] Please open this page again after a while. If the problem continues, write to the address below.</p>
+        </div>
+        <!-- Not shown when the period has ended or the payment was refunded (CONTACT_ERRORS in thanks.js) -->
+        <div id="thanksErrorContact" class="thanks-notice" hidden>
+          <p><strong>[TBD] Within 48 hours of payment, from the email address you used to pay,</strong> write to us. Include the date and time of payment and what this page shows.</p>
+          <p><a href="mailto:info@example.com">info@example.com</a></p>
+        </div>
         <div class="cta-group">
-          <a class="btn btn-lg" href="/en/products/pawgress/#price">Back to the purchase page</a>
+          <a class="btn btn-lg btn-ghost" href="/en/products/pawgress/#price">Back to the Pawgress page</a>
         </div>
       </div>
     </div>

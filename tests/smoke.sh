@@ -20,11 +20,13 @@ BASE="${1:-https://lucidbrain.jp}"
 BASE="${BASE%/}"
 status=0
 
-# 全 curl に付ける引数。サービストークンがあれば Access のヘッダを足す
-CURL_ARGS=(-s -L)
+# サービストークンがあれば Access のヘッダを足す。転送を追わない確認でも使うので分けて持つ
+ACCESS_ARGS=()
 if [ -n "${CF_ACCESS_CLIENT_ID:-}" ] && [ -n "${CF_ACCESS_CLIENT_SECRET:-}" ]; then
-  CURL_ARGS+=(-H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}")
+  ACCESS_ARGS+=(-H "CF-Access-Client-Id: ${CF_ACCESS_CLIENT_ID}" -H "CF-Access-Client-Secret: ${CF_ACCESS_CLIENT_SECRET}")
 fi
+# 全 curl に付ける引数
+CURL_ARGS=(-s -L "${ACCESS_ARGS[@]}")
 
 # 想定ステータスと実際を突き合わせる。3つ目以降は curl にそのまま渡す
 expect_status() {
@@ -89,6 +91,36 @@ echo "-- ページ遷移でも /api/* が Worker に届く --"
 # 一致するファイルが無いページ遷移を、Cloudflare は Worker を呼ばずに 404 ページで返す。
 # wrangler.jsonc の run_worker_first が効いていれば Worker に届き、product が無いので 400 になる（SPEC §8.1）。
 expect_status /api/download-free 400 -H 'Sec-Fetch-Mode: navigate'
+
+echo
+echo "-- ダウンロードの失敗は決済完了ページへ戻す --"
+# ページ遷移として失敗したら、素のテキストではなく決済完了ページのエラーパネルへ 302 で戻す（SPEC §8.1）。
+# 戻り先に session_id を付けると自動ダウンロードが繰り返されるので、付いていないことも見る。
+# プロダクトとプランは決済完了ページの data 属性から拾い、ここに書かない。
+# 転送を追わないよう、CURL_ARGS（-L 付き）ではなく Access のヘッダだけを付ける
+expect_thanks_redirect() {
+  local thanks="$1"
+  local product plan lang location
+  product=$(grep -oE 'data-product="[^"]+"' "$thanks" | head -1 | sed -E 's/.*="(.*)"/\1/')
+  plan=$(grep -oE 'data-plan="[^"]+"' "$thanks" | head -1 | sed -E 's/.*="(.*)"/\1/')
+  # 決済完了ページは自分の言語を付けて /api/download を呼ぶ（thanks.js）。英語なら /en/ へ戻る
+  lang=$(grep -oE '<html lang="[^"]+"' "$thanks" | head -1 | sed -E 's/.*="(.*)"/\1/')
+  local path="/api/download?product=${product}&plan=${plan}&lang=${lang}"
+  location=$(curl -s "${ACCESS_ARGS[@]}" -H 'Sec-Fetch-Mode: navigate' -D - -o /dev/null "${BASE}${path}" \
+    | grep -i '^location:' | tr -d '\r' | head -1)
+  location="${location#*: }"
+  local want
+  want="$(to_url_path "$thanks")?error=missing"
+  if [ "$location" = "$want" ]; then
+    echo "OK  302  $path -> $location"
+  else
+    echo "NG  $path の戻り先が ${location:-（無い）}（期待は $want）"
+    status=1
+  fi
+}
+while IFS= read -r thanks; do
+  expect_thanks_redirect "$thanks"
+done < <(find public -path '*/products/*/thanks.html' -type f | LC_ALL=C sort)
 
 echo
 echo "-- セキュリティヘッダ --"
