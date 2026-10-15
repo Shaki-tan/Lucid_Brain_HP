@@ -1518,7 +1518,7 @@ Stripe の価格・R2 のキー・secret はレジストリから組まれるた
 
 | イベント | 発生箇所 | 残す項目 | 残す先 | 保持 |
 |---|---|---|---|---|
-| 同意 | `/api/checkout` | `consent_version` / `consent_at`（サーバ時刻）/ `product` / `plan` / `consent_lang` / `consent_entry_count` / `consent_entry_1..N`（**表示した行とチェックした文言そのもの**）/ `consent_at_client`（参考値） | Stripe の metadata | 実質恒久 |
+| 同意 | `/api/checkout` | `consent_version` / `consent_at`（サーバ時刻）/ `product` / `plan` / `consent_lang` / `consent_entry_count` / `consent_entry_01..N`（**表示した行とチェックした文言そのもの**）/ `consent_at_client`（参考値） | Stripe の metadata | 実質恒久 |
 | 決済成立・返金・異議 | Stripe | 金額・国・支払手段・時刻 | Stripe（自動） | 実質恒久 |
 | Checkout 作成の失敗 | `/api/checkout` | エラー種別・Stripe のステータス | Workers Logs | 3〜7日 |
 | ダウンロード実行 | `/api/download` | `product` / `plan` / `session_id` の末尾数桁 / 結果 | Workers Logs | 3〜7日 |
@@ -1534,8 +1534,8 @@ metadata = {
   plan:            planId,
   consent_lang:    'ja' | 'en',        // 表示した言語
   consent_entry_count: '10',
-  consent_entry_1: '分量: <本文>',                         // 1行1キー（下記）
-  consent_entry_6: '返品・返金: <本文> ／ ✓ <チェックの文言>',  // 同意する行はチェックの文言も残す
+  consent_entry_01: '分量: <本文>',                        // 1行1キー。番号は2桁（下記）
+  consent_entry_06: '返品・返金: <本文> ／ ✓ <チェックの文言>',  // 同意する行はチェックの文言も残す
   consent_at_client: '…',              // クライアント申告。参考値（原則4）
 }
 // 買い切り: payment_intent_data[metadata][…] / サブスク: subscription_data[metadata][…] にも同じ値
@@ -1570,7 +1570,8 @@ Workers Logs を確実に有効化するため、`wrangler.jsonc` に1行入れ�
 ```
 metadata[consent_lang]        ja | en        表示した言語
 metadata[consent_entry_count] 10             行数
-metadata[consent_entry_1..N]  <見出し>: <本文>［ ／ ✓ <チェックの文言>］  1行1キー。表示した行と、チェックした文言をそのまま残す
+metadata[consent_entry_01..N] <見出し>: <本文>［ ／ ✓ <チェックの文言>］  1行1キー。表示した行と、チェックした文言をそのまま残す
+metadata のキーは Stripe のダッシュボードで文字列順に並ぶ。番号を2桁にそろえ（_01〜）、行の順と表示の順を一致させる。
 ```
 
 1キーに連結しない。実文は仮文言より長くなり、1値500文字の上限に当たるためである。

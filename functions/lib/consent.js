@@ -68,7 +68,8 @@ export function toConsentMetadata(entries, lang) {
   }
   entries.slice(0, MAX_ENTRIES).forEach((entry, index) => {
     const text = toEntryText(entry)
-    metadata[`consent_entry_${index + 1}`] =
+    // Stripe のダッシュボードはキーを文字列順に並べる。番号を2桁にそろえて、行の順と一致させる（_10 が _1 の次に来ないように）
+    metadata[`consent_entry_${String(index + 1).padStart(2, '0')}`] =
       text.length > METADATA_VALUE_LIMIT ? `${text.slice(0, METADATA_VALUE_LIMIT - 1)}…` : text
   })
   return metadata
