@@ -33,6 +33,10 @@ export const PRODUCTS = {
         // 配布ファイル名の型。{version} はアップロード時にファイル名から読み取る。
         // R2 のキーはここから組む（functions/lib/releases.js・SPEC §8.5）。
         releaseFile: 'Pawgress-Free-Windows-{version}-Setup.exe',
+        // ダウンロードの前に規約への同意を取る（SPEC §8.1）。記録は残さないが、
+        // どの版の文言を出していたかを consentVersion と git の履歴で示す
+        consentSet: 'free',
+        consentVersion: '2026-10-15',
       },
       paid: {
         billing: 'one_time',

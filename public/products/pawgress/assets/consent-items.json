@@ -13,6 +13,34 @@
     "検査は tests/check-consent.mjs が行う。"
   ],
   "sets": {
+    "free": {
+      "ja": {
+        "entries": [
+          {
+            "term": "利用規約",
+            "detail": "【仮】無料版にも、有償版と同じ Pawgress 利用規約が適用されます。",
+            "consent": {
+              "label": "【仮】利用規約に同意します。",
+              "linkText": "利用規約",
+              "href": "/products/pawgress/legal/terms"
+            }
+          }
+        ]
+      },
+      "en": {
+        "entries": [
+          {
+            "term": "Terms of Service",
+            "detail": "[TBD] The free edition is covered by the same Pawgress Terms of Service as the paid edition.",
+            "consent": {
+              "label": "[TBD] I agree to the Terms of Service.",
+              "linkText": "Terms of Service",
+              "href": "/en/products/pawgress/legal/terms"
+            }
+          }
+        ]
+      }
+    },
     "one_time": {
       "ja": {
         "entries": [

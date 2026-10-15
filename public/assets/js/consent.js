@@ -14,6 +14,11 @@
 // 同意チェックは購入ボタンの手前には置かない。ボタンを押してから同意ステップに入り、
 // 全項目にチェックが入って初めて「決済に進む」が有効になる。
 //
+// 無料版のダウンロードのボタン（data-free-download）も同じダイアログを開く（SPEC §8.1）。
+// インストーラーに規約の同意画面が無いため、無料版で規約を示して合意を取る場所はここだけである。
+// 違いは、全部チェックしたあとの行き先（決済 or ダウンロード）と、見出し・ボタンの文言だけにする。
+// 無料版の同意は利用者ごとに記録しない。どの版の文言を出していたかは git の履歴と consentVersion で示す。
+//
 // 文言は日英とも本文と同等の内容とする。§2.2 の「英語は要約」の唯一の例外である。
 // ここを要約にすると、EU 消費者権利指令の返品権が残る話に直撃するため。
 //
@@ -37,6 +42,10 @@
       errorRegion: '申し訳ありません。お使いの地域ではご購入いただけません。本サービスは日本国内の居住者を対象としています。',
       errorStale: 'ページが古くなっています。再読み込みのうえ、もう一度お試しください。',
       blockedButton: 'お住まいの地域では購入できません',
+      // 無料版のダウンロードの前に開くとき（SPEC §8.1）
+      freeTitle: 'ダウンロードの前に',
+      freeIntro: '利用規約をご確認のうえ、チェックを入れてください。チェックが入るとダウンロードできます。',
+      freeSubmit: 'ダウンロードする',
     },
     en: {
       title: 'Before you buy',
@@ -48,6 +57,9 @@
       errorRegion: 'Sorry — purchases are not available in your region. This service is intended for residents of Japan.',
       errorStale: 'This page is out of date. Please reload and try again.',
       blockedButton: 'Not available in your region',
+      freeTitle: 'Before you download',
+      freeIntro: 'Please read the Terms of Service and check the box. The download becomes available once it is checked.',
+      freeSubmit: 'Download',
     },
   }
 
@@ -128,7 +140,12 @@
     )
   }
 
-  function buildDialog(entries) {
+  // 無料版のダウンロードのボタンか。購入のボタンと、行き先と文言が変わる
+  function isFreeDownload(trigger) {
+    return trigger.hasAttribute('data-free-download')
+  }
+
+  function buildDialog(entries, isFree) {
     var el = document.createElement('dialog')
     el.className = 'consent-dialog'
     el.id = 'consentDialog'
@@ -141,13 +158,13 @@
     // 記録は購入ボタンの data 属性から /api/checkout へ渡り、Stripe に残る（SPEC §8.4）。
     el.innerHTML =
       // 開いたときは見出しにフォーカスを置く。プログラムからだけ当てるので tabindex="-1"
-      '<h2 id="consentTitle" tabindex="-1">' + escapeHtml(t.title) + '</h2>' +
-      '<p class="consent-intro">' + escapeHtml(t.intro) + '</p>' +
+      '<h2 id="consentTitle" tabindex="-1">' + escapeHtml(isFree ? t.freeTitle : t.title) + '</h2>' +
+      '<p class="consent-intro">' + escapeHtml(isFree ? t.freeIntro : t.intro) + '</p>' +
       '<ul class="consent-entries">' + entries.map(entryMarkup).join('') + '</ul>' +
       '<p class="consent-error" id="consentError" role="alert" hidden></p>' +
       '<div class="consent-actions">' +
       '<button type="button" class="btn btn-ghost" data-consent-cancel>' + escapeHtml(t.cancel) + '</button>' +
-      '<button type="button" class="btn" id="consentSubmit" aria-disabled="true">' + escapeHtml(t.submit) + '</button>' +
+      '<button type="button" class="btn" id="consentSubmit" aria-disabled="true">' + escapeHtml(isFree ? t.freeSubmit : t.submit) + '</button>' +
       '</div>'
 
     document.body.appendChild(el)
@@ -175,6 +192,14 @@
     if (status === 451 || code === 'unavailable_in_region') return t.errorRegion
     if (status === 409 || code === 'consent_version_mismatch') return t.errorStale
     return t.errorGeneric
+  }
+
+  // 無料版は決済を経ないので、ダイアログを閉じてダウンロードへ遷移するだけである。
+  // サーバ側では同意を強制しない。/api/download-free の URL を直接開けば今までどおり落とせる（SPEC §8.1）
+  function startFreeDownload(trigger) {
+    if (submitBtn.getAttribute('aria-disabled') === 'true') return
+    dialog.close()
+    location.href = '/api/download-free?product=' + encodeURIComponent(trigger.dataset.product)
   }
 
   async function submitCheckout(trigger) {
@@ -240,7 +265,7 @@
     }
 
     if (!dialog) {
-      dialog = buildDialog(entries)
+      dialog = buildDialog(entries, isFreeDownload(trigger))
       dialogSet = consentSet
       checkboxes = Array.prototype.slice.call(dialog.querySelectorAll('input[type="checkbox"]'))
       submitBtn = dialog.querySelector('#consentSubmit')
@@ -248,7 +273,10 @@
 
       checkboxes.forEach(function (box) { box.addEventListener('change', syncSubmitState) })
       dialog.querySelector('[data-consent-cancel]').addEventListener('click', function () { dialog.close() })
-      submitBtn.addEventListener('click', function () { submitCheckout(activeTrigger) })
+      submitBtn.addEventListener('click', function () {
+        if (isFreeDownload(activeTrigger)) startFreeDownload(activeTrigger)
+        else submitCheckout(activeTrigger)
+      })
     }
 
     checkboxes.forEach(function (box) { box.checked = false })
@@ -281,7 +309,7 @@
   }
 
   function init() {
-    var triggers = Array.prototype.slice.call(document.querySelectorAll('[data-checkout]'))
+    var triggers = Array.prototype.slice.call(document.querySelectorAll('[data-checkout], [data-free-download]'))
     if (triggers.length === 0) return
 
     // 押された時点で待たせないよう、先に読んでおく
@@ -294,7 +322,8 @@
       })
     })
 
-    disableWhenRegionBlocked(triggers)
+    // 地域で弾くのは購入だけ。無料版のダウンロードには地域の判定をかけない（SPEC §8.1）
+    disableWhenRegionBlocked(triggers.filter(function (trigger) { return !isFreeDownload(trigger) }))
   }
 
   if (document.readyState === 'loading') {
