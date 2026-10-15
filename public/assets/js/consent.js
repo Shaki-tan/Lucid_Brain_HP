@@ -93,43 +93,42 @@
     return itemsCache[productId]
   }
 
-  // セットの、表示する言語の文言。{ items, summary } を返す。項目が無ければ null。
-  // summary（購入の条件の本文）はセットによっては無い。その場合は空の配列にする。
-  function pickContent(data, consentSet) {
+  // セットの、表示する言語の行の並び（entries）。チェックする行が1つも無ければ null。
+  function pickEntries(data, consentSet) {
     var set = data && data.sets && data.sets[consentSet]
     var content = set && (isEn ? set.en : set.ja)
-    var items = content && content.items
-    if (!Array.isArray(items) || items.length === 0) return null
-    return { items: items, summary: Array.isArray(content.summary) ? content.summary : [] }
+    var entries = content && content.entries
+    if (!Array.isArray(entries)) return null
+    var hasConsent = entries.some(function (entry) { return entry && entry.consent })
+    return hasConsent ? entries : null
   }
 
-  // 最終確認画面の表示事項（分量・価格・支払時期と方法・引渡時期・申込みの期間・返品特約）。
-  // リンク先に任せず、チェックボックスの上に本文として出す（SPEC §8.3）
-  function summaryMarkup(summary) {
-    if (summary.length === 0) return ''
+  // 1行 = 見出しと本文。同意が要る行だけ、その下にチェックボックスとリンクを付ける。
+  // 購入の条件（分量・価格・支払時期と方法・引渡時期・申込みの期間・返品特約）を本文として並べ、
+  // ダイアログを最終確認画面にする（SPEC §8.3）。条件とチェックを別々に書くと同じことを2回書くことになる
+  function entryMarkup(entry, index) {
+    var check = ''
+    if (entry.consent) {
+      var id = 'consentItem' + index
+      check =
+        '<div class="consent-check">' +
+        '<input type="checkbox" id="' + id + '">' +
+        '<label for="' + id + '">' + escapeHtml(entry.consent.label) + ' ' +
+        '<a href="' + entry.consent.href + '" target="_blank" rel="noopener">' + escapeHtml(entry.consent.linkText) +
+        '<span class="visually-hidden"> ' + newTabLabel + '</span></a>' +
+        '</label>' +
+        '</div>'
+    }
     return (
-      '<dl class="consent-summary">' +
-      summary.map(function (row) {
-        return '<dt>' + escapeHtml(row.term) + '</dt><dd>' + escapeHtml(row.detail) + '</dd>'
-      }).join('') +
-      '</dl>'
-    )
-  }
-
-  function itemMarkup(item, index) {
-    var id = 'consentItem' + index
-    return (
-      '<li class="consent-item">' +
-      '<input type="checkbox" id="' + id + '">' +
-      '<label for="' + id + '">' + escapeHtml(item.label) + ' ' +
-      '<a href="' + item.href + '" target="_blank" rel="noopener">' + escapeHtml(item.linkText) +
-      '<span class="visually-hidden"> ' + newTabLabel + '</span></a>' +
-      '</label>' +
+      '<li class="consent-entry">' +
+      '<p class="consent-term">' + escapeHtml(entry.term) + '</p>' +
+      (entry.detail ? '<p class="consent-detail">' + escapeHtml(entry.detail) + '</p>' : '') +
+      check +
       '</li>'
     )
   }
 
-  function buildDialog(content) {
+  function buildDialog(entries) {
     var el = document.createElement('dialog')
     el.className = 'consent-dialog'
     el.id = 'consentDialog'
@@ -141,10 +140,10 @@
     // 版（consentVersion）は画面には出さない。読み手に意味のある情報ではないためである。
     // 記録は購入ボタンの data 属性から /api/checkout へ渡り、Stripe に残る（SPEC §8.4）。
     el.innerHTML =
-      '<h2 id="consentTitle">' + escapeHtml(t.title) + '</h2>' +
+      // 開いたときは見出しにフォーカスを置く。プログラムからだけ当てるので tabindex="-1"
+      '<h2 id="consentTitle" tabindex="-1">' + escapeHtml(t.title) + '</h2>' +
       '<p class="consent-intro">' + escapeHtml(t.intro) + '</p>' +
-      summaryMarkup(content.summary) +
-      '<ul class="consent-items">' + content.items.map(itemMarkup).join('') + '</ul>' +
+      '<ul class="consent-entries">' + entries.map(entryMarkup).join('') + '</ul>' +
       '<p class="consent-error" id="consentError" role="alert" hidden></p>' +
       '<div class="consent-actions">' +
       '<button type="button" class="btn btn-ghost" data-consent-cancel>' + escapeHtml(t.cancel) + '</button>' +
@@ -219,12 +218,12 @@
 
   async function openDialog(trigger) {
     var consentSet = trigger.dataset.consentSet
-    var content = pickContent(await loadItems(trigger.dataset.product), consentSet)
+    var entries = pickEntries(await loadItems(trigger.dataset.product), consentSet)
 
     // 文言が無い状態で開くと、チェックすべき項目が0件のダイアログが出る。
     // JSON が取れなかったか、セット名が products.js と食い違っている。どちらも実装側の問題である。
     // 黙って開かず、購入も始めない。
-    if (!content) {
+    if (!entries) {
       console.error('consent: 同意項目が見つからない（product=' + trigger.dataset.product +
         ' consentSet=' + consentSet + '）。' +
         itemsUrl(trigger.dataset.product) + ' が配信されているか、セット名が products.js と一致しているかを確認する。')
@@ -241,7 +240,7 @@
     }
 
     if (!dialog) {
-      dialog = buildDialog(content)
+      dialog = buildDialog(entries)
       dialogSet = consentSet
       checkboxes = Array.prototype.slice.call(dialog.querySelectorAll('input[type="checkbox"]'))
       submitBtn = dialog.querySelector('#consentSubmit')
@@ -256,8 +255,11 @@
     clearError()
     syncSubmitState()
     dialog.showModal()
-    // 開いたら内部にフォーカスを移す。閉じたときの復帰は <dialog> が行う。
-    checkboxes[0].focus()
+    // 開いたら内部の先頭（見出し）にフォーカスを移し、一番上から読める状態にする。
+    // showModal() は最初の操作要素（リンクやチェックボックス）にフォーカスを当て、そこまでスクロールしてしまうため、
+    // 見出しへ移したうえでスクロールを戻す。閉じたときの復帰は <dialog> が行う。
+    dialog.querySelector('#consentTitle').focus({ preventScroll: true })
+    dialog.scrollTop = 0
   }
 
   // 販売対象外の地域では、決済直前ではなく手前で伝える（SPEC §8.1）。

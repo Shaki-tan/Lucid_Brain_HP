@@ -6,16 +6,16 @@
     "決済のたびに Stripe のメタデータへ文言そのものを書く（SPEC §8.4 の原則6）。",
     "JSON にしてあるのは、Workers では eval できず JS を読めないためである。",
     "sets のキーは functions/lib/products.js の plan.consentSet と一致させる。",
-    "各セットは言語ごとに summary（チェックボックスの上に本文として出す購入の条件）と items（チェック項目）を持つ。",
-    "summary は最終確認画面の表示事項（分量・価格・支払時期と方法・引渡時期・申込みの期間・返品特約）である（SPEC §8.3）。",
-    "summary の checks は、その行に products.js の値（unitAmount・downloadWindowHours・duplicateWindowHours）が書かれていることを検査させる印である。",
-    "文言か、items がリンクする法務文書を変えたら products.js の consentVersion を上げ、LP の data-consent-version も合わせる。",
+    "各セットは言語ごとに entries を持つ。1行が「見出し（term）と本文（detail）」で、同意が要る行だけ consent（チェックボックスの文言とリンク）を持つ。",
+    "購入の条件（分量・価格・支払時期と方法・引渡時期・申込みの期間・返品特約）を本文として出し、ダイアログを最終確認画面にする（SPEC §8.3）。",
+    "checks は、その行に products.js の値（unitAmount・downloadWindowHours・duplicateWindowHours）が書かれていることを検査させる印である。",
+    "文言か、consent がリンクする法務文書を変えたら products.js の consentVersion を上げ、LP の data-consent-version も合わせる。",
     "検査は tests/check-consent.mjs が行う。"
   ],
   "sets": {
     "one_time": {
       "ja": {
-        "summary": [
+        "entries": [
           {
             "term": "分量",
             "detail": "【仮】Pawgress 有償版 1点（Windows 用・ダウンロード販売・買い切り）"
@@ -41,38 +41,48 @@
           {
             "term": "返品・返金",
             "detail": "【仮】決済の完了後は、購入者のご都合による返品・返金はお受けしません。重複して決済された場合（先の決済から72時間以内に重ねて決済された場合）、当方の責めでお渡しできない場合、重大な不具合を修正した版をお渡しできない場合は返金します。",
-            "checks": ["duplicateWindowHours"]
+            "checks": ["duplicateWindowHours"],
+            "consent": {
+              "label": "【仮】決済の完了後は、購入者の都合による返金を受けられないことを確認しました。",
+              "linkText": "利用規約の返金の条項",
+              "href": "/products/pawgress/legal/terms#refund"
+            }
           },
           {
             "term": "無料版からの移行",
             "detail": "【仮】無料版をアンインストールせずに、有償版を上書きしてインストールしてください。アンインストールすると、登録したデータは削除されます。"
-          }
-        ],
-        "items": [
-          {
-            "label": "【仮】利用規約の内容を確認しました。",
-            "linkText": "利用規約",
-            "href": "/products/pawgress/legal/terms"
           },
           {
-            "label": "【仮】決済の完了後は、購入者の都合による返金を受けられないことを確認しました。",
-            "linkText": "利用規約の返金の条項",
-            "href": "/products/pawgress/legal/terms#refund"
+            "term": "利用規約",
+            "detail": "【仮】利用の許諾の範囲、提供する版、重大な不具合への対応などを定めています。",
+            "consent": {
+              "label": "【仮】利用規約に同意します。",
+              "linkText": "利用規約",
+              "href": "/products/pawgress/legal/terms"
+            }
           },
           {
-            "label": "【仮】プライバシーポリシーの内容を確認しました。",
-            "linkText": "プライバシーポリシー",
-            "href": "/legal/privacy"
+            "term": "プライバシーポリシー",
+            "detail": "【仮】決済の際に Stripe から受け取る情報の扱いを定めています。",
+            "consent": {
+              "label": "【仮】プライバシーポリシーの内容を確認しました。",
+              "linkText": "プライバシーポリシー",
+              "href": "/legal/privacy"
+            }
           },
           {
-            "label": "【仮】特定商取引法に基づく表記を確認しました。",
-            "linkText": "特定商取引法に基づく表記",
-            "href": "/legal/tokushoho#pawgress"
+            "term": "販売事業者",
+            "detail": "【仮】販売事業者の氏名・所在地・連絡先は、特定商取引法に基づく表記に示しています。",
+            "consent": {
+              "label": "【仮】特定商取引法に基づく表記を確認しました。",
+              "linkText": "特定商取引法に基づく表記",
+              "href": "/legal/tokushoho#pawgress"
+            }
           }
         ]
       },
       "en": {
-        "summary": [
+        "entries": [
           {
             "term": "Quantity",
             "detail": "[TBD] One copy of Pawgress paid edition (for Windows, download, one-time purchase)"
@@ -98,33 +108,43 @@
           {
             "term": "Returns and refunds",
             "detail": "[TBD] Once payment is complete, we do not accept returns or refunds for the buyer's convenience. We refund duplicate payments (paying again within 72 hours of an earlier payment), cases where we cannot deliver through our own fault, and serious defects we cannot fix.",
-            "checks": ["duplicateWindowHours"]
+            "checks": ["duplicateWindowHours"],
+            "consent": {
+              "label": "[TBD] I understand that payments are not refunded for my own convenience once payment is complete.",
+              "linkText": "Refund section of the Terms of Service",
+              "href": "/en/products/pawgress/legal/terms#refund"
+            }
           },
           {
             "term": "Moving from the free edition",
             "detail": "[TBD] Do not uninstall the free edition. Install the paid edition over it. Uninstalling deletes your data."
-          }
-        ],
-        "items": [
-          {
-            "label": "[TBD] I have read the Terms of Service.",
-            "linkText": "Terms of Service",
-            "href": "/en/products/pawgress/legal/terms"
           },
           {
-            "label": "[TBD] I understand that payments are not refunded for my own convenience once payment is complete.",
-            "linkText": "Refund section of the Terms of Service",
-            "href": "/en/products/pawgress/legal/terms#refund"
+            "term": "Terms of Service",
+            "detail": "[TBD] Sets out who may use the software, which versions you receive and how serious defects are handled.",
+            "consent": {
+              "label": "[TBD] I agree to the Terms of Service.",
+              "linkText": "Terms of Service",
+              "href": "/en/products/pawgress/legal/terms"
+            }
           },
           {
-            "label": "[TBD] I have read the Privacy Policy.",
-            "linkText": "Privacy Policy",
-            "href": "/en/legal/privacy"
+            "term": "Privacy Policy",
+            "detail": "[TBD] Sets out how we handle the information we receive from Stripe at payment.",
+            "consent": {
+              "label": "[TBD] I have read the Privacy Policy.",
+              "linkText": "Privacy Policy",
+              "href": "/en/legal/privacy"
+            }
           },
           {
-            "label": "[TBD] I have read the Legal Notice under the Act on Specified Commercial Transactions.",
-            "linkText": "Legal Notice",
-            "href": "/en/legal/tokushoho#pawgress"
+            "term": "Seller",
+            "detail": "[TBD] The seller's name, address and contact details are in the Legal Notice.",
+            "consent": {
+              "label": "[TBD] I have read the Legal Notice under the Act on Specified Commercial Transactions.",
+              "linkText": "Legal Notice",
+              "href": "/en/legal/tokushoho#pawgress"
+            }
           }
         ]
       }

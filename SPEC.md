@@ -1308,7 +1308,7 @@ export const PRODUCTS = {
         downloadWindowHours: 72,                  // 決済の完了からダウンロードできる時間（§8.1）
         duplicateWindowHours: 72,                 // この時間内に重ねた決済を重複とみなす。いまは上と同じ定数を入れる
         consentSet: 'one_time',                   // 同意文言のセット（§8.3）
-        consentVersion: '2026-10-15.2',     // 同意の版。文言かリンク先の法務文書を変えたら上げる（§8.3）
+        consentVersion: '2026-10-15.3',     // 同意の版。文言かリンク先の法務文書を変えたら上げる（§8.3）
       },
       // サブスクを足す場合の形（現時点では定義しない）
       // pro: {
@@ -1402,39 +1402,30 @@ Stripe の価格・R2 のキー・secret はレジストリから組まれるた
 
 #### 同意項目
 
-同意ダイアログは、購入の条件の本文（`summary`）とチェック項目（`items`）の2つでできている。
-ダイアログを特商法上の最終確認画面と位置づけるため、表示事項はリンク先に任せず、チェックボックスの上に本文として出す。
+同意ダイアログは、行の並び（`entries`）1つでできている。1行は見出し（`term`）と本文（`detail`）で、同意が要る行だけチェックボックスとリンク（`consent`）を持つ。
+ダイアログを特商法上の最終確認画面と位置づけるため、購入の条件はリンク先に任せず本文として出す。
+購入の条件とチェック項目を別々に並べると同じことを2回書くことになり、食い違いの元になるので、1つにまとめている。
 
-**購入の条件の本文（`summary`）。** 有償プランのセットは必ず持つ。今の行は次の7つ（文言は `【仮】`）。
+買い切り（`consentSet: 'one_time'`）の行は次の10行で、うち4行にチェックボックスがある。文言は `【仮】`（§2.4）。
 
-| 見出し | 中身 | 検査で突き合わせる値 |
-|---|---|---|
-| 分量 | 1点・買い切り | — |
-| 価格 | 税込の価格 | `unitAmount` |
-| 支払時期・方法 | 申込み時・クレジットカード（Stripe） | — |
-| 引渡時期 | 決済の完了後ただちに。ダウンロードできる期間 | `downloadWindowHours` |
-| 申込みの期間 | 定めなし（期限付きの販売をするときは期限） | — |
-| 返品・返金 | 決済の完了後は返金しない。重複決済の定義と、返金する場合 | `duplicateWindowHours` |
-| 無料版からの移行 | 上書きインストール。アンインストールでデータが消える | — |
-
-価格と時間数は `products.js` の値を文字で書き写すことになる。行に `checks` を付け、検査がその行に値がそのまま書かれているかを確かめる。
-`products.js` の値を変えて文言を直し忘れると、デプロイ前に落ちる。無料版のセットは `summary` を持たない。
-
-**チェック項目（`items`）。** 買い切り（`consentSet: 'one_time'`）は4項目とする。
-実文は別途準備中のため、以下は構造を示す例文である（§2.4）。
-
-| # | 主旨 | 例文 | リンク先 |
+| 見出し | 本文の中身 | チェックボックスとリンク先 | 検査で突き合わせる値 |
 |---|---|---|---|
-| 1 | 利用規約の確認 | 【仮】利用規約の内容を確認しました。 | `/products/pawgress/legal/terms` |
-| 2 | 返金を受けられないことの確認 | 【仮】決済の完了後は、購入者の都合による返金を受けられないことを確認しました。 | `/products/pawgress/legal/terms#refund` |
-| 3 | プライバシーポリシーの確認 | 【仮】プライバシーポリシーの内容を確認しました。 | `/legal/privacy` |
-| 4 | 特商法表記の確認 | 【仮】特定商取引法に基づく表記を確認しました。 | `/legal/tokushoho#pawgress` |
+| 分量 | 1点・買い切り | — | — |
+| 価格 | 税込の価格 | — | `unitAmount` |
+| 支払時期・方法 | 申込み時・クレジットカード（Stripe） | — | — |
+| 引渡時期 | 決済の完了後ただちに。ダウンロードできる期間 | — | `downloadWindowHours` |
+| 申込みの期間 | 定めなし（期限付きの販売をするときは期限） | — | — |
+| 返品・返金 | 決済の完了後は返金しない。重複決済の定義と、返金する場合 | 返金を受けられないことの確認 → `/products/pawgress/legal/terms#refund` | `duplicateWindowHours` |
+| 無料版からの移行 | 上書きインストール。アンインストールでデータが消える | — | — |
+| 利用規約 | 規約が定めることの要旨 | 規約への同意（「同意します」） → `/products/pawgress/legal/terms` | — |
+| プライバシーポリシー | 決済で受け取る情報の扱い | 確認 → `/legal/privacy` | — |
+| 販売事業者 | 事業者の情報は特商法表記にあること | 確認 → `/legal/tokushoho#pawgress` | — |
 
-項目1・3・4 は legal 3種（§2.2）と1対1で対応させる。どの項目がどの文書を指すのかを読み手に考えさせないためである。
-項目2（返金不可の承諾）は、返金ポリシーを規約に統合した後も独立した項目として残し、規約の返金の条項を直接指す。返品特約を目立たせ、同意の証跡として明確にするためである。
-特商法表記へのリンクは、その商品の販売条件の節を直接指す。
-
-返金不可の起点は決済の完了である（規約 第12条）。対象地域の確認を項目に含めるかは、文言を確定させるときに決める（§10.1）。
+- 価格と時間数は `products.js` の値を文字で書き写すことになる。行に `checks` を付け、検査がその行に値がそのまま書かれているかを確かめる。`products.js` の値を変えて文言を直し忘れると、デプロイ前に落ちる。
+- 返金不可の承諾は、返金ポリシーを規約に統合した後も独立したチェックとして残し、規約の返金の条項を直接指す。返品特約を目立たせ、同意の証跡として明確にするためである。返金不可の起点は決済の完了である（規約 第12条）。
+- 規約・プライバシーポリシー・特商法表記のチェックは legal 3種（§2.2）と1対1で対応させる。特商法表記へのリンクは、その商品の販売条件の節を直接指す。
+- 対象地域の確認をチェックに含めるかは、文言を確定させるときに決める（§10.1）。
+- 開いたときは見出しにフォーカスを置き、一番上を表示する。`showModal()` は最初の操作要素にフォーカスを当ててそこまでスクロールするため、見出し（`tabindex="-1"`）へ移してスクロールを戻している。
 
 - 同意項目はプラン単位で持つ。`plan.consentSet` で切り替える構造にしておき、サブスクを導入するときは `subscription` のセットを追加する。その内容は導入時に別途指示を受ける。
 - 各項目から該当する legal ページへリンクする（別タブで開く）。
@@ -1453,9 +1444,9 @@ Stripe の価格・R2 のキー・secret はレジストリから組まれるた
 文言のファイルは**1つだけ**とする。ブラウザのダイアログと、決済時の記録（§8.4）が、同じファイルを読む。
 
 - パスは `products/<slug>/assets/consent-items.json` の規約とし、`slug` から組む。どこにも書き写さない。
-- 形は `{ "sets": { "<consentSet>": { "ja": { "summary": [...], "items": [...] }, "en": { … } } } }`。
-  `summary` の行は `term` / `detail`（と任意の `checks`）、`items` の項目は `label` / `linkText` / `href` を持つ。
-  本文と項目を同じセット・同じ言語の下に並べるのは、片方の言語だけ直す漏れを見つけやすくするためである。
+- 形は `{ "sets": { "<consentSet>": { "ja": { "entries": [...] }, "en": { "entries": [...] } } } }`。
+  行は `term` / `detail`、任意で `checks` と `consent`（`label` / `linkText` / `href`）を持つ。無料版のセットは同意の行だけでよい。
+  日英で行の数と同意する行の位置が揃っていることは検査が見る。
 - `_readme` キーに、そのファイルを単体で開いた人向けの説明を置く。JSON にコメントが書けないためである。
 - 購入ボタンは `data-consent-set` でセット名を指し、その名前は `products.js` の `plan.consentSet` と一致させる。
 
@@ -1470,20 +1461,20 @@ Stripe の価格・R2 のキー・secret はレジストリから組まれるた
 
 検査は `tests/check-consent.mjs` が行う。見るのは次のとおり。
 
-- `products.js` の `consentSet` に対応するセットがあり、日英で `summary` と `items` の数が揃っているか
-- `items` のリンク先が実在し、フラグメントの `id` があるか
-- `summary` に価格と期間が `products.js` の値のまま書かれているか（`checks`）
+- `products.js` の `consentSet` に対応するセットがあり、日英で行の数と同意する行の位置が揃っているか
+- 同意する行のリンク先が実在し、フラグメントの `id` があるか
+- 購入の条件の行に価格と期間が `products.js` の値のまま書かれているか（`checks`）
 - Stripe の metadata の上限に収まるか
 - ページの購入ボタンの `data-consent-version` / `data-consent-set` が `products.js` と一致するか（食い違うと `/api/checkout` が 409 で止め、購入できなくなる）
-- `consentVersion` が、`items` のリンク先の法務文書の改定日（`<time data-revised>`。§2.2）より前でないか
+- `consentVersion` が、同意する行のリンク先の法務文書の改定日（`<time data-revised>`。§2.2）より前でないか
 
 **記録。** `POST /api/checkout` に同意の事実を渡し、Stripe 側に記録する。詳細は §8.4 にある。
 その版の文言そのものは、決済のたびに Stripe の metadata に入る（§8.4）。
 
 **版を上げる規則。** 次のどちらかを変えたら `products.js` の `consentVersion` を上げ、ページの `data-consent-version` を合わせる。
 
-1. `consent-items.json` の文言（`summary` と `items`）
-2. `items` がリンクする法務文書の本文
+1. `consent-items.json` の文言（見出し・本文・チェックの文言）
+2. 同意する行がリンクする法務文書の本文
 
 版は日付（`YYYY-MM-DD`）で、同じ日に2回上げるときは `.2` のように後ろに付ける。
 2 を守っていれば、Stripe に残る `consentVersion` から、その時点の法務文書の版が日付で引ける（本文は git の、その日付の時点を見る）。
@@ -1527,7 +1518,7 @@ Stripe の価格・R2 のキー・secret はレジストリから組まれるた
 
 | イベント | 発生箇所 | 残す項目 | 残す先 | 保持 |
 |---|---|---|---|---|
-| 同意 | `/api/checkout` | `consent_version` / `consent_at`（サーバ時刻）/ `product` / `plan` / `consent_lang` / `consent_item_count` / `consent_item_1..N`（**文言そのもの**）/ `consent_summary_count` / `consent_summary_1..N`（**表示した購入の条件そのもの**）/ `consent_at_client`（参考値） | Stripe の metadata | 実質恒久 |
+| 同意 | `/api/checkout` | `consent_version` / `consent_at`（サーバ時刻）/ `product` / `plan` / `consent_lang` / `consent_entry_count` / `consent_entry_1..N`（**表示した行とチェックした文言そのもの**）/ `consent_at_client`（参考値） | Stripe の metadata | 実質恒久 |
 | 決済成立・返金・異議 | Stripe | 金額・国・支払手段・時刻 | Stripe（自動） | 実質恒久 |
 | Checkout 作成の失敗 | `/api/checkout` | エラー種別・Stripe のステータス | Workers Logs | 3〜7日 |
 | ダウンロード実行 | `/api/download` | `product` / `plan` / `session_id` の末尾数桁 / 結果 | Workers Logs | 3〜7日 |
@@ -1542,11 +1533,9 @@ metadata = {
   product:         productId,
   plan:            planId,
   consent_lang:    'ja' | 'en',        // 表示した言語
-  consent_item_count: '4',
-  consent_item_1:  '<1項目めの文言>',   // 1項目1キー（下記）
-  consent_item_2:  '…',
-  consent_summary_count: '7',
-  consent_summary_1: '分量: <本文>',     // 表示した購入の条件。1行1キー
+  consent_entry_count: '10',
+  consent_entry_1: '分量: <本文>',                         // 1行1キー（下記）
+  consent_entry_6: '返品・返金: <本文> ／ ✓ <チェックの文言>',  // 同意する行はチェックの文言も残す
   consent_at_client: '…',              // クライアント申告。参考値（原則4）
 }
 // 買い切り: payment_intent_data[metadata][…] / サブスク: subscription_data[metadata][…] にも同じ値
@@ -1580,10 +1569,8 @@ Workers Logs を確実に有効化するため、`wrangler.jsonc` に1行入れ�
 
 ```
 metadata[consent_lang]        ja | en        表示した言語
-metadata[consent_item_count]  4              項目数
-metadata[consent_item_1..N]   <文言>          1項目1キー
-metadata[consent_summary_count] 7            購入の条件の行数（有償プランのみ）
-metadata[consent_summary_1..N] <見出し>: <本文>  1行1キー。最終確認画面に何を出したかを残す
+metadata[consent_entry_count] 10             行数
+metadata[consent_entry_1..N]  <見出し>: <本文>［ ／ ✓ <チェックの文言>］  1行1キー。表示した行と、チェックした文言をそのまま残す
 ```
 
 1キーに連結しない。実文は仮文言より長くなり、1値500文字の上限に当たるためである。
@@ -1610,7 +1597,7 @@ metadata[consent_summary_1..N] <見出し>: <本文>  1行1キー。最終確認
 記録の設計は「問い合わせが来たときに何分で答えられるか」で評価する。
 
 返金を求められた場合は、Stripe ダッシュボードの支払いから該当の決済を開き、メタデータ欄で `consent_version` と `consent_at` を見る。
-その版の文言は同じ欄の `consent_item_*` にある。返金するなら同じ画面の返金ボタンを押す。
+その版の文言（表示した購入の条件と、チェックした文言）は同じ欄の `consent_entry_*` にある。返金するなら同じ画面の返金ボタンを押す。
 
 EU の購入者が撤回権を行使すると言ってきた場合も同じ手順で、購入前に「DL開始で返金不可」へ同意していた事実と、同意時刻が決済時刻より前であることを示す。
 実際にダウンロードしたかは Workers Logs で見るが、3〜7日を過ぎていれば残っていない。その場合は Stripe 側の同意記録だけで対応する。同意の事実が本体であり、DL の有無は補強材料である。

@@ -341,59 +341,63 @@ site-footer {
   margin-bottom: 20px;
 }
 
-/* 購入の条件（最終確認画面の表示事項）。チェック項目の上に、読める本文として置く */
-.consent-summary {
+/* 開いたときにプログラムからフォーカスを当てる見出し。枠は出さない */
+.consent-dialog h2:focus {
+  outline: none;
+}
+
+/* 購入の条件とチェック項目を1つの並びにする。1行 = 見出しと本文。同意が要る行だけチェックボックスを持つ（SPEC §8.3） */
+.consent-entries {
+  list-style: none;
+  margin-bottom: 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+.consent-entry {
   display: grid;
   grid-template-columns: 8em 1fr;
-  gap: 8px 14px;
-  margin-bottom: 20px;
-  padding: 14px 16px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  gap: 4px 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
   font-size: 13.5px;
   line-height: 1.7;
 }
 
-.consent-summary dt {
+.consent-term {
   color: var(--color-muted);
   font-weight: 700;
 }
 
-.consent-summary dd {
+.consent-detail {
   color: var(--color-ink);
 }
 
-@media (max-width: 480px) {
-  .consent-summary {
-    grid-template-columns: 1fr;
-    gap: 2px;
-  }
-  .consent-summary dd {
-    margin-bottom: 8px;
-  }
-}
-
-.consent-items {
-  list-style: none;
-  display: grid;
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
-.consent-item {
+/* チェックボックスは本文の下、本文と同じ列に置く */
+.consent-check {
+  grid-column: 2;
   display: flex;
   gap: 10px;
   align-items: flex-start;
+  margin-top: 6px;
   font-size: 14px;
-  line-height: 1.7;
 }
 
-.consent-item input[type="checkbox"] {
+.consent-check input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  margin-top: 6px;
+  margin-top: 5px;
   flex-shrink: 0;
   accent-color: var(--color-accent);
+}
+
+@media (max-width: 480px) {
+  .consent-entry {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .consent-check {
+    grid-column: 1;
+  }
 }
 
 .consent-actions {

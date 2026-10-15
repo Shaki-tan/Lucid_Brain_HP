@@ -5,12 +5,12 @@
 // ここが崩れると「版番号は残るが文言が残らない決済」が生まれるため、機械で確かめる。
 //
 // 見るもの:
-//   - セットの形（言語ごとの items と、有償プランの summary）と、日英の数の一致
-//   - items のリンク先が実在すること
-//   - summary に products.js の値（価格・期間）がそのまま書かれていること
+//   - セットの形（言語ごとの entries。同意する行は consent を持つ）と、日英の並びの一致
+//   - 同意する行のリンク先が実在すること
+//   - 購入の条件の行に products.js の値（価格・期間）がそのまま書かれていること
 //   - Stripe の metadata の上限に収まること
 //   - ページの data-consent-version が products.js と一致すること（食い違うと /api/checkout が 409 で止める）
-//   - consentVersion が、items のリンク先の法務文書の改定日より前でないこと（改定して版を上げ忘れるのを止める）
+//   - consentVersion が、同意する行のリンク先の法務文書の改定日より前でないこと（改定して版を上げ忘れるのを止める）
 //
 // 依存を持ち込まないため、ランナーに同梱の Node だけで動かす。
 //
@@ -21,7 +21,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { PRODUCTS, resolvePlan } from '../functions/lib/products.js'
-import { normalizeLang, toConsentMetadata, toSummaryText } from '../functions/lib/consent.js'
+import { normalizeLang, toConsentMetadata, toEntryText } from '../functions/lib/consent.js'
 
 const ROOT = join(fileURLToPath(new URL('.', import.meta.url)), '..')
 const PUBLIC_DIR = join(ROOT, 'public')
@@ -35,7 +35,7 @@ const OTHER_METADATA_KEYS = 5
 
 const LANGS = ['ja', 'en']
 
-// summary の checks に書ける印と、その行に書かれているべき文字列
+// 行の checks に書ける印と、その行に書かれているべき文字列
 const SUMMARY_CHECKS = {
   unitAmount: (plan) => plan.unitAmount?.toLocaleString('en-US'),
   downloadWindowHours: (plan) => plan.downloadWindowHours,
@@ -111,75 +111,79 @@ for (const [productId, product] of Object.entries(PRODUCTS)) {
       fail(`${where}: consentVersion が YYYY-MM-DD（同じ日の2回目以降は .2 等）の形ではない（${plan.consentVersion}）`)
     }
 
-    // 有償プランは最終確認画面の表示事項（summary）を持つ。無料版は持たない
-    const needsSummary = plan.billing !== 'free'
+    // 有償プランは購入の条件（価格・期間）を本文として出す。無料版は同意の行だけでよい
+    const isPaid = plan.billing !== 'free'
     const linkedFiles = new Set()
 
     for (const lang of LANGS) {
-      const content = set[lang]
-      const items = content?.items
-      if (!Array.isArray(items) || items.length === 0) {
-        fail(`${where}: ${lang} の items が無い`)
+      const entries = set[lang]?.entries
+      if (!Array.isArray(entries) || entries.length === 0) {
+        fail(`${where}: ${lang} の entries が無い`)
         continue
       }
+      if (!entries.some((entry) => entry?.consent)) {
+        fail(`${where}: ${lang} に同意する行（consent）が1つも無い`)
+      }
 
-      items.forEach((item, index) => {
-        for (const key of ['label', 'linkText', 'href']) {
-          if (typeof item?.[key] !== 'string' || item[key].length === 0) {
-            fail(`${where}/${lang}.items[${index}]: ${key} が無い`)
+      const covered = new Set()
+      entries.forEach((entry, index) => {
+        const at = `${where}/${lang}.entries[${index}]`
+        if (typeof entry?.term !== 'string' || entry.term.length === 0) fail(`${at}: term が無い`)
+        if (isPaid && (typeof entry?.detail !== 'string' || entry.detail.length === 0)) fail(`${at}: detail が無い`)
+
+        // 同意する行は、チェックボックスの文言とリンクを持つ。リンク先は実在し、フラグメントの id まであること
+        if (entry?.consent) {
+          for (const key of ['label', 'linkText', 'href']) {
+            if (typeof entry.consent[key] !== 'string' || entry.consent[key].length === 0) {
+              fail(`${at}: consent.${key} が無い`)
+            }
           }
-        }
-        // リンク先が実在すること。フラグメント付き（/legal/tokushoho#pawgress）は、その id があることまで見る
-        if (typeof item?.href === 'string' && item.href.startsWith('/')) {
-          const [path, fragment] = item.href.split('#')
-          const target = toPublicFile(path)
-          if (!target) {
-            fail(`${where}/${lang}.items[${index}]: リンク先が無い（${item.href}）`)
-          } else {
-            linkedFiles.add(target)
-            if (fragment && !readFileSync(target, 'utf8').includes(`id="${fragment}"`)) {
-              fail(`${where}/${lang}.items[${index}]: リンク先に id="${fragment}" が無い（${item.href}）`)
+          const href = entry.consent.href
+          if (typeof href === 'string' && href.startsWith('/')) {
+            const [path, fragment] = href.split('#')
+            const target = toPublicFile(path)
+            if (!target) {
+              fail(`${at}: リンク先が無い（${href}）`)
+            } else {
+              linkedFiles.add(target)
+              if (fragment && !readFileSync(target, 'utf8').includes(`id="${fragment}"`)) {
+                fail(`${at}: リンク先に id="${fragment}" が無い（${href}）`)
+              }
             }
           }
         }
-      })
 
-      const summary = Array.isArray(content.summary) ? content.summary : []
-      if (needsSummary && summary.length === 0) {
-        fail(`${where}: ${lang} の summary が無い。有償プランは購入の条件を本文として出す（SPEC §8.3）`)
-      }
-      const covered = new Set()
-      summary.forEach((row, index) => {
-        for (const key of ['term', 'detail']) {
-          if (typeof row?.[key] !== 'string' || row[key].length === 0) {
-            fail(`${where}/${lang}.summary[${index}]: ${key} が無い`)
-          }
-        }
-        for (const check of row?.checks ?? []) {
+        for (const check of entry?.checks ?? []) {
           const expected = SUMMARY_CHECKS[check]?.(plan)
           if (!SUMMARY_CHECKS[check]) {
-            fail(`${where}/${lang}.summary[${index}]: 知らない checks「${check}」`)
+            fail(`${at}: 知らない checks「${check}」`)
           } else if (expected === undefined || expected === null) {
-            fail(`${where}/${lang}.summary[${index}]: products.js に ${check} が無い`)
-          } else if (!containsValue(String(row.detail), expected)) {
-            fail(`${where}/${lang}.summary[${index}]: 「${row.term}」に ${check} の値（${expected}）が書かれていない`)
+            fail(`${at}: products.js に ${check} が無い`)
+          } else if (!containsValue(String(entry.detail), expected)) {
+            fail(`${at}: 「${entry.term}」に ${check} の値（${expected}）が書かれていない`)
           } else {
             covered.add(check)
           }
         }
+
+        // 文言が切られていないこと。切られる長さなら実文を見直す
+        if (toEntryText(entry).length > METADATA_VALUE_LIMIT) {
+          fail(`${at}: 見出し・本文・チェックの文言が 500 文字を超えるため記録時に切られる`)
+        }
       })
+
       // products.js にある値は、どこかの行で必ず示す。書き漏らすと価格や期間を変えたときに文言が置き去りになる
-      if (needsSummary) {
+      if (isPaid) {
         for (const check of Object.keys(SUMMARY_CHECKS)) {
           const value = SUMMARY_CHECKS[check](plan)
           if (value !== undefined && value !== null && !covered.has(check)) {
-            fail(`${where}: ${lang} の summary に、${check} を示す行（checks: ["${check}"]）が無い`)
+            fail(`${where}: ${lang} に、${check} を示す行（checks: ["${check}"]）が無い`)
           }
         }
       }
 
       // Stripe の metadata に収まること。ここが超えると記録が切れる
-      const metadata = toConsentMetadata({ items, summary }, normalizeLang(lang))
+      const metadata = toConsentMetadata(entries, normalizeLang(lang))
       const keys = Object.keys(metadata)
       if (keys.length + OTHER_METADATA_KEYS > METADATA_KEY_COUNT_LIMIT) {
         fail(`${where}/${lang}: metadata のキー数が多すぎる（${keys.length} + ${OTHER_METADATA_KEYS}）`)
@@ -188,24 +192,12 @@ for (const [productId, product] of Object.entries(PRODUCTS)) {
         if (key.length > METADATA_KEY_LIMIT) fail(`${where}/${lang}: metadata のキーが長い（${key}）`)
         if (value.length > METADATA_VALUE_LIMIT) fail(`${where}/${lang}: metadata の値が 500 文字を超える（${key}）`)
       }
-      // 文言が切られていないこと。切られる長さなら実文を見直す
-      items.forEach((item, index) => {
-        if (String(item?.label ?? '').length > METADATA_VALUE_LIMIT) {
-          fail(`${where}/${lang}.items[${index}]: label が 500 文字を超えるため記録時に切られる`)
-        }
-      })
-      summary.forEach((row, index) => {
-        if (toSummaryText(row).length > METADATA_VALUE_LIMIT) {
-          fail(`${where}/${lang}.summary[${index}]: 見出しと本文が 500 文字を超えるため記録時に切られる`)
-        }
-      })
     }
 
-    // 日英で数が違うと、どちらかの言語だけ項目や条件が欠ける
-    for (const part of ['items', 'summary']) {
-      const ja = set.ja?.[part] ?? []
-      const en = set.en?.[part] ?? []
-      if (ja.length !== en.length) fail(`${where}: 日英で ${part} の数が違う（ja ${ja.length} / en ${en.length}）`)
+    // 日英で行と同意の並びが違うと、どちらかの言語だけ条件や同意が欠ける
+    const shape = (lang) => (set[lang]?.entries ?? []).map((entry) => (entry?.consent ? 'C' : '-')).join('')
+    if (shape('ja') !== shape('en')) {
+      fail(`${where}: 日英で行の数か、同意する行の位置が違う（ja ${shape('ja')} / en ${shape('en')}）`)
     }
 
     // 同意した法務文書の版を consentVersion から引けるようにする。
