@@ -41,7 +41,7 @@
         <li><a href="/en/">Lucid Brain home</a></li>
         <li><a href="/en/products/pawgress/">Pawgress</a></li>
         <li><a href="/en/products/pawgress/legal/terms">Terms of Service</a></li>
-        <li><a href="/products/pawgress/thanks">日本語</a></li>
+        <li><a href="/products/pawgress/thanks" lang="ja" hreflang="ja">日本語</a></li>
       </ul>
     </div>
   </nav>
@@ -53,42 +53,43 @@
       <div id="thanksOk" data-product="pawgress" data-plan="paid" hidden>
         <p class="eyebrow">Thank you</p>
         <h1>Thank you for your purchase</h1>
-        <p class="sub">[TBD] Your payment went through. The download starts automatically. If it does not, press the button below.</p>
+        <p class="sub">Your payment is complete. Your download will start automatically. If it doesn't, use the button below.</p>
         <!-- The download period and keeping the installer go right under the heading (SPEC §8.1) -->
         <div class="thanks-notice">
-          <p><strong>[TBD] You can download for 72 hours from the time of payment.</strong></p>
-          <p>[TBD] Please keep the installer. After this period, if you forgot to download, lost the installer, or want to install on a new PC, you will need to purchase again.</p>
+          <p><strong>You can download Pawgress for 72 hours from when your payment was completed.</strong></p>
+          <p>Please keep the installer somewhere safe. Once this period has ended, you will need to buy again if you forgot to download, lost the installer, or want to install on a new PC.</p>
         </div>
         <div class="cta-group">
-          <a class="btn btn-lg" id="thanksDownloadLink" href="/api/download">If the download does not start, click here</a>
+          <a class="btn btn-lg" id="thanksDownloadLink" href="/api/download">Download didn't start? Click here</a>
           <a class="btn btn-lg btn-ghost" href="/en/products/pawgress/">Back to the Pawgress page</a>
         </div>
 
         <div class="thanks-guide">
-          <h2 id="install">Installation</h2>
+          <h2 id="install">Installing</h2>
           <ul>
-            <li>[TBD] If you use the free edition, do not uninstall it. Install the paid edition over it with the installer. Your data carries over.</li>
-            <li>[TBD] Uninstalling deletes your data (both the free and the paid edition).</li>
-            <li>[TBD] If Windows SmartScreen shows a warning when you start the installer, choose “More info” and then “Run anyway”.</li>
+            <li>If you use the free edition, do not uninstall it. Just run the paid edition's installer over it. The data you registered carries over as it is.</li>
+            <li>Uninstalling deletes the data you registered (in both the free and the paid edition).</li>
+            <li>If Windows SmartScreen shows a warning when you open the installer, select “More info” and then “Run anyway”.</li>
           </ul>
-          <p>[TBD] See the <a href="/docs/pawgress/user-guide.en.pdf">user guide (PDF)</a> for the full steps.</p>
+          <p>For the full steps, see the <a href="/docs/pawgress/user-guide.en.pdf">user guide (PDF)</a>.</p>
 
           <h2 id="trouble">If you cannot download</h2>
-          <p><strong>[TBD] Within 48 hours of payment, from the email address you used to pay,</strong> write to the address below. Include the date and time of payment and the error or symptom you saw. We will deliver the software another way.</p>
+          <p><strong>Within 48 hours of completing your payment, from the email address you used to pay,</strong> write to the address below. Include the email address you used to pay and the date and time of payment (or the number on the invoice or receipt Stripe sent you), along with the error or problem you saw. Once we have confirmed your payment, we will send you the software another way.</p>
           <p><a href="mailto:info@example.com">info@example.com</a></p>
-          <p>[TBD] This address handles failed downloads, serious defects and refunds only. For how to use the software, see the user guide. For feedback, please use the <a href="https://example.com/survey" data-link="survey" rel="noopener external">survey</a>.</p>
+          <p>To report a serious defect, write to the same address within 8 days from the day your payment was completed. As well as the details above, include the version you are using, your PC's operating system and its version, what happens, and the steps to reproduce it.</p>
+          <p>This address handles requests from buyers of the paid edition about downloads that failed, serious defects and refunds. We do not answer questions about how to use Pawgress, or enquiries from free edition users (including bug reports). For how to use it, see the user guide; to send us feedback, please use the <a href="https://example.com/survey" data-link="survey" rel="noopener external">survey</a>. Requests to disclose your personal information, and reports of breaches of our terms or infringement of rights, are also accepted at this address.</p>
 
           <h2 id="conditions">Terms of purchase</h2>
           <ul>
-            <li>[TBD] Delivery: you can download right after payment (for 72 hours).</li>
-            <li>[TBD] Returns: payments are not refunded once completed, except in the cases set out in the Terms of Service, such as serious defects.</li>
-            <li>[TBD] Duplicate payments: if you pay again within 72 hours of an earlier payment, we refund the duplicate.</li>
+            <li>Delivery: you can download immediately after payment is complete, for 72 hours from completion of payment.</li>
+            <li>Returns and refunds: once payment is complete, we do not accept returns or refunds for your own reasons. We do refund in the cases set out in the <a href="/en/products/pawgress/legal/terms#refund">Terms of Service</a>, such as when we cannot provide a fix for a serious defect within a reasonable time.</li>
+            <li>Duplicate payments: if you paid again within 72 hours of an earlier payment, tell us within 48 hours of the later payment and we will refund the duplicate.</li>
           </ul>
         </div>
 
         <ul class="doc-links doc-links-spaced">
-          <li><a href="/docs/pawgress/user-guide.en.pdf">[TBD] Pawgress user guide (PDF)</a></li>
-          <li><a href="/docs/common/gemini-api-key.en.pdf">[TBD] Getting an API key for an AI service (PDF)</a></li>
+          <li><a href="/docs/pawgress/user-guide.en.pdf">Pawgress user guide (PDF)</a></li>
+          <li><a href="/docs/common/gemini-api-key.en.pdf">How to get an API key for an AI service (PDF)</a></li>
         </ul>
       </div>
 
@@ -97,31 +98,31 @@
         <p class="eyebrow">Error</p>
         <div data-error="missing" hidden>
           <h1>No payment details found</h1>
-          <p class="sub">[TBD] The address of this page does not include your payment details. If you have already paid, do not buy again — write to the address below.</p>
+          <p class="sub">The address of this page does not include your payment details. If you have already paid, please do not buy again. Write to us at the address below instead.</p>
         </div>
         <div data-error="expired" hidden>
           <h1>The download period has ended</h1>
-          <p class="sub">[TBD] You can download for 72 hours from the time of payment. If you forgot to download, lost the installer, or want to install on a new PC, please purchase again.</p>
+          <p class="sub">You can download for 72 hours from when your payment was completed. If you forgot to download, lost the installer, or want to install on a new PC, you will need to buy again.</p>
         </div>
         <div data-error="refunded" hidden>
           <h1>This payment has been refunded</h1>
-          <p class="sub">[TBD] This payment was refunded, so it can no longer be used to download.</p>
+          <p class="sub">This payment was refunded, so it can no longer be used to download.</p>
         </div>
         <div data-error="not_found" hidden>
           <h1>We could not confirm your payment</h1>
-          <p class="sub">[TBD] Please check that the address of this page is correct. If you have already paid, do not buy again — write to the address below.</p>
+          <p class="sub">Please check that the address of this page is correct. If you have already paid, please do not buy again. Write to us at the address below instead.</p>
         </div>
         <div data-error="server" hidden>
           <h1>Downloads are not available right now</h1>
-          <p class="sub">[TBD] Please open this page again after a while. If the problem continues, write to the address below.</p>
+          <p class="sub">Please wait a while and open this page again. If the problem continues, write to us at the address below.</p>
         </div>
         <div data-error="file" hidden>
           <h1>We could not prepare the file</h1>
-          <p class="sub">[TBD] Please open this page again after a while. If the problem continues, write to the address below.</p>
+          <p class="sub">Please wait a while and open this page again. If the problem continues, write to us at the address below.</p>
         </div>
         <!-- Not shown when the period has ended or the payment was refunded (CONTACT_ERRORS in thanks.js) -->
         <div id="thanksErrorContact" class="thanks-notice" hidden>
-          <p><strong>[TBD] Within 48 hours of payment, from the email address you used to pay,</strong> write to us. Include the date and time of payment and what this page shows.</p>
+          <p><strong>Within 48 hours of completing your payment, from the email address you used to pay,</strong> write to us. Include the email address you used to pay and the date and time of payment (or the number on the invoice or receipt Stripe sent you), along with what this page shows.</p>
           <p><a href="mailto:info@example.com">info@example.com</a></p>
         </div>
         <div class="cta-group">

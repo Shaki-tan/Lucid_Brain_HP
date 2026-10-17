@@ -42,7 +42,7 @@
         <li><a href="/">Lucid Brain トップ</a></li>
         <li><a href="/products/pawgress/">Pawgress</a></li>
         <li><a href="/products/pawgress/legal/terms">利用規約</a></li>
-        <li><a href="/en/products/pawgress/thanks">English</a></li>
+        <li><a href="/en/products/pawgress/thanks" lang="en" hreflang="en">English</a></li>
       </ul>
     </div>
   </nav>
@@ -54,11 +54,11 @@
       <div id="thanksOk" data-product="pawgress" data-plan="paid" hidden>
         <p class="eyebrow">Thank you</p>
         <h1>ご購入ありがとうございます</h1>
-        <p class="sub">【仮】決済が完了しました。ダウンロードは自動で始まります。始まらない場合は、下のボタンを押してください。</p>
+        <p class="sub">決済が完了しました。ダウンロードは自動で始まります。始まらない場合は、下のボタンを押してください。</p>
         <!-- 期間とインストーラーの保管は、見出しのすぐ下に目立つ形で置く（SPEC §8.1） -->
         <div class="thanks-notice">
-          <p><strong>【仮】ダウンロードできるのは、決済の完了から72時間です。</strong></p>
-          <p>【仮】インストーラーはお手元に保管してください。期間を過ぎた後は、ダウンロードし忘れた場合、インストーラーを失くした場合、新しいPCに入れたい場合も、あらためてご購入いただくことになります。</p>
+          <p><strong>ダウンロードできるのは、決済の完了から72時間です。</strong></p>
+          <p>インストーラーはお手元に保管してください。期間を過ぎた後は、ダウンロードし忘れた場合も、インストーラーを失くした場合も、新しいPCに入れたい場合も、あらためてご購入いただくことになります。</p>
         </div>
         <div class="cta-group">
           <a class="btn btn-lg" id="thanksDownloadLink" href="/api/download">ダウンロードが始まらない場合はこちら</a>
@@ -68,28 +68,29 @@
         <div class="thanks-guide">
           <h2 id="install">インストール</h2>
           <ul>
-            <li>【仮】無料版をお使いの場合は、アンインストールせずに、有償版のインストーラーで上書きインストールしてください。登録したデータはそのまま引き継がれます。</li>
-            <li>【仮】アンインストールすると、登録したデータは削除されます（無料版・有償版とも）。</li>
-            <li>【仮】インストーラーの起動時に Windows の SmartScreen の警告が出た場合は、「詳細情報」から「実行」を選んでください。</li>
+            <li>無料版をお使いの場合は、アンインストールせずに、有償版のインストーラーをそのまま実行してください（上書きインストール）。登録したデータはそのまま引き継がれます。</li>
+            <li>アンインストールすると、登録したデータは削除されます（無料版・有償版とも）。</li>
+            <li>インストーラーを開いたときに Windows の SmartScreen の警告が出た場合は、「詳細情報」を押し、表示された「実行」を押してください。</li>
           </ul>
-          <p>【仮】詳しい手順は<a href="/docs/pawgress/user-guide.ja.pdf">操作説明書（PDF）</a>をご覧ください。</p>
+          <p>詳しい手順は<a href="/docs/pawgress/user-guide.ja.pdf">操作説明書（PDF）</a>をご覧ください。</p>
 
           <h2 id="trouble">ダウンロードできない場合</h2>
-          <p><strong>【仮】決済の完了から48時間以内に、決済に使ったメールアドレスから</strong>、下記の窓口へご連絡ください。決済の日時と、表示されたエラーや症状をお書き添えください。別の方法でお渡しします。</p>
+          <p><strong>決済の完了から48時間以内に、決済に使ったメールアドレスから</strong>、下記の窓口へご連絡ください。決済に使ったメールアドレスと決済の日時（または Stripe から届いた請求書・領収書の番号）に、表示されたエラーや症状をお書き添えください。決済を確かめたうえで、別の方法でお渡しします。</p>
           <p><a href="mailto:info@example.com">info@example.com</a></p>
-          <p>【仮】窓口でお受けするのは、ダウンロードできなかった場合・重大な不具合・返金のお申し出です。使い方は操作説明書を、ご意見は<a href="https://example.com/survey" data-link="survey" rel="noopener external">アンケート</a>をご利用ください。</p>
+          <p>重大な不具合のお申し出は、決済の完了の日から8日以内に、同じ窓口へお送りください。上の情報に加えて、お使いの版、PC の OS とそのバージョン、症状、再現の手順をお知らせください。</p>
+          <p>窓口でお受けするのは、有償版を購入された方からの、ダウンロードできなかった場合・重大な不具合・返金のお申し出です。使い方のご質問と、無料版をお使いの方からのお問い合わせ（不具合のご報告を含みます）にはお答えしていません。使い方は操作説明書を、ご意見は<a href="https://example.com/survey" data-link="survey" rel="noopener external">アンケート</a>をご利用ください。なお、個人情報の開示等のご請求と、規約の違反・権利の侵害のご連絡は、同じ窓口で受け付けます。</p>
 
           <h2 id="conditions">ご購入の条件</h2>
           <ul>
-            <li>【仮】引渡し: 決済の完了後ただちにダウンロードできます（72時間）。</li>
-            <li>【仮】返品: 決済の完了後の返金には応じられません。重大な不具合など、利用規約に定める場合を除きます。</li>
-            <li>【仮】重複決済: 先の決済から72時間以内に重ねて決済された場合は、重複として返金します。</li>
+            <li>引渡し: 決済の完了後、ただちにダウンロードできます。ダウンロードできる期間は、決済の完了から72時間です。</li>
+            <li>返品・返金: 決済の完了後は、ご都合による返品・返金はお受けしません。重大な不具合の修正版を相当の期間内にお渡しできない場合など、<a href="/products/pawgress/legal/terms#refund">利用規約</a>に定める場合は返金します。</li>
+            <li>重複決済: 先の決済から72時間以内に重ねて決済された場合は、後の決済の完了から48時間以内にお申し出いただければ、重複分を返金します。</li>
           </ul>
         </div>
 
         <ul class="doc-links doc-links-spaced">
-          <li><a href="/docs/pawgress/user-guide.ja.pdf">【仮】Pawgress の使い方（PDF）</a></li>
-          <li><a href="/docs/common/gemini-api-key.ja.pdf">【仮】AIサービスのAPIキー取得手順（PDF）</a></li>
+          <li><a href="/docs/pawgress/user-guide.ja.pdf">Pawgress の使い方（PDF）</a></li>
+          <li><a href="/docs/common/gemini-api-key.ja.pdf">AIサービスのAPIキーの取得手順（PDF）</a></li>
         </ul>
       </div>
 
@@ -98,31 +99,31 @@
         <p class="eyebrow">Error</p>
         <div data-error="missing" hidden>
           <h1>決済の情報が見つかりません</h1>
-          <p class="sub">【仮】このページのアドレスに、決済の情報が含まれていません。ご購入済みの方は、購入し直さずに、下記の窓口へご連絡ください。</p>
+          <p class="sub">このページのアドレスに、決済の情報が含まれていません。ご購入済みの方は、購入し直さずに、下記の窓口へご連絡ください。</p>
         </div>
         <div data-error="expired" hidden>
           <h1>ダウンロードできる期間が過ぎています</h1>
-          <p class="sub">【仮】ダウンロードできるのは、決済の完了から72時間です。ダウンロードし忘れた場合、インストーラーを失くした場合、新しいPCに入れたい場合は、あらためてご購入ください。</p>
+          <p class="sub">ダウンロードできるのは、決済の完了から72時間です。ダウンロードし忘れた場合、インストーラーを失くした場合、新しいPCに入れたい場合は、あらためてご購入ください。</p>
         </div>
         <div data-error="refunded" hidden>
           <h1>返金済みの決済です</h1>
-          <p class="sub">【仮】この決済は返金されているため、ダウンロードできません。</p>
+          <p class="sub">この決済は返金されているため、ダウンロードできません。</p>
         </div>
         <div data-error="not_found" hidden>
           <h1>決済を確認できませんでした</h1>
-          <p class="sub">【仮】このページのアドレスが正しいかをご確認ください。ご購入済みの方は、購入し直さずに、下記の窓口へご連絡ください。</p>
+          <p class="sub">このページのアドレスが正しいかをご確認ください。ご購入済みの方は、購入し直さずに、下記の窓口へご連絡ください。</p>
         </div>
         <div data-error="server" hidden>
           <h1>ただいまダウンロードできません</h1>
-          <p class="sub">【仮】時間をおいて、もう一度このページを開いてください。続く場合は、下記の窓口へご連絡ください。</p>
+          <p class="sub">時間をおいて、もう一度このページを開いてください。続く場合は、下記の窓口へご連絡ください。</p>
         </div>
         <div data-error="file" hidden>
           <h1>ダウンロードするファイルを用意できませんでした</h1>
-          <p class="sub">【仮】時間をおいて、もう一度このページを開いてください。続く場合は、下記の窓口へご連絡ください。</p>
+          <p class="sub">時間をおいて、もう一度このページを開いてください。続く場合は、下記の窓口へご連絡ください。</p>
         </div>
         <!-- 期間を過ぎた・返金済みのときは、申し出ることが無いので出さない（thanks.js の CONTACT_ERRORS） -->
         <div id="thanksErrorContact" class="thanks-notice" hidden>
-          <p><strong>【仮】決済の完了から48時間以内に、決済に使ったメールアドレスから</strong>ご連絡ください。決済の日時と、このページに表示された内容をお書き添えください。</p>
+          <p><strong>決済の完了から48時間以内に、決済に使ったメールアドレスから</strong>ご連絡ください。決済に使ったメールアドレスと決済の日時（または Stripe から届いた請求書・領収書の番号）に、このページに表示された内容をお書き添えください。</p>
           <p><a href="mailto:info@example.com">info@example.com</a></p>
         </div>
         <div class="cta-group">

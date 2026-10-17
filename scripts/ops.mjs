@@ -371,6 +371,7 @@ const BLOCKING_CHECKS = [
   'tests/check-wrangler.mjs',
   'tests/check-entitlement.mjs',
   'tests/check-legal-common.mjs',
+  'tests/check-privacy-settings.mjs',
 ]
 
 function requireBash() {

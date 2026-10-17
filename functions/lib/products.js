@@ -24,7 +24,7 @@ export const PRODUCTS = {
     // scripts/ops.mjs stripe がこの値に揃える。ダッシュボードで変えても次の stripe で戻る。
     // Stripe は商品ごとに1言語しか持てないので日本語だけで書く。分量は「1点」で示し、「1ライセンス」とは書かない
     stripeProductName: 'Pawgress 有償版（Windows 用・買い切り・1点）',
-    stripeProductDescription: '【仮】決済完了後ただちにダウンロード（72時間）。決済完了後の返金不可（重大な不具合を除く）。',
+    stripeProductDescription: '決済完了後すぐダウンロード（決済完了から72時間）。決済完了後の返品・返金は不可（重複決済・重大な不具合等を除く）。',
     successPath: '/products/pawgress/thanks',
     cancelPath: '/products/pawgress/#price',
     plans: {

@@ -65,7 +65,7 @@
       home: '/en/',
       skipToMain: 'Skip to main content',
       brandLabel: 'Lucid Brain home',
-      productBrandLabel: '{name} page top',
+      productBrandLabel: 'Top of the {name} page',
       langSwitch: '日本語',
       langSwitchLabel: '日本語に切り替える',
       footerLabel: 'Footer',

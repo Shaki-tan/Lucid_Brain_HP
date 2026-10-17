@@ -187,6 +187,8 @@ CSP は `font-src 'self'` なので `_headers` の CSP 行の変更は要らな�
 | Stripe | 公開前はテストモード | 常にテストモード |
 | 見られる人 | 公開までは Access で許可した人だけ。公開時に外す（`scripts/ops/config.mjs` の `IS_LAUNCHED`） | Cloudflare Access で許可した人だけ |
 
+運用の資料（構築・保守・公開文書の確認）は `Docs/` に置く（配信しない・git に入れる）。プライバシーポリシーが前提にしている設定は `Docs/PRIVACY_SETTINGS.md` が正で、変えるときは先にプライバシーポリシーを改定する。
+
 ビルドは `node scripts/ops.mjs ci` を呼び、利用規約の共通部分を組み込んでから検査し、検査に落ちたらデプロイしない。手元で同じ検査を回すなら `node scripts/ops.mjs check`。
 利用規約の共通部分（`public/legal/terms-common.html` と英語版）は原本で、配信しない。直したら `check` を流し、組み直された規約もコミットに含める（SPEC §2.2）。
 
