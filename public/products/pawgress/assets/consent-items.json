@@ -18,9 +18,9 @@
         "entries": [
           {
             "term": "利用規約",
-            "detail": "【仮】無料版にも、有償版と同じ Pawgress 利用規約が適用されます。",
+            "detail": "無料版にも、有償版と同じ Pawgress 利用規約が適用されます。",
             "consent": {
-              "label": "【仮】利用規約に同意します。",
+              "label": "利用規約に同意します。",
               "linkText": "利用規約",
               "href": "/products/pawgress/legal/terms"
             }
@@ -31,9 +31,9 @@
         "entries": [
           {
             "term": "Terms of Service",
-            "detail": "[TBD] The free edition is covered by the same Pawgress Terms of Service as the paid edition.",
+            "detail": "The free edition is covered by the same Pawgress Terms of Service as the paid edition.",
             "consent": {
-              "label": "[TBD] I agree to the Terms of Service.",
+              "label": "I agree to the Terms of Service.",
               "linkText": "Terms of Service",
               "href": "/en/products/pawgress/legal/terms"
             }
@@ -46,63 +46,69 @@
         "entries": [
           {
             "term": "分量",
-            "detail": "【仮】Pawgress 有償版 1点（Windows 用・ダウンロード販売・買い切り）"
+            "detail": "Pawgress 有償版 1点（Windows 用・ダウンロード販売・買い切り）"
           },
           {
-            "term": "価格",
-            "detail": "【仮】2,980円（税込）",
-            "checks": ["unitAmount"]
+            "term": "販売価格",
+            "detail": "2,980円（税込）。リリース記念価格です。",
+            "checks": [
+              "unitAmount"
+            ]
           },
           {
             "term": "支払時期・方法",
-            "detail": "【仮】申込み時に、クレジットカードでお支払いいただきます（決済は Stripe の画面で行います）。"
+            "detail": "申込み時に、クレジットカードで決済します（Stripe の画面）。"
           },
           {
             "term": "引渡時期",
-            "detail": "【仮】決済の完了後、ただちにダウンロードできます。ダウンロードできる期間は、決済の完了から72時間です。",
-            "checks": ["downloadWindowHours"]
+            "detail": "決済の完了後、ただちにダウンロードできます。ダウンロードできる期間は、決済の完了から72時間です。ダウンロードできない場合は、決済の完了から48時間以内に、決済に使ったメールアドレスからお問い合わせください。",
+            "checks": [
+              "downloadWindowHours"
+            ]
           },
           {
             "term": "申込みの期間",
-            "detail": "【仮】定めはありません。"
+            "detail": "ありません。"
           },
           {
             "term": "返品・返金",
-            "detail": "【仮】決済の完了後は、購入者のご都合による返品・返金はお受けしません。重複して決済された場合（先の決済から72時間以内に重ねて決済された場合）、当方の責めでお渡しできない場合、重大な不具合を修正した版をお渡しできない場合は返金します。",
-            "checks": ["duplicateWindowHours"],
+            "detail": "決済の完了後は、ご都合による返品・返金はお受けしません。重複して決済された場合（先の決済から72時間以内）、当方の責めでダウンロードできる状態に置けない場合、重大な不具合の修正版を相当の期間内に提供できない場合は、返金します。",
+            "checks": [
+              "duplicateWindowHours"
+            ],
             "consent": {
-              "label": "【仮】決済の完了後は、購入者の都合による返金を受けられないことを確認しました。",
+              "label": "決済の完了後は、自分の都合による返品・返金を受けられないことを確認しました。",
               "linkText": "利用規約の返金の条項",
               "href": "/products/pawgress/legal/terms#refund"
             }
           },
           {
             "term": "無料版からの移行",
-            "detail": "【仮】無料版をアンインストールせずに、有償版を上書きしてインストールしてください。アンインストールすると、登録したデータは削除されます。"
+            "detail": "無料版をアンインストールせずに、有償版のインストーラーをそのまま実行してください（上書きインストール）。先にアンインストールすると、登録したデータは削除されます。"
           },
           {
             "term": "利用規約",
-            "detail": "【仮】利用の許諾の範囲、提供する版、重大な不具合への対応などを定めています。",
+            "detail": "利用できる範囲、提供する版、重大な不具合への対応などを定めています。",
             "consent": {
-              "label": "【仮】利用規約に同意します。",
+              "label": "利用規約に同意します。",
               "linkText": "利用規約",
               "href": "/products/pawgress/legal/terms"
             }
           },
           {
             "term": "プライバシーポリシー",
-            "detail": "【仮】決済の際に Stripe から受け取る情報の扱いを定めています。",
+            "detail": "決済の際に Stripe から受け取る情報などの扱いを定めています。",
             "consent": {
-              "label": "【仮】プライバシーポリシーの内容を確認しました。",
+              "label": "プライバシーポリシーの内容を確認しました。",
               "linkText": "プライバシーポリシー",
               "href": "/legal/privacy"
             }
           },
           {
             "term": "販売事業者",
-            "detail": "【仮】販売事業者の氏名・所在地・連絡先は、特定商取引法に基づく表記に示しています。",
+            "detail": "販売事業者の氏名・所在地・連絡先は、特定商取引法に基づく表記に示しています。",
             "consent": {
-              "label": "【仮】特定商取引法に基づく表記を確認しました。",
+              "label": "特定商取引法に基づく表記を確認しました。",
               "linkText": "特定商取引法に基づく表記",
               "href": "/legal/tokushoho#pawgress"
             }
@@ -113,63 +119,69 @@
         "entries": [
           {
             "term": "Quantity",
-            "detail": "[TBD] One copy of Pawgress paid edition (for Windows, download, one-time purchase)"
+            "detail": "One copy of Pawgress paid edition (for Windows; sold as a download; one-time purchase)"
           },
           {
             "term": "Price",
-            "detail": "[TBD] ¥2,980 (tax included)",
-            "checks": ["unitAmount"]
+            "detail": "¥2,980 (including tax). This is our launch price.",
+            "checks": [
+              "unitAmount"
+            ]
           },
           {
-            "term": "Payment",
-            "detail": "[TBD] By credit card when you order, on a payment page provided by Stripe."
+            "term": "When and how you pay",
+            "detail": "You pay by credit card when you place your order, on a payment page provided by Stripe."
           },
           {
             "term": "Delivery",
-            "detail": "[TBD] You can download right after payment, for 72 hours from the time of payment.",
-            "checks": ["downloadWindowHours"]
+            "detail": "You can download the software immediately after payment is complete. You can download it for 72 hours from completion of payment. If you cannot download it, contact us from the email address you used to pay, within 48 hours of completion of payment.",
+            "checks": [
+              "downloadWindowHours"
+            ]
           },
           {
             "term": "Offer period",
-            "detail": "[TBD] None."
+            "detail": "None."
           },
           {
             "term": "Returns and refunds",
-            "detail": "[TBD] Once payment is complete, we do not accept returns or refunds for the buyer's convenience. We refund duplicate payments (paying again within 72 hours of an earlier payment), cases where we cannot deliver through our own fault, and serious defects we cannot fix.",
-            "checks": ["duplicateWindowHours"],
+            "detail": "Once payment is complete, we do not accept returns or refunds for your own reasons. We do refund if you paid twice (within 72 hours of an earlier payment), if through our fault we cannot make the software available for download, or if we cannot provide a fix for a serious defect within a reasonable time.",
+            "checks": [
+              "duplicateWindowHours"
+            ],
             "consent": {
-              "label": "[TBD] I understand that payments are not refunded for my own convenience once payment is complete.",
-              "linkText": "Refund section of the Terms of Service",
+              "label": "I understand that, once payment is complete, I cannot get a return or refund for my own reasons.",
+              "linkText": "Refunds article of the Terms of Service",
               "href": "/en/products/pawgress/legal/terms#refund"
             }
           },
           {
-            "term": "Moving from the free edition",
-            "detail": "[TBD] Do not uninstall the free edition. Install the paid edition over it. Uninstalling deletes your data."
+            "term": "Upgrading from the free edition",
+            "detail": "Do not uninstall the free edition. Simply run the paid edition's installer over it. If you uninstall first, the data you registered is deleted."
           },
           {
             "term": "Terms of Service",
-            "detail": "[TBD] Sets out who may use the software, which versions you receive and how serious defects are handled.",
+            "detail": "Sets out who may use the software, which version you receive, how serious defects are handled, and more.",
             "consent": {
-              "label": "[TBD] I agree to the Terms of Service.",
+              "label": "I agree to the Terms of Service.",
               "linkText": "Terms of Service",
               "href": "/en/products/pawgress/legal/terms"
             }
           },
           {
             "term": "Privacy Policy",
-            "detail": "[TBD] Sets out how we handle the information we receive from Stripe at payment.",
+            "detail": "Sets out how we handle information, including what we receive from Stripe when you pay.",
             "consent": {
-              "label": "[TBD] I have read the Privacy Policy.",
+              "label": "I have read the Privacy Policy.",
               "linkText": "Privacy Policy",
               "href": "/en/legal/privacy"
             }
           },
           {
             "term": "Seller",
-            "detail": "[TBD] The seller's name, address and contact details are in the Legal Notice.",
+            "detail": "The seller's name, address and contact details are in our Legal Notice under the Act on Specified Commercial Transactions.",
             "consent": {
-              "label": "[TBD] I have read the Legal Notice under the Act on Specified Commercial Transactions.",
+              "label": "I have read the Legal Notice under the Act on Specified Commercial Transactions.",
               "linkText": "Legal Notice",
               "href": "/en/legal/tokushoho#pawgress"
             }

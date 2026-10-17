@@ -1395,7 +1395,7 @@ export const PRODUCTS = {
         billing: 'free',
         releaseFile: 'Pawgress-Free-Windows-{version}-Setup.exe',   // 配布ファイル名の型（§8.5）
         consentSet: 'free',                       // ダウンロード前の同意（記録はしない・§8.1）
-        consentVersion: '2026-10-17',
+        consentVersion: '2026-10-17.2',
       },
       paid: {
         billing: 'one_time',                      // 買い切り
@@ -1406,7 +1406,7 @@ export const PRODUCTS = {
         downloadWindowHours: 72,                  // 決済の完了からダウンロードできる時間（§8.1）
         duplicateWindowHours: 72,                 // この時間内に重ねた決済を重複とみなす。いまは上と同じ定数を入れる
         consentSet: 'one_time',                   // 同意文言のセット（§8.3）
-        consentVersion: '2026-10-17',       // 同意の版。文言かリンク先の法務文書を変えたら上げる（§8.3）
+        consentVersion: '2026-10-17.2',     // 同意の版。文言かリンク先の法務文書を変えたら上げる（§8.3）
       },
       // サブスクを足す場合の形（現時点では定義しない）
       // pro: {
