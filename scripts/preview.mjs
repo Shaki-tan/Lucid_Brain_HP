@@ -143,7 +143,26 @@ function redirectFor(urlPath) {
 
 // ---------- 静的アセットの解決 ----------
 
+// public/.assetsignore に書いたファイルは、デプロイでアップロードされない（配信しない原本。SPEC §4.1）。
+// 本番と同じく、無いものとして扱う。1行に1つ、public/ からのパスとして読む（ワイルドカードは使わない）
+function readAssetsIgnore() {
+  try {
+    return new Set(
+      readFileSync(join(ROOT, '.assetsignore'), 'utf8')
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line && !line.startsWith('#'))
+        .map((line) => join(ROOT, line.replace(/^\//, ''))),
+    )
+  } catch {
+    return new Set()
+  }
+}
+
+const ignoredAssets = readAssetsIgnore()
+
 async function isFile(path) {
+  if (ignoredAssets.has(path)) return false
   try {
     return (await stat(path)).isFile()
   } catch {

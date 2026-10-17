@@ -58,6 +58,8 @@ tests/              検査スクリプト。public/ の外に置く
    有償プランを持つなら `public/products/<name>/assets/consent-items.json` に同意項目の文言も置く（SPEC §8.3）
 3. `public/products/<name>/` と `public/en/products/<name>/` を作る。
    利用規約と返金ポリシーはプロダクトごとに持つので、その中の `legal/` に置く（SPEC §2.2）。
+   利用規約にはそのプロダクトの固有の条だけを書き、末尾に `<div class="legal-common" data-legal-common="terms"></div>` を置く。
+   共通の一般条項は `node scripts/ops.mjs legal` が `public/legal/terms-common.html` から組み込む
    そのプロダクトの配色は、そのプロダクトのCSSの先頭に持つ（→ 下の「配色を変える」）
 4. `public/docs/<name>/` を作る ← **忘れやすい。** §4.3 の唯一の例外
 5. `public/legal/tokushoho.html`（と英語版）に、その商品の小節を足す。
@@ -185,7 +187,8 @@ CSP は `font-src 'self'` なので `_headers` の CSP 行の変更は要らな�
 | Stripe | 公開前はテストモード | 常にテストモード |
 | 見られる人 | 公開までは Access で許可した人だけ。公開時に外す（`scripts/ops/config.mjs` の `IS_LAUNCHED`） | Cloudflare Access で許可した人だけ |
 
-ビルドは `node scripts/ops.mjs ci` を呼び、検査に落ちたらデプロイしない。手元で同じ検査を回すなら `node scripts/ops.mjs check`。
+ビルドは `node scripts/ops.mjs ci` を呼び、利用規約の共通部分を組み込んでから検査し、検査に落ちたらデプロイしない。手元で同じ検査を回すなら `node scripts/ops.mjs check`。
+利用規約の共通部分（`public/legal/terms-common.html` と英語版）は原本で、配信しない。直したら `check` を流し、組み直された規約もコミットに含める（SPEC §2.2）。
 
 ### 構築・設定
 

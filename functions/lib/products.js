@@ -36,7 +36,7 @@ export const PRODUCTS = {
         // ダウンロードの前に規約への同意を取る（SPEC §8.1）。記録は残さないが、
         // どの版の文言を出していたかを consentVersion と git の履歴で示す
         consentSet: 'free',
-        consentVersion: '2026-10-15',
+        consentVersion: '2026-10-17',
       },
       paid: {
         billing: 'one_time',
@@ -50,7 +50,7 @@ export const PRODUCTS = {
         downloadWindowHours: PAWGRESS_WINDOW_HOURS,
         duplicateWindowHours: PAWGRESS_WINDOW_HOURS,
         consentSet: 'one_time',
-        consentVersion: '2026-10-15.3',
+        consentVersion: '2026-10-17',
       },
       // サブスクを足す場合の形（現時点では定義しない・SPEC §8.2）。
       // pro: {

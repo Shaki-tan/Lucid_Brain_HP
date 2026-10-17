@@ -12,8 +12,9 @@
 //   node scripts/ops.mjs secret <NAME>                 secret を1つ入れ直す
 //   node scripts/ops.mjs smoke                         デプロイ済みのサイトにスモークを流す
 //   node scripts/ops.mjs logs                          構造化ログを流し見る（wrangler tail）
-//   node scripts/ops.mjs check                         デプロイ前の検査だけを回す
-//   node scripts/ops.mjs ci                            検査 → デプロイ。GitHub 連携のビルドが呼ぶ
+//   node scripts/ops.mjs legal                         利用規約の共通部分を各製品の規約に組み込む（SPEC §2.2）
+//   node scripts/ops.mjs check                         組み立て → デプロイ前の検査
+//   node scripts/ops.mjs ci                            組み立て → 検査 → デプロイ。GitHub 連携のビルドが呼ぶ
 //   node scripts/ops.mjs deploy                        手元からデプロイする。ビルドが止まったときの予備
 //
 // どのコマンドにも --env staging を付けるとテスト環境（develop）が対象になる。付けなければ本番（main）。
@@ -55,6 +56,7 @@ import {
   StripeApiError,
 } from './ops/stripe.mjs'
 import { findDuplicates, toPayment } from './ops/duplicates.mjs'
+import { buildLegal, LegalBuildError } from './legal/build.mjs'
 
 // 購入者の大半は日本にいる（SPEC §7.2）。作成時にしか指定できない
 const R2_LOCATION = 'apac'
@@ -368,6 +370,7 @@ const BLOCKING_CHECKS = [
   'tests/check-glyphs.mjs',
   'tests/check-wrangler.mjs',
   'tests/check-entitlement.mjs',
+  'tests/check-legal-common.mjs',
 ]
 
 function requireBash() {
@@ -379,6 +382,22 @@ function requireBash() {
 async function runTest(file, mode) {
   const command = file.endsWith('.sh') ? requireBash() : process.execPath
   return run(command, [file], { mode })
+}
+
+// 利用規約の共通部分を各製品の規約に組み込む（SPEC §2.2）。検査より前に流し、検査が組み込んだ後の全体を見るようにする。
+// ci も最初にこれを流すので、原本を直して push すれば組み込まれた規約が出る（SPEC §7.7）
+function assembleLegal() {
+  heading('利用規約の組み立て')
+  let results
+  try {
+    results = buildLegal()
+  } catch (error) {
+    if (error instanceof LegalBuildError) throw new OpsError(`組み立てを止めた: ${error.message}`)
+    throw error
+  }
+  for (const { file, isChanged } of results) {
+    ok(`public/${file}${isChanged ? '（組み直した。コミットに含める）' : ''}`)
+  }
 }
 
 async function runChecks() {
@@ -415,6 +434,7 @@ async function runWranglerDeploy(message) {
 
 // GitHub 連携のビルドから呼ぶ。対話をせず、検査に落ちたらデプロイしない（SPEC §7.7）
 async function ci() {
+  assembleLegal()
   await runChecks()
   await runWranglerDeploy(await gitOutput(['rev-parse', '--short', 'HEAD']))
 }
@@ -427,6 +447,8 @@ async function deploy({ isDirtyAllowed = false, isCheckSkipped = false } = {}) {
   if (branch !== expectedBranch) {
     throw new OpsError(`${envLabel()}は ${expectedBranch} から出す。いまは ${branch} にいる`)
   }
+  // 組み立てで変わったものは、次のコミットされていない変更の確認で止まる
+  assembleLegal()
   const isDirty = (await gitOutput(['status', '--porcelain'])) !== ''
   // 配信物は git に残っているものと一致させる。どの版が出ているかを後から辿れるようにするため（SPEC §1.2）
   if (isDirty && !isDirtyAllowed) {
@@ -790,8 +812,10 @@ const HELP = `使い方: node scripts/ops.mjs <command> [--env staging]
   secret <NAME>                   secret を1つ入れ直す（伏字入力）
   smoke                           SITE_BASE_URL にスモークを流す（テスト環境は CF_ACCESS_CLIENT_ID / _SECRET が要る）
   logs                            ログを流し見る（wrangler tail）
-  check                           デプロイ前の検査だけを回す
-  ci                              検査 → デプロイ。GitHub 連携のビルドのデプロイコマンドに書く
+  legal                           利用規約の共通部分（public/legal/terms-common.html と英語版）を、
+                                  各製品の規約のページに組み込む。check / ci / deploy も最初にこれを流す
+  check                           組み立て → デプロイ前の検査
+  ci                              組み立て → 検査 → デプロイ。GitHub 連携のビルドのデプロイコマンドに書く
   deploy [--allow-dirty] [--skip-checks]
                                   手元からデプロイする（予備）。ブランチが環境と合わなければ止まる
 
@@ -859,7 +883,10 @@ async function main() {
       return smoke(site.baseUrl)
     case 'logs':
       return wrangler(['tail', ...envArgs(), '--format', 'pretty'])
+    case 'legal':
+      return assembleLegal()
     case 'check':
+      assembleLegal()
       return runChecks()
     case 'ci':
       return ci()

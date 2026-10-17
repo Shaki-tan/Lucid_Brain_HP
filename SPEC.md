@@ -131,6 +131,26 @@ Lucid Brain コーポレートサイトの仕様。
 返金ポリシーは単独の文書にせず、利用規約の返金の条項（`id="refund"`）に統合した。返金の条件は規約の他の条項（引渡し・重大な不具合）と切り離せないためである。
 購入前の同意項目と特商法表記からは、`/products/<slug>/legal/terms#refund` を直接指す。
 
+**利用規約は、固有の部分と共通部分からなる。** 固有の部分はプロダクトごとに書く条（Pawgress なら第1〜21条）で、
+共通部分はどのプロダクトでも同じ一般条項（禁止事項・知的財産権・損害賠償の制限・準拠法等。Pawgress では第9章・第22〜33条）である。
+共通部分の原本は1つだけ持ち、各製品の規約のページの末尾に組み込む。同じ条文を製品ごとに写すと、直し漏れで食い違うためである。
+
+- **原本の置き場所は、他の法務文書と同じ場所・同じ形にする。** `public/legal/terms-common.html` と `public/en/legal/terms-common.html`。
+  `<head>` のメタ情報・`legal-body`・改定日・改定履歴を持つ普通のページとして書き、`noindex` を付ける。
+  **配信はしない。** `public/.assetsignore` に書き、デプロイでアップロードしない。`sitemap.xml` にも載せない。
+- **組み立ては `scripts/legal/build.mjs` が行う**（`node scripts/ops.mjs legal`。`check` / `ci` / `deploy` も最初に流す・§7.7）。
+  規約のページの `<div class="legal-common" data-legal-common="terms">` の中身は組み立ての結果であり、手で直さない。
+  - 原本には章番号・条番号を書かない。章は `<h2 data-common-chapter="…">`、条は `<section data-common-article="名前">` と `<h3>` の題で書く。
+    組み立てが、固有の部分の最後の章・条の続きの番号を振り、`id`（`chapter-N` / `article-N`）を付ける。
+  - 固有の部分から共通部分の条を指すときは、番号を手で書かず `<a data-ref="名前">` と書く。項・号は `data-ref-item` / `data-ref-subitem`。
+    組み立てが文言（「第30条第1項第1号」/ `Article 30(1)(i)`）と `href` を入れる。存在しない条・項・号を指すと組み立てが止まる。
+  - 規約のページの改定日は、固有の部分の改定日（`<time data-revised data-revised-own="YYYY-MM-DD">`）と原本の改定日の新しいほうになる。
+    改定履歴の表（`data-legal-history`）には、固有の部分の行（`data-history-own`。手で書く）に、原本の改定履歴の行が規約の改定として加わる。
+  - 原本の書き方から外れたもの（条の中に見出しや `div` を置く等）は、組み立てがエラーにして止める。黙って崩れた規約を作らない。
+- **共通部分だけを改定しても、それを組み込むすべての規約の改定になる。** 規約のページの改定日が進むので、
+  同意の版（`consentVersion`）の上げ忘れは `tests/check-consent.mjs` が拾う（§8.3）。
+- 組み込みが最新か、参照がすべて埋まっているか、改定日が正しいか、原本が配信されない設定かは `tests/check-legal-common.mjs` が見る。
+
 特商法表記は、会社で決まる事項の節（`#seller`）と、商品ごとの販売条件の節に分ける。
 商品ごとの節の `id` はプロダクトの slug と同じにし、`/legal/tokushoho#pawgress` で直接参照できるようにする。見出しの文言を変えても `id` は変えない（同意項目と LP が指している）。
 
@@ -142,6 +162,7 @@ Lucid Brain コーポレートサイトの仕様。
 - 英語版は日本語版と見出しの階層と `id` を揃える（`tests/check-i18n.mjs`）。要約で省略した節には「日本語版に詳細がある」旨を書く。
 - 準拠法と管轄裁判所は、契約である利用規約に明記する。特商法表記は契約ではないので置かない。
 - 各文書の冒頭に最終改定日を `<time data-revised datetime="YYYY-MM-DD">` で1つ置き、末尾に改定履歴の節（`id="history"`）を置く。過去の版は公開せず、git に残す。改定日の印は、同意の版との対応の検査に使う（§8.3）。
+  利用規約だけは、固有の部分の改定日を `data-revised-own` に書き、`datetime` と表示は組み立てに任せる（上の共通部分の項）。
 - 本文は議論用の原稿（`Tasks/` の法務文書 v1。コメントと赤字の強調を含む）から平文だけを移す。原稿の未確定の記載（`【 】`）とコメントが本文に残っていないかは `tests/check-placeholders.sh` が見る。
 - 本サービスが日本国内の居住者を対象とする旨を明記する（§7.2）。
 - 購入フロー上で同意を求める事項だけは、英語でも本文と同等の内容とする（§8.3）。
@@ -199,6 +220,9 @@ Lucid Brain コーポレートサイトの仕様。
 /docs/common/*.pdf                  プロダクトを跨いで通用するドキュメント（§4.3）
 /docs/pawgress/*.pdf                Pawgress 固有のドキュメント（§4.3）
 /robots.txt, /sitemap.xml           クローラ向け
+
+/legal/terms-common                 利用規約の共通部分の原本。配信しない（404。§2.2）
+/en/legal/terms-common              同上（英語）
 
 POST /api/checkout                  Stripe Checkout Session の作成（§8.3）
 POST /api/webhook                   Stripe からのイベント受信（§8.4）
@@ -306,7 +330,7 @@ root
 |  |  |  |--index.html               # Pawgress LP
 |  |  |  |--thanks.html              # 決済完了
 |  |  |  |--legal/                   # このプロダクトの法務文書。日本語（正文）（§2.2）
-|  |  |  |  |--terms.html
+|  |  |  |  |--terms.html           # 末尾の共通部分は組み立ての結果。手で直さない
 |  |  |  |--assets/                  # このプロダクト固有の資産。共通側と同じ並びにする
 |  |  |  |  |--consent-items.json        # 同意項目の文言。ブラウザとサーバが同じものを読む（§8.3）
 |  |  |  |  |--css/pawgress.css      # このプロダクトの配色もここが持つ（§5.2）
@@ -316,6 +340,7 @@ root
 |  |--legal/                         # 会社で1つ持つ法務文書。日本語（正文）（§2.2）
 |  |  |--privacy.html
 |  |  |--tokushoho.html
+|  |  |--terms-common.html          # 利用規約の共通部分の原本。.assetsignore で配信しない
 |  |
 |  |--en/                            # 英語版。日本語側と同じ階層構造にする
 |  |  |--index.html
@@ -327,6 +352,7 @@ root
 |  |  |--legal/
 |  |  |  |--privacy.html
 |  |  |  |--tokushoho.html
+|  |  |  |--terms-common.html       # 共通部分の原本（英語）。配信しない
 |  |  |--404.html
 |  |
 |  |--index.html                     # トップページ（マニフェストを含む）
@@ -335,11 +361,14 @@ root
 |  |--sitemap.xml
 |  |--_headers                       # セキュリティヘッダ・キャッシュ制御
 |  |--_redirects                     # 旧URLからの転送
+|  |--.assetsignore                  # アップロードしないファイル（共通部分の原本）。書き方は .gitignore と同じ
 |
 |--scripts/                          # 開発用スクリプト。配信されない・依存を持たない（§1.2 / §7.5）
 |  |--preview.mjs                    # 本番と同条件でキャッシュ無しに配信する確認用サーバー
 |  |--ops.mjs                        # 構築・設定の CLI。ビルドのデプロイコマンドもこれ（§7.6 / §7.7）
 |  |--ops/                           # ops.mjs の部品（設定の読み取り・wrangler 起動・Stripe API・対話入力）
+|  |--legal/
+|  |  |--build.mjs                   # 利用規約の共通部分を各製品の規約に組み込む（§2.2）
 |  |--font-subset/                   # Webフォントのサブセット生成の入力（§7.5）
 |  |  |--charset-base-ja.txt         # 和文の漢字以外。フォント本体はここに置かない
 |  |  |--charset-joyo.txt            # 常用漢字（未配置）
@@ -355,6 +384,7 @@ root
 |  |--check-glyphs.mjs               # サイトの文字がフォントのサブセットに収まっているか（§7.5）
 |  |--check-wrangler.mjs             # 検証用のダウンロード期間が本番に無いか（§8.1）
 |  |--check-entitlement.mjs          # ダウンロード可否の判定（期間・返金）を Stripe の応答を固定して確かめる（§8.1）
+|  |--check-legal-common.mjs         # 利用規約の共通部分の組み込み（参照・改定日・原本を配信しないこと）（§2.2）
 |  |--smoke.sh                       # デプロイ後。200/404/CSP/キャッシュ制御
 |
 |--Tasks/                            # 内部管理用。.gitignore 対象
@@ -377,6 +407,7 @@ root
 | 1ページ／1プロダクトでしか使わない | そのページのディレクトリ配下（`products/<name>/...`） |
 | 「誰が」で決まる法務文書（プライバシーポリシー・特商法表記） | `public/legal/`。会社で1つ持つ（§2.2） |
 | 「何を、いくらで、どう売るか」で決まる法務文書（利用規約。返金の条件を含む） | `public/products/<name>/legal/`。プロダクトごとに持つ（§2.2） |
+| 利用規約の共通部分の原本 | `public/legal/terms-common.html`（英語は `public/en/legal/`）。他の法務文書と同じ場所・同じ形にし、`public/.assetsignore` で配信しない（§2.2） |
 | 英語版のページ | `public/en/` 配下に、日本語側と同じ階層で置く |
 | 英語版が使う CSS・画像 | 日本語側と同じものを参照する。複製しない |
 | 全ページの見た目に現れる断片 | `public/assets/js/partials.js`（§5） |
@@ -385,7 +416,7 @@ root
 | 複数エンドポイントから呼ばれるロジック | `functions/lib/` |
 | 配信物の検査 | `tests/`。手でもCIでも同じものを回す（§7.5） |
 | 開発中に使う道具（確認用サーバー・構築とデプロイの CLI 等） | `scripts/`。配信されず依存を持たないことが条件（§1.2） |
-| 生成物を作るための入力（フォントの文字リスト等） | `scripts/<用途>/`。**生成物は `public/` に、入力は `scripts/` に置く。** 入力は配信しない |
+| 生成物を作るための入力（フォントの文字リスト等） | `scripts/<用途>/`。**生成物は `public/` に、入力は `scripts/` に置く。** 入力は配信しない。例外は利用規約の共通部分の原本で、法務文書の置き場所を揃えるため `public/` に置き、`.assetsignore` で配信から外す |
 | プロダクト固有の値（金額・配布ファイル名・遷移先） | `functions/lib/products.js` のみ。ハンドラに直書きしない |
 
 PDF だけは「1プロダクトでしか使わないものはプロダクト配下」の例外とする。
@@ -1028,7 +1059,8 @@ tests/
 |--check-glyphs.mjs        # サイトの文字がフォントのサブセットに収まっているか
 |--check-wrangler.mjs      # 検証用のダウンロード期間が本番（トップレベルの vars）に無いか
 |--check-entitlement.mjs   # ダウンロード可否の判定を、fetch を差し替えて場合ごとに確かめる
-|--smoke.sh                # デプロイ後、curl で 200 / 404 / CSP / キャッシュ制御を確認
+|--check-legal-common.mjs  # 利用規約の共通部分の組み込み（参照・改定日・原本を配信しないこと）
+|--smoke.sh                # デプロイ後、curl で 200 / 404 / CSP / キャッシュ制御を確認。.assetsignore のファイルは 404 を期待する
 ```
 
 `public/` の下には絶対に置かない。置いたものはそのまま公開されるためである。
@@ -1087,8 +1119,9 @@ node scripts/ops.mjs duplicates [日数]              重複決済の疑いが�
 node scripts/ops.mjs stripe                        商品・価格・Webhook を揃え、secret を入れる
 node scripts/ops.mjs secret <NAME>                 secret を1つ入れ直す
 node scripts/ops.mjs smoke / logs                  スモーク / ログ
-node scripts/ops.mjs check                         デプロイ前の検査だけ
-node scripts/ops.mjs ci                            検査 → デプロイ。ビルドのデプロイコマンドが呼ぶ
+node scripts/ops.mjs legal                         利用規約の共通部分を各製品の規約に組み込む（§2.2）
+node scripts/ops.mjs check                         組み立て → デプロイ前の検査
+node scripts/ops.mjs ci                            組み立て → 検査 → デプロイ。ビルドのデプロイコマンドが呼ぶ
 node scripts/ops.mjs deploy                        手元からのデプロイ。ビルドが止まったときの予備
 ```
 
@@ -1130,6 +1163,9 @@ node scripts/ops.mjs deploy                        手元からのデプロイ�
 - **wrangler の版は `scripts/ops/shell.mjs` の `WRANGLER` で固定する。** `npx` は版を指定しないと毎回最新を取りに行き、
   放置しているあいだに挙動が変わる。リポジトリの依存には入れない（`package.json` を作らない）。
 - **デプロイ前に `tests/` を回す**（`ci` / `deploy` / `check`）。`check-placeholders.sh` だけは公開前まで落ちるのが正しいため、止めずに知らせる。
+- **検査の前に利用規約を組み立てる**（`ci` / `deploy` / `check` の最初。`legal` は組み立てだけ）。検査が共通部分を含めた規約の全体を見るようにするため（§2.2）。
+  組み立てが止まれば検査もデプロイもしない。組み立てで変わったファイルは `check` が「組み直した」と出すので、コミットに含める。
+  手元の `deploy` は組み立ての後に未コミットの変更を見るので、組み直したものをコミットせずに出すことはない。
 - **版のメッセージにコミットのハッシュを入れる。** どの版が出ているかを後から辿れるようにするため。
 - **手元からの `deploy` は、環境に対応するブランチ（本番は `main`、テストは `develop`）にいて、未コミットの変更が無いときだけ出す。**
   別の環境のコードや、git に残っていないものを出さないためである。デプロイ後に `tests/smoke.sh` を流す。
@@ -1179,6 +1215,11 @@ API で設定できず、ダッシュボードで行うものは次のとおり�
 
 デプロイコマンドを `ops.mjs ci` にするのは、検査に落ちたコミットを出さないためと、wrangler の版を
 `scripts/ops/shell.mjs` の1箇所で固定したままにするためである。ダッシュボードにコマンドの中身を書かない。
+
+`ci` は **利用規約の組み立て → 検査 → デプロイ** の順に流す（§2.2・§7.6）。共通部分の原本を直して push するだけで、
+それを組み込んだ各製品の規約がデプロイされる。原本そのものは `public/.assetsignore` によりアップロードされない。
+組み立ての結果も git に入れておく（`check` を流せば最新になる）。ビルドでも組み立て直すので入れ忘れても出るものは最新だが、
+リポジトリの中身とデプロイされるものを揃えておくためである。
 ブランチと環境の対応は `scripts/ops/config.mjs` の `toDeployBranch` にも持ち、手元からの `deploy` の照合に使う。
 ダッシュボードの設定と食い違わせない。
 
@@ -1349,7 +1390,7 @@ export const PRODUCTS = {
         billing: 'free',
         releaseFile: 'Pawgress-Free-Windows-{version}-Setup.exe',   // 配布ファイル名の型（§8.5）
         consentSet: 'free',                       // ダウンロード前の同意（記録はしない・§8.1）
-        consentVersion: '2026-10-15',
+        consentVersion: '2026-10-17',
       },
       paid: {
         billing: 'one_time',                      // 買い切り
@@ -1360,7 +1401,7 @@ export const PRODUCTS = {
         downloadWindowHours: 72,                  // 決済の完了からダウンロードできる時間（§8.1）
         duplicateWindowHours: 72,                 // この時間内に重ねた決済を重複とみなす。いまは上と同じ定数を入れる
         consentSet: 'one_time',                   // 同意文言のセット（§8.3）
-        consentVersion: '2026-10-15.3',     // 同意の版。文言かリンク先の法務文書を変えたら上げる（§8.3）
+        consentVersion: '2026-10-17',       // 同意の版。文言かリンク先の法務文書を変えたら上げる（§8.3）
       },
       // サブスクを足す場合の形（現時点では定義しない）
       // pro: {
@@ -1527,7 +1568,8 @@ Stripe の価格・R2 のキー・secret はレジストリから組まれるた
 **版を上げる規則。** 次のどちらかを変えたら `products.js` の `consentVersion` を上げ、ページの `data-consent-version` を合わせる。
 
 1. `consent-items.json` の文言（見出し・本文・チェックの文言）
-2. 同意する行がリンクする法務文書の本文
+2. 同意する行がリンクする法務文書の本文。**利用規約の共通部分の原本を変えたときも含む**（§2.2）。
+   共通部分は各製品の規約に組み込まれるので、それを組み込むすべての製品の、規約にリンクするすべてのプラン（有償版・無料版）の版を上げる
 
 版は日付（`YYYY-MM-DD`）で、同じ日に2回上げるときは `.2` のように後ろに付ける。
 2 を守っていれば、Stripe に残る `consentVersion` から、その時点の法務文書の版が日付で引ける（本文は git の、その日付の時点を見る）。
@@ -1774,7 +1816,7 @@ pawgress/1.0.1/Pawgress-Windows-1.0.1-Setup.exe
 |---|---|
 | 会社の法的実体・正式名称・会社概要の内容 | 特商法表記と直結する。公開前に必須 |
 | X アカウント・メールアドレス・note のURL | プレースホルダで実装を進める。トップページの CONTACT 節にあり、日英2ファイルに同じものが入る（§6.2） |
-| legal 3種の本文（日英） | 日本語は法務文書 v1（仮の状態）の平文を移してある。英語は `[TBD]` の要約。公開前に確定した文書で差し替える |
+| legal 3種の本文（日英） | 利用規約は法務文書 v2 の清書を移し、英語は条ごとの詳しい要約にした（共通部分は原本・§2.2）。プライバシーポリシーと特商法表記は v1（仮の状態）の平文と `[TBD]` の要約のまま。v2 の確定後に全文を見直す |
 | 同意項目の文言 | 同上。項目数と主旨のみ本SPECで確定させる（§8.3） |
 | ロゴ・OGP画像 | 当面は既存の猫モチーフSVGを流用する |
 | Webフォントの書体とウェイト | セルフホストは確定（§7.4 で初期リリース対象）。**何を何ウェイト積むかが未決で、これが唯一の障害である。** 決まれば器は用意済み（§7.5） |

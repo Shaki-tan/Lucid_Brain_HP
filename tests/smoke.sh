@@ -53,12 +53,32 @@ to_url_path() {
   printf '%s' "$path"
 }
 
+# public/.assetsignore に書いたファイルはアップロードされない（配信しない原本。SPEC §4.1）。
+# 200 の一覧から除き、404 を返すことを見る。1行に1つ、public/ からのパスとして読む（ワイルドカードは使わない）
+ASSETS_IGNORED=()
+if [ -f public/.assetsignore ]; then
+  while IFS= read -r line || [ -n "$line" ]; do
+    line="${line%$'\r'}"
+    case "$line" in '' | '#'*) continue ;; esac
+    ASSETS_IGNORED+=("public/${line#/}")
+  done < public/.assetsignore
+fi
+
+is_assets_ignored() {
+  local ignored
+  for ignored in "${ASSETS_IGNORED[@]}"; do
+    [ "$ignored" = "$1" ] && return 0
+  done
+  return 1
+}
+
 echo "== ${BASE} に対するスモーク =="
 echo
 echo "-- ページと配布PDF（200） --"
 # 一覧を手で持たない。public/ に置いた全ページと全PDFが配信されていることを見る。
 # プロダクトを足しても、ここは書き換えずに済む
 while IFS= read -r file; do
+  is_assets_ignored "$file" && continue
   expect_status "$(to_url_path "$file")" 200
 done < <({
   find public -name '*.html' -type f ! -name '404.html'
@@ -73,6 +93,12 @@ for path in \
   /site.webmanifest
 do
   expect_status "$path" 200
+done
+
+echo
+echo "-- 配信しないファイル（404。public/.assetsignore） --"
+for file in "${ASSETS_IGNORED[@]}"; do
+  expect_status "$(to_url_path "$file")" 404
 done
 
 echo
